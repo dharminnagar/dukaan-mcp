@@ -1,0 +1,929 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Razorpay Test Mode Setup</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #f7f7f8;
+    --bg-elevated: #ffffff;
+    --fg: #1c1d1f;
+    --fg-muted: #5b5f66;
+    --border: #d9dbe0;
+    --accent: #2f5fdc;
+    --accent-fg: #ffffff;
+    --code-bg: #f0f1f4;
+    --code-fg: #1c1d1f;
+    --code-border: #d9dbe0;
+    --success: #1a7f4e;
+    --success-bg: #e7f6ee;
+    --warn-bg: #fff6e0;
+    --warn-border: #e3b93a;
+    --warn-fg: #6b5205;
+    --danger-bg: #fdecec;
+    --danger-border: #d9534f;
+    --danger-fg: #7a1f1a;
+    --link: #2f5fdc;
+    --track: #e4e5e9;
+    --shadow: 0 1px 2px rgba(20, 20, 25, 0.06);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #16171a;
+      --bg-elevated: #1e2024;
+      --fg: #e7e8ea;
+      --fg-muted: #9a9da5;
+      --border: #33353c;
+      --accent: #6f93f2;
+      --accent-fg: #0f1116;
+      --code-bg: #111214;
+      --code-fg: #dfe1e5;
+      --code-border: #33353c;
+      --success: #4fd390;
+      --success-bg: #113325;
+      --warn-bg: #2e2408;
+      --warn-border: #c9a233;
+      --warn-fg: #ecd07f;
+      --danger-bg: #33191a;
+      --danger-border: #b9524d;
+      --danger-fg: #f0a6a2;
+      --link: #8ab0ff;
+      --track: #2a2c31;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #16171a;
+    --bg-elevated: #1e2024;
+    --fg: #e7e8ea;
+    --fg-muted: #9a9da5;
+    --border: #33353c;
+    --accent: #6f93f2;
+    --accent-fg: #0f1116;
+    --code-bg: #111214;
+    --code-fg: #dfe1e5;
+    --code-border: #33353c;
+    --success: #4fd390;
+    --success-bg: #113325;
+    --warn-bg: #2e2408;
+    --warn-border: #c9a233;
+    --warn-fg: #ecd07f;
+    --danger-bg: #33191a;
+    --danger-border: #b9524d;
+    --danger-fg: #f0a6a2;
+    --link: #8ab0ff;
+    --track: #2a2c31;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+
+  * { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  main {
+    max-width: 840px;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem 6rem;
+  }
+
+  header.page-head {
+    padding: 1.75rem 0 1rem;
+  }
+
+  h1 {
+    font-size: 1.6rem;
+    margin: 0 0 0.35rem;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    color: var(--fg-muted);
+    font-size: 0.95rem;
+    margin: 0 0 1.1rem;
+  }
+
+  .progress-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: var(--bg);
+    padding: 0.6rem 0 0.9rem;
+  }
+
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .progress-track {
+    flex: 1;
+    height: 8px;
+    background: var(--track);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    border-radius: 999px;
+    transition: width 0.25s ease;
+  }
+
+  .progress-label {
+    font-size: 0.85rem;
+    color: var(--fg-muted);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  section.step {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1.25rem 1.4rem;
+    margin: 1.1rem 0;
+    box-shadow: var(--shadow);
+  }
+
+  .step-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--accent-fg);
+    font-size: 0.85rem;
+    font-weight: 600;
+    flex: none;
+  }
+
+  h2 {
+    font-size: 1.15rem;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  .step-intro {
+    color: var(--fg-muted);
+    font-size: 0.92rem;
+    margin: 0.2rem 0 0.9rem;
+  }
+
+  .checklist {
+    list-style: none;
+    margin: 0 0 0.9rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+  }
+
+  .checklist input[type="checkbox"] {
+    margin-top: 0.2rem;
+    width: 1.05rem;
+    height: 1.05rem;
+    flex: none;
+    accent-color: var(--accent);
+  }
+
+  .checklist label {
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+
+  .checklist label .fine {
+    display: block;
+    color: var(--fg-muted);
+    font-size: 0.85rem;
+    margin-top: 0.15rem;
+  }
+
+  .checklist input[type="checkbox"]:checked + label {
+    color: var(--fg-muted);
+    text-decoration: line-through;
+    text-decoration-color: var(--border);
+  }
+
+  code.inline {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    color: var(--code-fg);
+    padding: 0.1rem 0.35rem;
+    border-radius: 5px;
+    font-size: 0.85em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  .code-block {
+    position: relative;
+    margin: 0.7rem 0;
+    border: 1px solid var(--code-border);
+    border-radius: 10px;
+    background: var(--code-bg);
+    overflow: hidden;
+  }
+
+  .code-block .code-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: var(--fg-muted);
+    border-bottom: 1px solid var(--code-border);
+  }
+
+  .code-scroll {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+
+  pre {
+    margin: 0;
+    padding: 0.85rem 1rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.82rem;
+    color: var(--code-fg);
+    white-space: pre;
+    line-height: 1.55;
+  }
+
+  .copy-btn {
+    font: inherit;
+    font-size: 0.75rem;
+    background: var(--bg-elevated);
+    color: var(--fg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.25rem 0.55rem;
+    cursor: pointer;
+  }
+
+  .copy-btn:hover { border-color: var(--accent); }
+  .copy-btn:active { transform: translateY(1px); }
+  .copy-btn.copied { color: var(--success); border-color: var(--success); }
+
+  .table-scroll {
+    overflow-x: auto;
+    max-width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin: 0.8rem 0;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 480px;
+    font-size: 0.88rem;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  thead th {
+    background: var(--code-bg);
+    color: var(--fg-muted);
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+
+  .callout {
+    border-radius: 10px;
+    padding: 0.75rem 0.9rem;
+    margin: 0.8rem 0;
+    font-size: 0.9rem;
+    border: 1px solid var(--border);
+  }
+
+  .callout.note {
+    background: var(--code-bg);
+    border-color: var(--code-border);
+    color: var(--fg);
+  }
+
+  .callout.warn {
+    background: var(--warn-bg);
+    border-color: var(--warn-border);
+    color: var(--warn-fg);
+  }
+
+  .callout.danger {
+    background: var(--danger-bg);
+    border-color: var(--danger-border);
+    color: var(--danger-fg);
+  }
+
+  .callout.success {
+    background: var(--success-bg);
+    border-color: var(--success);
+    color: var(--fg);
+  }
+
+  .callout strong { font-weight: 700; }
+
+  .callout p { margin: 0.3rem 0; }
+  .callout p:first-child { margin-top: 0; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  a { color: var(--link); }
+
+  ul.plain, ol.plain {
+    margin: 0.5rem 0;
+    padding-left: 1.3rem;
+    font-size: 0.9rem;
+  }
+  ul.plain li, ol.plain li { margin: 0.25rem 0; }
+
+  footer {
+    color: var(--fg-muted);
+    font-size: 0.82rem;
+    text-align: center;
+    padding: 1.5rem 0 0.5rem;
+  }
+
+  .theme-toggle {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    z-index: 6;
+    font-size: 0.75rem;
+    background: var(--bg-elevated);
+    color: var(--fg-muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.4rem 0.75rem;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+  }
+
+  @media (max-width: 520px) {
+    h1 { font-size: 1.35rem; }
+    section.step { padding: 1rem; }
+    th, td { padding: 0.45rem 0.55rem; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+  <header class="page-head">
+    <h1>Razorpay Test Mode Setup</h1>
+    <p class="subtitle">
+      A one-time checklist to get a solo-dev, TEST-MODE-ONLY Razorpay integration working for a
+      hackathon build (Bun/TypeScript, MCP server, AI buyer agents, policy gate). No KYC, no live money.
+    </p>
+  </header>
+
+  <div class="progress-wrap">
+    <div class="progress-row">
+      <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="progressTrack">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-label" id="progressLabel">0 / 0 done</div>
+    </div>
+  </div>
+
+  <section class="step" id="s1">
+    <div class="step-head"><span class="step-num">1</span><h2>Account signup</h2></div>
+    <p class="step-intro">Creates your Razorpay account. This step alone unlocks Test Mode — nothing else in this section is required for the hackathon.</p>
+
+    <ul class="checklist">
+      <li>
+        <input type="checkbox" id="s1-1"><label for="s1-1">Go to
+          <code class="inline">https://dashboard.razorpay.com/signup</code> and create an account
+          (email + password, or continue with Google).
+          <span class="fine">You'll also be asked to verify a phone number by OTP. That's the entire signup — no business documents needed at this stage.</span>
+        </label>
+      </li>
+      <li>
+        <input type="checkbox" id="s1-2"><label for="s1-2">Land on the dashboard home screen and confirm you're logged in.</label>
+      </li>
+      <li>
+        <input type="checkbox" id="s1-3"><label for="s1-3"><strong>Do not click into "Complete KYC" / "Activate your account" prompts.</strong>
+          <span class="fine">Dismiss or ignore them — you do not need Live Mode for this project.</span>
+        </label>
+      </li>
+    </ul>
+
+    <div class="callout success">
+      <p><strong>Test Mode needs signup only — no KYC.</strong> Razorpay's own Quickstart docs describe Test Mode as usable
+      immediately after signup, without completing KYC verification (their phrasing: you can "start integration immediately
+      without KYC completion" and use Test Mode while KYC is pending or entirely skipped). Test Mode has no time limit on its own.</p>
+      <p>The 4–5-business-day-ish review you may have heard about applies only to <strong>Live Mode</strong> activation
+      (accepting real money) and to partner/commission payout features — Razorpay's docs quote varying ranges depending on
+      business type (roughly 1–5+ working days), with some accounts eligible for a faster "Express Activation." None of that
+      blocks you. Do not start it.</p>
+    </div>
+  </section>
+
+  <section class="step" id="s2">
+    <div class="step-head"><span class="step-num">2</span><h2>Switch to Test Mode</h2></div>
+    <p class="step-intro">Every subsequent step (keys, orders, webhooks) is mode-scoped — doing it in the wrong mode gives you the wrong keys or a KYC wall.</p>
+
+    <ul class="checklist">
+      <li>
+        <input type="checkbox" id="s2-1"><label for="s2-1">In the dashboard, find the Test/Live switch in the top menu ribbon and set it to <strong>Test</strong>.
+          <span class="fine">Razorpay's docs describe this as a toggle in the top ribbon of the dashboard; exact pixel position can shift with UI updates.</span>
+        </label>
+      </li>
+      <li>
+        <input type="checkbox" id="s2-2"><label for="s2-2">Confirm a visible "Test Mode" indicator/badge is showing before you touch API Keys, Orders, or Webhooks.</label>
+      </li>
+    </ul>
+
+    <div class="callout warn">
+      <p><strong>Could not fully confirm:</strong> I could not pull a current screenshot or the exact current label text of this
+      toggle from a live-rendered page (docs fetches returned text content, not the rendered UI chrome). Confirm visually once
+      logged in — look for a "Test Mode"/"Live Mode" switch near the top of the dashboard.</p>
+    </div>
+  </section>
+
+  <section class="step" id="s3">
+    <div class="step-head"><span class="step-num">3</span><h2>Generate test API keys</h2></div>
+    <p class="step-intro">Dashboard path: <strong>Account &amp; Settings → API Keys</strong> (docs also label this section "Website and app settings → API Keys").</p>
+
+    <ul class="checklist">
+      <li>
+        <input type="checkbox" id="s3-1"><label for="s3-1">Open <strong>Account &amp; Settings → API Keys</strong>.</label>
+      </li>
+      <li>
+        <input type="checkbox" id="s3-2"><label for="s3-2">Make sure you're still in Test Mode (step 2), then click <strong>Generate Test Key</strong>.</label>
+      </li>
+      <li>
+        <input type="checkbox" id="s3-3"><label for="s3-3">Copy both the <strong>Key Id</strong> and <strong>Key Secret</strong> immediately.
+          <span class="fine">The secret is shown once, at generation time only. The dashboard shows the Key Id afterward but never the secret again — losing it means regenerating (which invalidates the old key).</span>
+        </label>
+      </li>
+      <li>
+        <input type="checkbox" id="s3-4"><label for="s3-4">Create a local <code class="inline">.env</code> file and paste both values in.</label>
+      </li>
+      <li>
+        <input type="checkbox" id="s3-5"><label for="s3-5"><strong>Add <code class="inline">.env</code> to <code class="inline">.gitignore</code> before your first commit or <code class="inline">git add</code>.</strong></label>
+      </li>
+    </ul>
+
+    <div class="code-block">
+      <div class="code-label"><span>.env</span><button class="copy-btn" data-copy-target="code-env">Copy</button></div>
+      <div class="code-scroll"><pre id="code-env">RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxxxxxx
+RAZORPAY_KEY_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxx</pre></div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-label"><span>.gitignore</span><button class="copy-btn" data-copy-target="code-gitignore">Copy</button></div>
+      <div class="code-scroll"><pre id="code-gitignore">.env
+.env.*
+!.env.example</pre></div>
+    </div>
+
+    <div class="callout danger">
+      <p><strong>Never commit the key secret.</strong> If it ever lands in a commit (even a local one you plan to amend away),
+      treat it as compromised and regenerate — git history is not a safe place to "fix later."</p>
+    </div>
+  </section>
+
+  <section class="step" id="s4">
+    <div class="step-head"><span class="step-num">4</span><h2>Smoke test: create an order</h2></div>
+    <p class="step-intro">Confirms your keys work before you build anything on top. Amount is in the smallest currency
+      subunit — <strong>paise</strong> for INR (so ₹500.00 is <code class="inline">50000</code>). The API base URL is
+      identical for Test and Live — only the key prefix (<code class="inline">rzp_test_</code> vs <code class="inline">rzp_live_</code>) and secret differ.</p>
+
+    <ul class="checklist">
+      <li>
+        <input type="checkbox" id="s4-1"><label for="s4-1">Run the curl command below with your real Test key/secret substituted.</label>
+      </li>
+      <li>
+        <input type="checkbox" id="s4-2"><label for="s4-2">Confirm the JSON response contains <code class="inline">"id": "order_..."</code> and <code class="inline">"status": "created"</code>.</label>
+      </li>
+      <li>
+        <input type="checkbox" id="s4-3"><label for="s4-3">Run the Bun/TypeScript equivalent and confirm you get the same result programmatically.</label>
+      </li>
+    </ul>
+
+    <div class="code-block">
+      <div class="code-label"><span>curl</span><button class="copy-btn" data-copy-target="code-curl">Copy</button></div>
+      <div class="code-scroll"><pre id="code-curl">curl -u rzp_test_xxxxxxxxxxxxxxxx:xxxxxxxxxxxxxxxxxxxxxxxxxxxx \
+  -X POST https://api.razorpay.com/v1/orders \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 50000,
+    "currency": "INR",
+    "receipt": "receipt#1"
+  }'</pre></div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-label"><span>orders.ts (Bun)</span><button class="copy-btn" data-copy-target="code-ts">Copy</button></div>
+      <div class="code-scroll"><pre id="code-ts">const keyId = process.env.RAZORPAY_KEY_ID!;
+const keySecret = process.env.RAZORPAY_KEY_SECRET!;
+
+const res = await fetch("https://api.razorpay.com/v1/orders", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: "Basic " + btoa(`${keyId}:${keySecret}`),
+  },
+  body: JSON.stringify({
+    amount: 50000,
+    currency: "INR",
+    receipt: "receipt#1",
+  }),
+});
+
+const order = await res.json();
+console.log(order.id, order.status); // order_..., created</pre></div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-label"><span>example response shape</span><button class="copy-btn" data-copy-target="code-resp">Copy</button></div>
+      <div class="code-scroll"><pre id="code-resp">{
+  "id": "order_EKwxwAgItmmXdp",
+  "entity": "order",
+  "amount": 50000,
+  "amount_paid": 0,
+  "amount_due": 50000,
+  "currency": "INR",
+  "receipt": "receipt#1",
+  "status": "created",
+  "attempts": 0,
+  "created_at": 1596536529
+}</pre></div>
+    </div>
+
+    <div class="callout note">
+      <p>The <code class="inline">order_EKwxwAgItmmXdp</code> id above is an illustrative example of the id format, not a
+      live value from your account — your real response will have its own id, amounts, and timestamp.</p>
+    </div>
+  </section>
+
+  <section class="step" id="s5">
+    <div class="step-head"><span class="step-num">5</span><h2>Raising support tickets (optional, long shot)</h2></div>
+    <p class="step-intro">Dashboard path: click the <strong>Help &amp; Support</strong> icon (headphone icon) in the dashboard, or go to
+      <strong>Account &amp; Settings → Support Tickets → + Raise New Query</strong>, pick the closest topic/sub-topic, paste your message, and submit.</p>
+
+    <ul class="checklist">
+      <li>
+        <input type="checkbox" id="s5-1"><label for="s5-1">Open Help &amp; Support from the dashboard.</label>
+      </li>
+      <li>
+        <input type="checkbox" id="s5-2"><label for="s5-2">Click <strong>+ Raise New Query</strong>, choose the nearest topic, paste the S2S JSON v2 ticket body below, submit.</label>
+      </li>
+      <li>
+        <input type="checkbox" id="s5-3"><label for="s5-3">Repeat for the BharatQR ticket body below.</label>
+      </li>
+      <li>
+        <input type="checkbox" id="s5-4"><label for="s5-4">Move on and keep building — do not wait on a response for either.</label>
+      </li>
+    </ul>
+
+    <div class="code-block">
+      <div class="code-label"><span>Ticket 1 — S2S JSON v2 (test mode)</span><button class="copy-btn" data-copy-target="code-ticket1">Copy</button></div>
+      <div class="code-scroll"><pre id="code-ticket1">Subject: Request to enable Server-to-Server JSON v2 on Test Mode
+
+Hi team,
+
+I'm building a project for the Razorpay AI Buildathon 2026 and would like
+Server-to-Server (S2S) JSON v2 integration enabled on my account, for
+Test Mode only. I understand this is normally gated behind support
+approval and, for card payments, PCI-DSS compliance — I'm not looking to
+process live card data, this is purely for test-mode development ahead
+of the Buildathon deadline.
+
+Could you let me know whether S2S JSON v2 can be enabled for Test Mode
+specifically, and if so, what you need from me to proceed?
+
+Thanks,
+[your name]</pre></div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-label"><span>Ticket 2 — BharatQR (test mode)</span><button class="copy-btn" data-copy-target="code-ticket2">Copy</button></div>
+      <div class="code-scroll"><pre id="code-ticket2">Subject: Request to enable BharatQR on Test Mode
+
+Hi team,
+
+I'm building a project for the Razorpay AI Buildathon 2026 and would
+like BharatQR enabled on my merchant account for Test Mode. This is
+test-mode only — no live QR/payment volume expected.
+
+Could you enable BharatQR for testing, or let me know the process and
+expected timeline?
+
+Thanks,
+[your name]</pre></div>
+    </div>
+
+    <div class="callout warn">
+      <p><strong>Both are long shots.</strong> S2S JSON v2 is an on-demand feature normally requiring a support-approved
+      activation and, for card data, a PCI-DSS compliance certificate — a solo hackathon account may simply not qualify.
+      BharatQR activation is also support-gated and, per Razorpay's docs, even once enabled its <em>scanning</em> flow only
+      works against Live Mode QR codes (test mode has its own separate "BharatQR test payment route" for triggering test
+      payments toward a test-mode QR). Lead time for either request is unknown and could exceed your deadline. <strong>Nothing
+      in the build should depend on either being approved</strong> — use the Orders API (Section 4) as your primary rail.</p>
+    </div>
+  </section>
+
+  <section class="step" id="s6">
+    <div class="step-head"><span class="step-num">6</span><h2>Webhooks in test mode</h2></div>
+    <p class="step-intro">Dashboard path: <strong>Account &amp; Settings → Webhooks</strong>, while in Test Mode.</p>
+
+    <ul class="checklist">
+      <li>
+        <input type="checkbox" id="s6-1"><label for="s6-1">Confirm you're in Test Mode, then open <strong>Account &amp; Settings → Webhooks</strong>.</label>
+      </li>
+      <li>
+        <input type="checkbox" id="s6-2"><label for="s6-2">Add a new webhook: enter your endpoint URL, pick the events you care about (e.g. <code class="inline">order.paid</code>, <code class="inline">payment.captured</code>), and set a webhook secret.</label>
+      </li>
+      <li>
+        <input type="checkbox" id="s6-3"><label for="s6-3">When prompted for an OTP to confirm creating/editing/deleting the webhook, use the default test-mode OTP: <code class="inline">754081</code>.</label>
+      </li>
+    </ul>
+
+    <div class="callout note">
+      <p>This OTP (<code class="inline">754081</code>) is documented by Razorpay specifically for test-mode webhook
+      setup/edit/delete confirmations — it's not a real one-time code sent anywhere, it's a fixed stand-in for test mode.</p>
+    </div>
+
+    <div class="callout warn">
+      <p><strong>Could not confirm:</strong> the exact current menu wording/path for adding a webhook (docs pages fetched
+      described the OTP behavior clearly but not a step-by-step "click here" path for initial webhook registration).
+      Account &amp; Settings → Webhooks is Razorpay's documented general location; verify the exact button label once you're
+      in the dashboard.</p>
+    </div>
+  </section>
+
+  <section class="step" id="s7">
+    <div class="step-head"><span class="step-num">7</span><h2>Test credentials reference</h2></div>
+    <p class="step-intro">Keep this open while testing checkout flows. All of these only work with a <code class="inline">rzp_test_</code> key.</p>
+
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Network</th><th>Card number</th><th>CVV</th><th>Expiry</th></tr></thead>
+        <tbody>
+          <tr><td>Visa (India)</td><td>4100 2800 0000 1007</td><td>any 3 digits</td><td>any future date</td></tr>
+          <tr><td>Mastercard (India)</td><td>5500 6700 0000 1002</td><td>any 3 digits</td><td>any future date</td></tr>
+          <tr><td>RuPay (India)</td><td>6527 6589 0000 1005</td><td>any 3 digits</td><td>any future date</td></tr>
+          <tr><td>Diners</td><td>3608 280009 1007</td><td>any 3 digits</td><td>any future date</td></tr>
+          <tr><td>Amex</td><td>3402 560004 01007</td><td>any 4 digits</td><td>any future date</td></tr>
+          <tr><td>Mastercard (international)</td><td>5105 1051 0510 5100</td><td>any 3 digits</td><td>any future date</td></tr>
+          <tr><td>Visa (India, alt.)</td><td>4628 9499 7226 2986</td><td>111</td><td>11/30</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <p><strong>Partially confirmed:</strong> the first six rows were pulled directly from Razorpay's own test-card-details
+      docs content. The last row (<code class="inline">4628 9499 7226 2986</code>, from your brief) is widely cited —
+      including on Razorpay's own white-label doc mirrors (e.g. its HDFC/Curlec partner docs, which republish the same
+      underlying content) — with CVV <code class="inline">111</code> and expiry <code class="inline">11/30</code>, but I
+      could not pull that exact row from the primary <code class="inline">razorpay.com/docs/payments/payments/test-card-details/</code>
+      page myself (its test-card table didn't come through in the fetched content). Any of the rows above should work; if one
+      is rejected, cross-check against the live docs page before assuming your integration is broken.</p>
+    </div>
+
+    <ul class="plain">
+      <li><strong>OTP rule:</strong> enter any OTP <strong>4–10 digits</strong> long to make the payment succeed; anything
+        <strong>under 4 digits</strong> makes it fail. This applies to the mock OTP screen shown during test-mode card
+        payments.</li>
+      <li><strong>UPI test VPAs:</strong> <code class="inline">success@razorpay</code> simulates an instant successful
+        payment; <code class="inline">failure@razorpay</code> simulates an instant decline.</li>
+    </ul>
+
+    <div class="callout danger">
+      <p><strong>UPI Collect is being deprecated 28 Feb 2026</strong> per an NPCI mandate — manual VPA/UPI-ID entry to
+      initiate a payment or mandate is being phased out industry-wide (a narrow MCC exemption exists for IPO/secondary-market
+      transactions, which won't apply here). Razorpay will auto-remove the UPI Collect option from Standard Checkout; for
+      Custom/S2S checkout integrations, removal and switching to UPI Intent/QR is a manual step on your side. Since this
+      lands before your 5 Sept 2026 deadline, don't build anything that depends on UPI Collect specifically — use UPI
+      Intent/QR flows, or the test VPAs above via whichever flow is still active when you test.</p>
+    </div>
+
+    <div class="callout warn">
+      <p><strong>Confusing but confirmed:</strong> in test mode, clicking "cancel" on a payment results in a
+      <strong>successful</strong> payment, not a cancelled/failed one. Razorpay's own docs state this directly. If you need
+      to test a genuinely failed/cancelled payment, use the mock bank page's explicit "Failure" button, an OTP under 4
+      digits, or <code class="inline">failure@razorpay</code> — don't rely on the cancel action to simulate failure.</p>
+    </div>
+
+    <ul class="checklist">
+      <li>
+        <input type="checkbox" id="s7-1"><label for="s7-1">Tried one successful test-card payment through a Standard Checkout flow.</label>
+      </li>
+      <li>
+        <input type="checkbox" id="s7-2"><label for="s7-2">Tried one UPI test payment using <code class="inline">success@razorpay</code> and one using <code class="inline">failure@razorpay</code>.</label>
+      </li>
+    </ul>
+  </section>
+
+  <section class="step" id="s8">
+    <div class="step-head"><span class="step-num">8</span><h2>Known limits and blockers</h2></div>
+    <p class="step-intro">Read this before architecture decisions, not after.</p>
+
+    <ul class="checklist">
+      <li>
+        <input type="checkbox" id="s8-1"><label for="s8-1"><strong>Payment Links:</strong> capped at 30 per business in test mode (confirmed in docs). Fine for demos, not for load-testing a link-per-order design.</label>
+      </li>
+      <li>
+        <input type="checkbox" id="s8-2"><label for="s8-2"><strong>S2S routes:</strong> gated behind support approval, and for card payments specifically, PCI-DSS compliance. Don't design around S2S being available by default.</label>
+      </li>
+      <li>
+        <input type="checkbox" id="s8-3"><label for="s8-3"><strong>Smart Collect:</strong> test payments toward a virtual account are triggered via a "Make a Test Payment" button on the dashboard, per Razorpay's own test-payments docs — not something documented as scriptable through a public API.</label>
+      </li>
+      <li>
+        <input type="checkbox" id="s8-4"><label for="s8-4"><strong>Standard Checkout:</strong> even in test mode, completing a payment means clicking through a mock bank page with Success/Failure buttons in an actual browser — it is not a pure server-to-server round trip.</label>
+      </li>
+      <li>
+        <input type="checkbox" id="s8-5"><label for="s8-5"><strong>No official local sandbox/mock server:</strong> every test-mode request still hits the same
+          <code class="inline">api.razorpay.com</code> host used in production — only the key prefix changes. I did not find
+          Razorpay documentation of a downloadable or local mock server, and the fact that test and live share one base URL is
+          consistent with there being none — but I could not find an explicit "we do not offer a local sandbox" statement
+          either, so treat this as inference rather than a confirmed docs fact.</label>
+      </li>
+    </ul>
+
+    <div class="callout success">
+      <p><strong>Practical conclusion:</strong> build your buyer-agent → policy-gate → payment flow around the
+      <strong>Orders API</strong> (Section 4) as the rail — it's a clean server-to-server JSON call with no browser
+      dependency. But expect <strong>payment authorization itself</strong> (actually moving a test payment from "created" to
+      "paid") to require either a browser session hitting the Standard Checkout mock bank page, or a human clicking through
+      it — plan your demo flow (and any automated agent test harness) around a human/browser step at the authorization
+      boundary, not full end-to-end headless automation.</p>
+    </div>
+  </section>
+
+  <footer>
+    Test Mode only. No live keys, no real money, no KYC required for anything on this page.
+  </footer>
+
+</main>
+
+<button class="theme-toggle" id="themeToggle" type="button">Theme: System</button>
+
+<script>
+(function () {
+  "use strict";
+
+  var STORAGE_KEY = "razorpay-setup-checklist-v1";
+  var THEME_KEY = "razorpay-setup-theme-v1";
+
+  function safeGet(key) {
+    try {
+      var raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function safeSet(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (e) {
+      /* storage unavailable (private mode, quota, etc) — page still works, just doesn't persist */
+    }
+  }
+
+  var checkboxes = Array.prototype.slice.call(document.querySelectorAll('.checklist input[type="checkbox"]'));
+  var state = safeGet(STORAGE_KEY) || {};
+
+  function updateProgress() {
+    var total = checkboxes.length;
+    var done = checkboxes.filter(function (cb) { return cb.checked; }).length;
+    var pct = total ? Math.round((done / total) * 100) : 0;
+    var fill = document.getElementById("progressFill");
+    var label = document.getElementById("progressLabel");
+    var track = document.getElementById("progressTrack");
+    if (fill) fill.style.width = pct + "%";
+    if (label) label.textContent = done + " / " + total + " done";
+    if (track) track.setAttribute("aria-valuenow", String(pct));
+  }
+
+  checkboxes.forEach(function (cb) {
+    if (Object.prototype.hasOwnProperty.call(state, cb.id)) {
+      cb.checked = !!state[cb.id];
+    }
+    cb.addEventListener("change", function () {
+      state[cb.id] = cb.checked;
+      safeSet(STORAGE_KEY, state);
+      updateProgress();
+    });
+  });
+
+  updateProgress();
+
+  function fallbackCopy(text) {
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    var ok = false;
+    try {
+      ok = document.execCommand("copy");
+    } catch (e) {
+      ok = false;
+    }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).then(
+        function () { return true; },
+        function () { return fallbackCopy(text); }
+      );
+    }
+    return Promise.resolve(fallbackCopy(text));
+  }
+
+  Array.prototype.slice.call(document.querySelectorAll(".copy-btn")).forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var targetId = btn.getAttribute("data-copy-target");
+      var target = targetId ? document.getElementById(targetId) : null;
+      if (!target) return;
+      var text = target.textContent || "";
+      copyText(text).then(function (ok) {
+        var original = btn.textContent;
+        btn.textContent = ok ? "Copied" : "Failed";
+        btn.classList.toggle("copied", !!ok);
+        setTimeout(function () {
+          btn.textContent = original;
+          btn.classList.remove("copied");
+        }, 1500);
+      });
+    });
+  });
+
+  var themeToggle = document.getElementById("themeToggle");
+  var savedTheme = safeGet(THEME_KEY);
+  var order = ["system", "light", "dark"];
+
+  function applyTheme(mode) {
+    if (mode === "light") {
+      document.documentElement.setAttribute("data-theme", "light");
+    } else if (mode === "dark") {
+      document.documentElement.setAttribute("data-theme", "dark");
+    } else {
+      document.documentElement.removeAttribute("data-theme");
+    }
+    if (themeToggle) {
+      themeToggle.textContent = "Theme: " + mode.charAt(0).toUpperCase() + mode.slice(1);
+    }
+  }
+
+  var currentTheme = (savedTheme && order.indexOf(savedTheme) !== -1) ? savedTheme : "system";
+  applyTheme(currentTheme);
+
+  if (themeToggle) {
+    themeToggle.addEventListener("click", function () {
+      var idx = order.indexOf(currentTheme);
+      currentTheme = order[(idx + 1) % order.length];
+      applyTheme(currentTheme);
+      safeSet(THEME_KEY, currentTheme);
+    });
+  }
+})();
+</script>
+</body>
+</html>
