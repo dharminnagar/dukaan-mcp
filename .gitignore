@@ -21,7 +21,6 @@ build/
 out/
 
 # projectmem runtime artifacts
-.projectmem/events.jsonl
 .projectmem/watch.pid
 .projectmem/watch.log
 .projectmem/structure.json
