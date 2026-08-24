@@ -1,0 +1,6 @@
+sku,name,price,stock,category
+sku-001,Toor Dal 1kg,145.00,40,groceries
+sku-002,Basmati Rice 5kg,499.50,15,groceries
+sku-003,Amul Butter 500g,265,25,dairy
+sku-004,Colgate Toothpaste 200g,99.00,60,personal-care
+sku-005,Britannia Biscuits Pack,45.50,100,snacks

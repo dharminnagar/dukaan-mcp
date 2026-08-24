@@ -1,0 +1,6 @@
+{
+  "spend_cap_rupees": "5000.00",
+  "approval_threshold_rupees": "1500.00",
+  "category_allowlist": ["groceries", "dairy", "personal-care", "snacks"],
+  "window": "24h"
+}
