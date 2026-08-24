@@ -30,7 +30,7 @@ days and there is no video.
 - [ ] **D8 (30 Aug)** — DUK-18 eval pt1: transcripts + adversarial generation, split frozen
 - [ ] **D9 (31 Aug)** — DUK-19 eval pt2: metrics reporter, tuning on training split ONLY
       *Exit: real metrics table with a non-empty escapes list. **Risk retired: the differentiator***
-- [ ] **D10 (1 Sept)** — DUK-20 held-out run (ONCE) + both UIs
+- [ ] **D10 (1 Sept)** — DUK-20 held-out run (ONCE) + onboarding form + audit CLI printer · DUK-27 CSV column mapping + merchant confirm (DROPPABLE, starts only if D5-D9 landed on time)
 - [ ] **D11 (2 Sept)** — DUK-21 README + architecture + video script
 - [ ] **D12 (3 Sept)** — DUK-22 record + edit video
 - [ ] **D13 (4 Sept)** — DUK-23 form narrative + submit (IRREVERSIBLE)
@@ -42,10 +42,11 @@ days and there is no video.
 - [x] Onboarding UI down to one unstyled page (-1.5h)
 - [x] Audit view down to a read-only table, no filters (-1.5h)
 - [x] Razorpay fixture caching where the allow branch allows it (-1h)
+- [x] Audit view to a `bun run audit --session=X` CLI printer, decided up front instead of on slip (-45 min), to part-fund DUK-27
 
 ## Cut order if it slips
 
-1. Audit view to a `bun run audit --session=X` CLI printer (45 min replacement)
+1. DUK-27 CSV column mapping — the DUK-10 exact-header path stays load-bearing, so dropping it costs a video beat, not a deliverable
 2. Onboarding UI to form only
 3. Gate tests 18 cases down to 10 — reluctant, contradicts the pitch
 
@@ -67,6 +68,8 @@ id on camera · the video · the README · the two long-form form fields.
 - Partner Auth tenancy (`X-Razorpay-Account`) once Technology Partner status clears
 - Align tool schema with UCP + ACP
 - Swap human approval for Reserve Pay mandates once UAP clears RBI
+- Merchant-facing policy simulator: replay a merchant's audit history against a candidate policy and report benign sessions recovered next to attacks newly admitted. Considered 24 Aug alongside DUK-27, deferred because DUK-27 is cheaper and hits the Instant Checkout onboarding finding directly
+- Multi-format catalog ingestion (images, PDFs, Excel, free-text paste) with a hand-labelled extraction accuracy eval. Rejected 24 Aug on cost: 6-9h out of D8-D10
 
 ## Shipped
 
