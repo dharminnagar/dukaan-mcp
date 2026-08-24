@@ -12,7 +12,7 @@ days and there is no video.
 
 ## Schedule
 
-- [ ] **D1 (23 Aug)** — DUK-5 repo untangle + scaffold · DUK-6 Razorpay account + real `order_` id · DUK-7 support tickets
+- [x] **D1 (23 Aug)** — DUK-5 repo untangle + scaffold · DUK-6 Razorpay account + real `order_` id (**order_TTgT79PWPuu8Fh**, 24 Aug) · DUK-7 support tickets STILL OPEN
       *Exit: real order id in hand, project is its own repo, `bun run db:migrate` works*
 - [ ] **D2 (24 Aug)** — DUK-8 error envelope + AuditEvent contracts · DUK-9 auth tokens + tenancy · DUK-10 CSV to Product + Policy validation
       *Exit: two merchants creatable from CSV, each with a token and a policy*
@@ -56,7 +56,8 @@ id on camera · the video · the README · the two long-form form fields.
 
 ## Open
 
-- DUK-28 session_id fragmentation. One client, three tool calls, three session_ids. Blocks DUK-20's `audit --session=X` hero scenario. Fix (a) is one line in DUK-17; fix (b) stateful createMcpHandler, needed before DUK-25. NOT a gate or tenancy bug.
+- DUK-28 DEPRIORITISED by Dharmin 24 Aug to an end-if-time improvement. Acceptable ONLY because fix (a), the buyer agent sending a stable mcp-session-id header, moved into DUK-17 as a required acceptance criterion. If (b) never ships, the hosted endpoint's audit trail is ungroupable by session for any client we don't own — state that in the README limitations list rather than hiding it.
+- DUK-7: Dharmin will raise the tickets himself. Verdict recorded: LOW importance. BharatQR is the only documented headless simulate-payment route, but a working headless authorisation would partly undercut the NPCI-regulation argument the pitch makes, and 2-3 weeks review against ~11 days means it will not land. Raise it for the Build Challenges paragraph, not the capability.
 - DUK-6 is mis-statused: account and rzp_test_ key are done, but the smoke POST /v1/orders producing a real `order_` id has never run and scripts/smoke-razorpay.ts does not exist. That order id is on the never-cut list. ~15 min, needs Dharmin (external write with live test credentials).
 - DUK-7 support tickets: 2-3 week stated review against a ~12 day deadline. Raise today or kill the line so it stops occupying a slot.
 - DUK-25 fixed demo token has no mechanism: createMerchant mints agent id and token via CSPRNG, so both change on every reseed.
@@ -76,6 +77,10 @@ id on camera · the video · the README · the two long-form form fields.
 - Multi-format catalog ingestion (images, PDFs, Excel, free-text paste) with a hand-labelled extraction accuracy eval. Rejected 24 Aug on cost: 6-9h out of D8-D10
 
 ## Shipped
+
+- [x] **D3 done early (24 Aug)** — DUK-11 seed data + DUK-12 MCP catalog tools, via two parallel agents with disjoint file ownership. 80 tests pass across 9 files. Orchestrator verification found DUK-28, which the agents' own tests missed.
+- [x] **DUK-6 closed (24 Aug)** — scripts/smoke-razorpay.ts run against the live test API: order_TTgT79PWPuu8Fh, 4999 paise, notes.merchant_id round-tripped. First video asset. Clears a never-cut item.
+- [x] Interfaces frozen so concurrent units cannot invent seams: the gate never calls Razorpay (decide returns allow, DUK-13's handler calls the adapter), and the RazorpayAdapter.createOrder signature.
 
 - [x] Hostile review of IDEA.md v1 — two research passes, every factual claim verified or refuted
 - [x] Track locked: 01, gate-as-product, Track 02's measurement discipline grafted on
