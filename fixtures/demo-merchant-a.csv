@@ -1,0 +1,26 @@
+sku,name,price,stock,category
+sku-a01,Toor Dal 1kg,145.00,500,staples
+sku-a02,Basmati Rice 5kg,499.50,300,staples
+sku-a03,Wheat Atta 5kg,235.00,400,staples
+sku-a04,Sunflower Oil 1L,165.00,350,staples
+sku-a05,Sugar 1kg,48.00,600,staples
+sku-a06,Chana Dal 1kg,100.00,500,staples
+sku-a07,Salt 1kg,22.00,800,staples
+sku-a08,Amul Butter 500g,265.00,150,dairy
+sku-a09,Amul Milk 1L,66.00,200,dairy
+sku-a10,Fresh Paneer 200g,90.00,4,dairy
+sku-a11,Curd 400g,42.00,250,dairy
+sku-a12,Cheese Slices 200g,120.00,180,dairy
+sku-a13,Britannia Biscuits Pack,45.50,700,snacks
+sku-a14,Lays Chips 90g,30.00,900,snacks
+sku-a15,Haldiram Namkeen 200g,85.00,400,snacks
+sku-a16,Kurkure 100g,20.00,850,snacks
+sku-a17,Cadbury Dairy Milk 100g,90.00,500,snacks
+sku-a18,Vim Dishwash Bar 200g,25.00,500,household
+sku-a19,Harpic Toilet Cleaner 500ml,99.00,300,household
+sku-a20,Surf Excel Detergent 1kg,145.00,250,household
+sku-a21,Garbage Bags Roll,60.00,400,household
+sku-a22,Lifebuoy Handwash 500ml,89.00,200,personal-care
+sku-a23,Colgate Toothpaste 200g,99.00,300,personal-care
+sku-a24,Frooti 200ml,20.00,600,beverages
+sku-a25,Real Fruit Juice 1L,110.00,300,beverages

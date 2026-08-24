@@ -1,0 +1,26 @@
+sku,name,price,stock,category
+sku-b01,Bluetooth Neckband,899.00,40,audio
+sku-b02,Wireless Earbuds Pro,2499.00,25,audio
+sku-b03,Over-Ear Headphones,3499.00,15,audio
+sku-b04,Portable Bluetooth Speaker,1899.00,20,audio
+sku-b05,Soundbar 2.1 Channel,6999.00,8,audio
+sku-b06,Budget Smartphone 4GB,8999.00,12,mobile
+sku-b07,Mid-Range Smartphone 8GB,15999.00,8,mobile
+sku-b08,Flagship Smartphone 12GB,54999.00,3,mobile
+sku-b09,Feature Phone,1499.00,30,mobile
+sku-b10,5G Smartphone 6GB,12999.00,10,mobile
+sku-b11,Phone Case Premium,499.00,60,accessories
+sku-b12,Tempered Glass Screen Guard,299.00,100,accessories
+sku-b13,Wireless Charging Pad,1299.00,35,accessories
+sku-b14,Power Bank 10000mAh,1200.00,45,accessories
+sku-b15,USB-C Fast Charger 65W,999.00,50,accessories
+sku-b16,Car Mobile Holder,349.00,70,accessories
+sku-b17,microSD Card 128GB,899.00,40,storage
+sku-b18,Pendrive 64GB,499.00,55,storage
+sku-b19,External HDD 1TB,3499.00,18,storage
+sku-b20,External SSD 500GB,4999.00,12,storage
+sku-b21,SSD NVMe 1TB,7999.00,2,storage
+sku-b22,Fitness Band,1999.00,20,wearables
+sku-b23,Smartwatch Series X,5999.00,10,wearables
+sku-b24,Wireless Mouse,699.00,45,computing
+sku-b25,Keyboard Mechanical Compact,2999.00,25,computing

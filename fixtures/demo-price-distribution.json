@@ -1,0 +1,18 @@
+[
+  {
+    "merchant_id": "m_demo_kirana",
+    "item_count": 25,
+    "min_price_paise": 2000,
+    "max_price_paise": 49950,
+    "mean_price_paise": 10860,
+    "total_price_paise": 271500
+  },
+  {
+    "merchant_id": "m_demo_electronics",
+    "item_count": 25,
+    "min_price_paise": 29900,
+    "max_price_paise": 5499900,
+    "mean_price_paise": 578104,
+    "total_price_paise": 14452600
+  }
+]

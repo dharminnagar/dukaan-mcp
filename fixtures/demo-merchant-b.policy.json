@@ -1,0 +1,6 @@
+{
+  "spend_cap_rupees": "60000.00",
+  "approval_threshold_rupees": "1000.00",
+  "category_allowlist": ["audio", "mobile", "accessories", "storage"],
+  "window": "1h"
+}
