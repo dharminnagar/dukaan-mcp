@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, test } from 'bun:test';
 import { parsePolicy, parseWindow } from '../src/catalog/policy';
-import { closePool, pool } from '../src/db/pool';
+import { pool } from '../src/db/pool';
 
 describe('parseWindow', () => {
   test('24h -> 86400', () => expect(parseWindow('24h')).toBe(86400));
@@ -76,6 +76,9 @@ describe('policy_threshold_reachable — Postgres CHECK constraint', () => {
 
   afterAll(async () => {
     await pool.query(`DELETE FROM merchants WHERE id = 'm_policy_check'`);
-    await closePool();
+    // src/db/pool.ts exports ONE process-wide Pool singleton shared by every
+    // test file in the same `bun test` process. Closing it here would break
+    // whichever file runs next, so it is deliberately left open; bun exits
+    // regardless.
   });
 });

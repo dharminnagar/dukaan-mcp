@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, test } from 'bun:test';
 import { writeAuditEvent } from '../src/audit/write';
-import { closePool, pool, query } from '../src/db/pool';
+import { pool, query } from '../src/db/pool';
 import type { AuditEventInput } from '../src/shared/contracts';
 
 const baseInput: AuditEventInput = {
@@ -18,7 +18,10 @@ const baseInput: AuditEventInput = {
 };
 
 afterAll(async () => {
-  await closePool();
+  // src/db/pool.ts exports ONE process-wide Pool singleton shared by every
+  // test file in the same `bun test` process. Closing it here would break
+  // whichever file runs next, so it is deliberately left open; bun exits
+  // regardless.
 });
 
 describe('writeAuditEvent', () => {

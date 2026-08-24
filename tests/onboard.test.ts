@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, test } from 'bun:test';
 import { hashToken } from '../src/auth/token';
-import { closePool, pool, query, queryOne } from '../src/db/pool';
+import { pool, query, queryOne } from '../src/db/pool';
 import { createMerchant } from '../src/onboard/create-merchant';
 
 const FIXTURE_CSV = await Bun.file(`${import.meta.dir}/../fixtures/merchant-a.csv`).text();
@@ -111,5 +111,8 @@ describe('createMerchant', () => {
 });
 
 afterAll(async () => {
-  await closePool();
+  // src/db/pool.ts exports ONE process-wide Pool singleton shared by every
+  // test file in the same `bun test` process. Closing it here would break
+  // whichever file runs next, so it is deliberately left open; bun exits
+  // regardless.
 });
