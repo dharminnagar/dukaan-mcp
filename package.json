@@ -17,6 +17,7 @@
     "dev": "bun --watch src/mcp/http.ts",
     "mcp:dev": "bun --watch src/mcp/http.ts",
     "spike:client": "bun run scripts/spike-client.ts",
+    "verify:mcp": "bun run scripts/verify-mcp.ts",
     "smoke:rzp": "bun run scripts/smoke-razorpay.ts",
     "seed:merchant": "bun run scripts/seed-merchant.ts",
     "seed:demo": "bun run scripts/seed-demo.ts",
