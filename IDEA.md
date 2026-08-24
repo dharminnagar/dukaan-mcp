@@ -89,7 +89,7 @@ Submission is a single Google Form. Among twelve required fields it collects Sel
 |---|---|
 | Time | About 3 focused hours a day, solo, to a roughly 5 September deadline. 39 hours nominal. |
 | Deadline confidence | 5 September comes from third-party sources only. It appears on no Razorpay-owned page. Build to it, treat the date as unconfirmed risk. |
-| Stack | Bun, TypeScript, Next.js, SQLite |
+| Stack | Bun, TypeScript, Next.js, Postgres 17 |
 | Payments | Razorpay test mode, which needs signup only and no KYC. Their docs: "The Test mode is available to you as soon as you complete the sign-up process." |
 | Judged artifacts | Public repo, 5-minute video, architecture. Engineers read the repo on an unhurried timeline, so "we only had 48 hours" isn't available as an excuse. |
 
@@ -211,6 +211,16 @@ So the loop closes like this. The agent shops, the gate decides, a real Order ge
 
 Support tickets for S2S JSON v2 and BharatQR test activation go in on day one. If either lands, the loop upgrades. Neither is in the plan.
 
+### Deployed, so a judge can use it rather than watch it
+
+Both the MCP server and the dashboard are hosted, on Railway, with managed Postgres in the same project. A judge adds the endpoint to Claude Desktop with a demo token published in the README and shops a real merchant themselves. For a pitch whose claim is that any merchant becomes agent-transactable, someone else's agent completing a purchase against it is the proof. A video of the same thing is a description of the proof.
+
+The endpoint is token-gated rather than open. One demo merchant token ships in the README so access is instant; the endpoint is not left unauthenticated. The account is Razorpay test mode and cannot move real money, but a public MCP endpoint holding a payment key is not a posture worth shipping regardless.
+
+Two rules keep this from becoming a liability. The video is recorded against local, never against the live URL, so a deploy breaking on the last day costs a bonus rather than a deliverable. And the local path stays independent: `docker compose up -d && bun run db:migrate && bun run eval` reproduces every number in the metrics table with the hosted instance switched off entirely. That reproducibility is load-bearing for the measurement claim and it does not get to depend on uptime.
+
+Deployment is scheduled last and is explicitly droppable for the same reason.
+
 ### Error handling, and the failure handled gracefully
 
 The structured error envelope gets designed before the gate and before the agent, because both consume it and deferring it means paying for it twice. It returns as an MCP tool result with `isError`, never a thrown exception, and it carries `reason_code`, a human-readable message, and machine-readable fields: `item_id`, `true_stock`, `remaining_budget`, `cap`, `window`.
@@ -230,7 +240,7 @@ Secondary case, Razorpay 429. Razorpay documents a rate limiter but publishes no
 | Cap scope | `(merchant_id, agent_id, window)` | `session_id` | A session-scoped cap dies the moment an agent opens a new session, which is the first adversarial class in the suite |
 | Buyer agent | Custom Claude-API MCP client | Live inside Claude Desktop | Reasoning trace, tool calls and gate decisions can sit side by side in the video, and one hero session is all the video needs |
 | Razorpay integration | Direct REST calls in the adapter | Passthrough Razorpay's own MCP server | Razorpay's MCP has no catalog tools, so passthrough was never an option. Direct calls also give control over error shaping and audit formatting |
-| Storage | SQLite | Postgres | Single node, single writer, no durability requirement. A choice on the merits, not on a clock |
+| Storage | Postgres 17, Docker locally, managed in production | SQLite | The MCP server and dashboard are deployed live, and SQLite on an ephemeral hosting filesystem is untenable. Postgres also gives real `TEXT[]`, `JSONB`, `TIMESTAMPTZ` and `INCLUDE` covering indexes. Cost paid: every DB call becomes async, and a judge running locally needs Docker |
 | Spend limits | App-level gate only | Gate plus UPI Reserve Pay | Reserve Pay has no public API reference and no test-mode sandbox. It's a closed pilot. Citing it as part of the build would mean claiming something unbuildable |
 
 ### Scope, and what gets cut first
@@ -266,6 +276,8 @@ Collected in one place, because a reader finding them scattered assumes I hid th
 - Cost figures rest on a price distribution I seeded. It's published so a reader can rescale it, and the blocked-GMV number is labelled an upper bound.
 - Tenancy is logical, not Razorpay-native. Production would use Partner Auth with `X-Razorpay-Account`.
 - Payment authorization is a human step because UPI regulation currently requires one.
+- Running the evaluation locally needs Docker. That is the price of Postgres, which the live deployment required.
+- The hosted endpoint is gated by a demo token published in the README, so anyone with the repo can call it. Acceptable because the account is test mode, but it is not an authentication scheme.
 - Catalog truth is asserted by the merchant at upload. The gate enforces internal consistency between what the catalog says and what checkout claims. It cannot detect a merchant who is wrong about their own stock.
 
 ### Out of scope, and what comes next
