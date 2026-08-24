@@ -18,7 +18,10 @@
     "verbatimModuleSyntax": true,
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
-    "types": ["bun"]
+    "types": ["bun"],
+    "paths": {
+      "@/*": ["./src/*"],
+    }
   },
   "include": ["src", "scripts", "tests", "migrations"],
   "exclude": ["node_modules", "web", "dist", "build", ".next", "out"]

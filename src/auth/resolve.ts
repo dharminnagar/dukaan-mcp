@@ -5,7 +5,7 @@
  * contracts.ts for why.
  */
 import { randomBytes } from 'node:crypto';
-import type { TenantContext, UnauthenticatedError } from '../shared/contracts';
+import type { TenantContext, UnauthenticatedError } from '@/shared/contracts';
 import { query } from '../db/pool';
 import { hashToken, hashesEqual, parseBearer } from './token';
 
