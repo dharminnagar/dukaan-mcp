@@ -18,11 +18,11 @@ days and there is no video.
       *Exit: two merchants creatable from CSV, each with a token and a policy*
 - [x] **D3 (25 Aug, done early on 24 Aug)** — DUK-11 seed two merchants · DUK-12 MCP server pt1 (Streamable HTTP + catalog tools). 80 tests pass across 9 files. Found DUK-28.
       *Exit: A's token returns A's catalog, B's returns B's*
-- [ ] **D4 (26 Aug)** — DUK-13 MCP server pt2 (checkout, order status, transport hardening)
+- [ ] **D4 (26 Aug)** — DUK-13 MCP server pt2 (checkout, order status, transport hardening). NEXT UP. Unblocked: gate seam and adapter seam both frozen and shipped.
       *Exit: all four tools over HTTP with per-request tenancy. **Risk retired: transport***
-- [ ] **D5 (27 Aug)** — DUK-14 the gate
+- [x] **D5 (27 Aug, done early on 24 Aug)** — DUK-14 the gate. Orchestrator probes found 3 holes in check 1 the agent's 10 tests missed; all fixed before commit. See issue #0016.
       *Exit: every branch reachable, every branch writes an AuditEvent*
-- [ ] **D6 (28 Aug)** — DUK-15 gate tests · DUK-16 Razorpay adapter
+- [ ] **D6 (28 Aug)** — DUK-15 gate tests (13 already in tests/gate.test.ts; DUK-15 is now the ADVERSARIAL top-up, not the first tests) · ~~DUK-16 Razorpay adapter~~ **done 24 Aug**
       *Exit: allow branch produces a real order id, tests green. **Risk retired: the gate***
 - [ ] **D7 (29 Aug)** — DUK-17 buyer agent · **HARD GATE 21:00**
       *Exit: blocked, re-planned, substituted, succeeded — three linked AuditEvents*
