@@ -16,7 +16,7 @@ days and there is no video.
       *Exit: real order id in hand, project is its own repo, `bun run db:migrate` works*
 - [ ] **D2 (24 Aug)** — DUK-8 error envelope + AuditEvent contracts · DUK-9 auth tokens + tenancy · DUK-10 CSV to Product + Policy validation
       *Exit: two merchants creatable from CSV, each with a token and a policy*
-- [ ] **D3 (25 Aug)** — DUK-11 seed two merchants · DUK-12 MCP server pt1 (Streamable HTTP + catalog tools)
+- [x] **D3 (25 Aug, done early on 24 Aug)** — DUK-11 seed two merchants · DUK-12 MCP server pt1 (Streamable HTTP + catalog tools). 80 tests pass across 9 files. Found DUK-28.
       *Exit: A's token returns A's catalog, B's returns B's*
 - [ ] **D4 (26 Aug)** — DUK-13 MCP server pt2 (checkout, order status, transport hardening)
       *Exit: all four tools over HTTP with per-request tenancy. **Risk retired: transport***
@@ -56,6 +56,10 @@ id on camera · the video · the README · the two long-form form fields.
 
 ## Open
 
+- DUK-28 session_id fragmentation. One client, three tool calls, three session_ids. Blocks DUK-20's `audit --session=X` hero scenario. Fix (a) is one line in DUK-17; fix (b) stateful createMcpHandler, needed before DUK-25. NOT a gate or tenancy bug.
+- DUK-6 is mis-statused: account and rzp_test_ key are done, but the smoke POST /v1/orders producing a real `order_` id has never run and scripts/smoke-razorpay.ts does not exist. That order id is on the never-cut list. ~15 min, needs Dharmin (external write with live test credentials).
+- DUK-7 support tickets: 2-3 week stated review against a ~12 day deadline. Raise today or kill the line so it stops occupying a slot.
+- DUK-25 fixed demo token has no mechanism: createMerchant mints agent id and token via CSPRNG, so both change on every reseed.
 - "Why I'm the right fit" content — waiting on real background details from Dharmin. Nothing invented.
 - Placement of that section (currently a closing section in IDEA.md, belongs in the video open + form).
 
