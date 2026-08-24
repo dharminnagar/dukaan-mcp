@@ -1,5 +1,10 @@
 # CLAUDE.md
 
+- Always use the /unslop command before answering
+- Commit .projectmem with every change to the project
+- Update Linear ticket with every change to the project
+- 
+
 <!-- >>> projectmem bridge >>> -->
 ## projectmem (MANDATORY)
 
