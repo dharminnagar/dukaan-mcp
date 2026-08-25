@@ -1,0 +1,11 @@
+node_modules
+bun.lock
+dist
+build
+web/.next
+# Derived from events.jsonl or hand-authored prose; reformatting either would
+# create noise in an audit trail that ships publicly.
+.projectmem
+# Generated, byte-identical-by-contract eval dataset. Reformatting it would
+# change the file the determinism test compares against.
+fixtures/eval

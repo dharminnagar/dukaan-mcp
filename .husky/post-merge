@@ -1,0 +1,13 @@
+# --- projectmem, ported from `pjm hooks install` -----------------------------
+# Husky sets core.hooksPath to .husky/_, so anything in .git/hooks is IGNORED.
+# projectmem's own installer writes there, which means running
+# `pjm hooks install` would create hooks that silently never fire. Its logic
+# therefore lives HERE instead, and `pjm hooks uninstall` has been run so there
+# is exactly one source of truth. See projectmem issue #0019.
+PJM_BIN="/Users/dharmin/.local/bin/pjm"
+if [ ! -x "$PJM_BIN" ]; then
+    PJM_BIN="$(command -v pjm 2>/dev/null || command -v projectmem 2>/dev/null)"
+fi
+if [ -d ".projectmem" ] && [ -n "$PJM_BIN" ]; then
+    "$PJM_BIN" _auto-capture "merge" >/dev/null 2>&1 &
+fi
