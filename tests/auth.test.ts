@@ -6,11 +6,18 @@ import {
   parseBearer,
 } from "../src/auth/token";
 import { resolveTenant } from "../src/auth/resolve";
+import { TenantRepo } from "../src/db/repo";
 import { pool, query } from "../src/db/pool";
 
 const MERCHANT_ID = "m_u4_auth";
 const AGENT_1_ID = "ag_u4_auth1";
 const AGENT_2_ID = "ag_u4_auth2";
+
+const SESSION_ID_RE = /^s_[a-zA-Z0-9_-]{1,64}$/;
+
+const REUSE_MERCHANT_ID = "m_auth28_reuse";
+const REUSE_AGENT_1_ID = "ag_auth28_1";
+const REUSE_AGENT_2_ID = "ag_auth28_2";
 
 interface AgentRow {
   id: string;
@@ -139,6 +146,137 @@ describe("resolve.ts", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error("unreachable");
     expect(result.ctx.session_id.length).toBeGreaterThan(0);
+  });
+});
+
+describe("resolveTenant session_id derivation (DUK-28)", () => {
+  let reuseToken1: ReturnType<typeof mintAgentToken>;
+  let reuseToken2: ReturnType<typeof mintAgentToken>;
+
+  beforeAll(async () => {
+    await query("DELETE FROM merchants WHERE id = $1", [REUSE_MERCHANT_ID]);
+    await query("INSERT INTO merchants (id, name) VALUES ($1, $2)", [
+      REUSE_MERCHANT_ID,
+      "DUK-28 Reuse Test Merchant",
+    ]);
+
+    reuseToken1 = mintAgentToken();
+    reuseToken2 = mintAgentToken();
+
+    await query(
+      "INSERT INTO agents (id, merchant_id, label, token_hash) VALUES ($1, $2, $3, $4)",
+      [REUSE_AGENT_1_ID, REUSE_MERCHANT_ID, "Reuse Agent 1", reuseToken1.hash]
+    );
+    await query(
+      "INSERT INTO agents (id, merchant_id, label, token_hash) VALUES ($1, $2, $3, $4)",
+      [REUSE_AGENT_2_ID, REUSE_MERCHANT_ID, "Reuse Agent 2", reuseToken2.hash]
+    );
+  });
+
+  afterAll(async () => {
+    // Same pool-lifetime rule as the top-level afterAll: never closePool()
+    // here, tests/repo.test.ts and tests/gate.test.ts may still need it.
+    await query("DELETE FROM merchants WHERE id = $1", [REUSE_MERCHANT_ID]);
+  });
+
+  test("a supplied mcp-session-id header is honoured verbatim", async () => {
+    const supplied = "s_auth28_explicit_header";
+    const result = await resolveTenant(`Bearer ${reuseToken1.raw}`, supplied);
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error("unreachable");
+    expect(result.ctx.session_id).toBe(supplied);
+  });
+
+  test("two resolutions for the same agent with no header return the same session_id inside the reuse window", async () => {
+    const first = await resolveTenant(`Bearer ${reuseToken1.raw}`, null);
+    expect(first.ok).toBe(true);
+    if (!first.ok) throw new Error("unreachable");
+
+    // Mirrors the real call chain in src/mcp/http.ts: resolveTenant() only
+    // decides which id to use, ensureSession() is what persists the row
+    // that a later resolveTenant() call can find.
+    await new TenantRepo(first.ctx).ensureSession();
+
+    const second = await resolveTenant(`Bearer ${reuseToken1.raw}`, null);
+    expect(second.ok).toBe(true);
+    if (!second.ok) throw new Error("unreachable");
+
+    expect(second.ctx.session_id).toBe(first.ctx.session_id);
+  });
+
+  test("two resolutions for different agents under the same merchant with no header never merge", async () => {
+    const agent1 = await resolveTenant(`Bearer ${reuseToken1.raw}`, null);
+    const agent2 = await resolveTenant(`Bearer ${reuseToken2.raw}`, null);
+    expect(agent1.ok).toBe(true);
+    expect(agent2.ok).toBe(true);
+    if (!agent1.ok || !agent2.ok) throw new Error("unreachable");
+
+    await new TenantRepo(agent1.ctx).ensureSession();
+    await new TenantRepo(agent2.ctx).ensureSession();
+
+    const agent1Again = await resolveTenant(`Bearer ${reuseToken1.raw}`, null);
+    const agent2Again = await resolveTenant(`Bearer ${reuseToken2.raw}`, null);
+    expect(agent1Again.ok).toBe(true);
+    expect(agent2Again.ok).toBe(true);
+    if (!agent1Again.ok || !agent2Again.ok) throw new Error("unreachable");
+
+    expect(agent1Again.ctx.session_id).not.toBe(agent2Again.ctx.session_id);
+  });
+
+  test("a resolution after the reuse window has elapsed returns a new session_id", async () => {
+    const agentId = "ag_auth28_expiry";
+    const token = mintAgentToken();
+    await query("DELETE FROM agents WHERE id = $1", [agentId]);
+    await query(
+      "INSERT INTO agents (id, merchant_id, label, token_hash) VALUES ($1, $2, $3, $4)",
+      [agentId, REUSE_MERCHANT_ID, "Expiry Agent", token.hash]
+    );
+
+    const staleSessionId = "s_auth28_stale_session";
+    // Backdated directly via SQL (the same technique tests/repo.test.ts and
+    // tests/gate.test.ts use for the spend-cap window) rather than sleeping
+    // or mocking a clock: the reuse lookup filters on Postgres's own now(),
+    // so the deterministic way to place a session "outside the window" is
+    // to give it a started_at that is provably outside it relative to that
+    // same now(), computed in the same SQL statement.
+    await query(
+      `INSERT INTO sessions (id, merchant_id, agent_id, started_at)
+       VALUES ($1, $2, $3, now() - interval '2 hours')`,
+      [staleSessionId, REUSE_MERCHANT_ID, agentId]
+    );
+
+    const result = await resolveTenant(`Bearer ${token.raw}`, null);
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error("unreachable");
+    expect(result.ctx.session_id).not.toBe(staleSessionId);
+
+    await query("DELETE FROM agents WHERE id = $1", [agentId]);
+  });
+
+  test("every derived session_id satisfies the sessions.id CHECK and can actually be inserted", async () => {
+    const result = await resolveTenant(`Bearer ${reuseToken1.raw}`, null);
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error("unreachable");
+    expect(result.ctx.session_id).toMatch(SESSION_ID_RE);
+
+    const inserted = await new TenantRepo(result.ctx).ensureSession();
+    expect(inserted.id).toBe(result.ctx.session_id);
+  });
+
+  test("a revoked or unknown token still returns UNAUTHENTICATED and never a session_id", async () => {
+    const revoked = await resolveTenant("Bearer dk_not_a_real_token", null);
+    expect(revoked.ok).toBe(false);
+    if (revoked.ok) throw new Error("unreachable");
+    expect(revoked.error.reason_code).toBe("UNAUTHENTICATED");
+
+    await query("UPDATE agents SET token_hash = $1 WHERE id = $2", [
+      hashToken("some-other-value-now-unmatched"),
+      REUSE_AGENT_2_ID,
+    ]);
+    const afterRevoke = await resolveTenant(`Bearer ${reuseToken2.raw}`, null);
+    expect(afterRevoke.ok).toBe(false);
+    if (afterRevoke.ok) throw new Error("unreachable");
+    expect(afterRevoke.error.reason_code).toBe("UNAUTHENTICATED");
   });
 });
 
