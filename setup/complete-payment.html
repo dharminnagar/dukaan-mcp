@@ -1,0 +1,633 @@
+<!--
+  This page makes exactly one external network request: the Razorpay Standard
+  Checkout script below (checkout.razorpay.com/v1/checkout.js). That is
+  unavoidable — a payment cannot be completed offline, and Razorpay does not
+  ship a local/self-hosted build of it. No other CDN, font, or analytics
+  request exists anywhere in this file.
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Complete a Test Payment</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<style>
+  :root {
+    --bg: #f7f7f8;
+    --bg-elevated: #ffffff;
+    --fg: #1c1d1f;
+    --fg-muted: #5b5f66;
+    --border: #d9dbe0;
+    --accent: #2f5fdc;
+    --accent-fg: #ffffff;
+    --code-bg: #f0f1f4;
+    --code-fg: #1c1d1f;
+    --code-border: #d9dbe0;
+    --success: #1a7f4e;
+    --success-bg: #e7f6ee;
+    --warn-bg: #fff6e0;
+    --warn-border: #e3b93a;
+    --warn-fg: #6b5205;
+    --danger-bg: #fdecec;
+    --danger-border: #d9534f;
+    --danger-fg: #7a1f1a;
+    --link: #2f5fdc;
+    --track: #e4e5e9;
+    --shadow: 0 1px 2px rgba(20, 20, 25, 0.06);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #16171a;
+      --bg-elevated: #1e2024;
+      --fg: #e7e8ea;
+      --fg-muted: #9a9da5;
+      --border: #33353c;
+      --accent: #6f93f2;
+      --accent-fg: #0f1116;
+      --code-bg: #111214;
+      --code-fg: #dfe1e5;
+      --code-border: #33353c;
+      --success: #4fd390;
+      --success-bg: #113325;
+      --warn-bg: #2e2408;
+      --warn-border: #c9a233;
+      --warn-fg: #ecd07f;
+      --danger-bg: #33191a;
+      --danger-border: #b9524d;
+      --danger-fg: #f0a6a2;
+      --link: #8ab0ff;
+      --track: #2a2c31;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #16171a;
+    --bg-elevated: #1e2024;
+    --fg: #e7e8ea;
+    --fg-muted: #9a9da5;
+    --border: #33353c;
+    --accent: #6f93f2;
+    --accent-fg: #0f1116;
+    --code-bg: #111214;
+    --code-fg: #dfe1e5;
+    --code-border: #33353c;
+    --success: #4fd390;
+    --success-bg: #113325;
+    --warn-bg: #2e2408;
+    --warn-border: #c9a233;
+    --warn-fg: #ecd07f;
+    --danger-bg: #33191a;
+    --danger-border: #b9524d;
+    --danger-fg: #f0a6a2;
+    --link: #8ab0ff;
+    --track: #2a2c31;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+
+  * { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  main {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem 6rem;
+  }
+
+  header.page-head {
+    padding: 1.75rem 0 1rem;
+  }
+
+  h1 {
+    font-size: 1.6rem;
+    margin: 0 0 0.35rem;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    color: var(--fg-muted);
+    font-size: 0.95rem;
+    margin: 0 0 1.1rem;
+  }
+
+  section.step {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1.25rem 1.4rem;
+    margin: 1.1rem 0;
+    box-shadow: var(--shadow);
+  }
+
+  .step-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--accent-fg);
+    font-size: 0.85rem;
+    font-weight: 600;
+    flex: none;
+  }
+
+  h2 {
+    font-size: 1.15rem;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  .step-intro {
+    color: var(--fg-muted);
+    font-size: 0.92rem;
+    margin: 0.2rem 0 0.9rem;
+  }
+
+  code.inline {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    color: var(--code-fg);
+    padding: 0.1rem 0.35rem;
+    border-radius: 5px;
+    font-size: 0.85em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  .callout {
+    border-radius: 10px;
+    padding: 0.75rem 0.9rem;
+    margin: 0.8rem 0;
+    font-size: 0.9rem;
+    border: 1px solid var(--border);
+  }
+
+  .callout.note {
+    background: var(--code-bg);
+    border-color: var(--code-border);
+    color: var(--fg);
+  }
+
+  .callout.warn {
+    background: var(--warn-bg);
+    border-color: var(--warn-border);
+    color: var(--warn-fg);
+  }
+
+  .callout.danger {
+    background: var(--danger-bg);
+    border-color: var(--danger-border);
+    color: var(--danger-fg);
+  }
+
+  .callout.success {
+    background: var(--success-bg);
+    border-color: var(--success);
+    color: var(--fg);
+  }
+
+  .callout strong { font-weight: 700; }
+
+  .callout p { margin: 0.3rem 0; }
+  .callout p:first-child { margin-top: 0; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  .field {
+    margin-bottom: 0.9rem;
+  }
+
+  .field:last-child { margin-bottom: 0; }
+
+  .field label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+  }
+
+  .field .hint {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: var(--fg-muted);
+    margin-top: 0.25rem;
+  }
+
+  .field input[type="text"] {
+    width: 100%;
+    font: inherit;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.92rem;
+    padding: 0.55rem 0.65rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--code-bg);
+    color: var(--fg);
+  }
+
+  .field input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .field input.invalid {
+    border-color: var(--danger-border);
+  }
+
+  .field-error {
+    font-size: 0.78rem;
+    color: var(--danger-fg);
+    margin-top: 0.3rem;
+    min-height: 1em;
+  }
+
+  .pay-btn {
+    display: block;
+    width: 100%;
+    font: inherit;
+    font-size: 1.05rem;
+    font-weight: 700;
+    padding: 0.85rem 1rem;
+    border: none;
+    border-radius: 10px;
+    background: var(--accent);
+    color: var(--accent-fg);
+    cursor: pointer;
+  }
+
+  .pay-btn:disabled {
+    background: var(--border);
+    color: var(--fg-muted);
+    cursor: not-allowed;
+  }
+
+  .pay-btn:not(:disabled):active { transform: translateY(1px); }
+
+  .result-box {
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    margin-top: 1rem;
+    border: 1px solid var(--border);
+    display: none;
+  }
+
+  .result-box.visible { display: block; }
+
+  .result-row {
+    margin: 0.6rem 0;
+  }
+
+  .result-row:first-child { margin-top: 0; }
+  .result-row:last-child { margin-bottom: 0; }
+
+  .result-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--fg-muted);
+    margin-bottom: 0.2rem;
+  }
+
+  .result-value {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+    word-break: break-all;
+    line-height: 1.3;
+  }
+
+  a { color: var(--link); }
+
+  footer {
+    color: var(--fg-muted);
+    font-size: 0.82rem;
+    text-align: center;
+    padding: 1.5rem 0 0.5rem;
+  }
+
+  .theme-toggle {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    z-index: 6;
+    font-size: 0.75rem;
+    background: var(--bg-elevated);
+    color: var(--fg-muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.4rem 0.75rem;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+  }
+
+  @media (max-width: 520px) {
+    h1 { font-size: 1.35rem; }
+    section.step { padding: 1rem; }
+    .result-value { font-size: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+  <header class="page-head">
+    <h1>Complete a Test Payment</h1>
+    <p class="subtitle">
+      Pastes onto an order the MCP server already created and puts a human at the one step the
+      law does not let an agent skip: authorizing the payment.
+    </p>
+  </header>
+
+  <section class="step" id="s1">
+    <div class="step-head"><span class="step-num">1</span><h2>Why you are the one clicking this</h2></div>
+    <div class="callout note">
+      <p>The agent shopped, and the policy gate decided — that produced a real Razorpay Order
+      (<code class="inline">status: "created"</code>). Nothing has been paid yet, because under current
+      Indian payments regulation an agent cannot autonomously authorize a UPI payment. That authorization
+      is a deliberate human step, not a missing feature.</p>
+      <p>Pasting the order id below, clicking Pay, and clicking through Razorpay's mock bank page with the
+      test OTP <strong>is</strong> that step. Once it's done, the payment shows up under
+      Transactions → Payments in the dashboard and the order stops being just a line under Orders.</p>
+    </div>
+  </section>
+
+  <section class="step" id="s2">
+    <div class="step-head"><span class="step-num">2</span><h2>Order id and key id</h2></div>
+    <p class="step-intro">Both are public/publishable values — an order id identifies a specific order, a
+      Key Id is the publishable half of a Razorpay API key pair.</p>
+
+    <div class="field">
+      <label for="orderIdInput">Order id</label>
+      <input type="text" id="orderIdInput" placeholder="order_XXXXXXXXXXXXXX" autocomplete="off" spellcheck="false">
+      <div class="field-error" id="orderIdError"></div>
+    </div>
+
+    <div class="field">
+      <label for="keyIdInput">Key id
+        <span class="hint">The publishable Key Id only — from Account &amp; Settings → API Keys. Saved in this browser so you don't retype it.</span>
+      </label>
+      <input type="text" id="keyIdInput" placeholder="rzp_test_XXXXXXXXXXXXXX" autocomplete="off" spellcheck="false">
+      <div class="field-error" id="keyIdError"></div>
+    </div>
+
+    <div class="callout danger">
+      <p><strong>Never paste the Key Secret here.</strong> This page has no field for it, needs no field
+      for it, and cannot use it. Standard Checkout only ever needs the Key Id in the browser — the Key
+      Secret belongs on a server, never in a page like this one.</p>
+    </div>
+
+    <div class="callout warn">
+      <p><strong>The Key Id must start with <code class="inline">rzp_test_</code>.</strong> Razorpay's API
+      base URL and the checkout script are identical for test and live mode — the key prefix is the only
+      thing telling this page apart from one that could move real money. If it doesn't start with
+      <code class="inline">rzp_test_</code>, the Pay button below stays disabled and checkout will refuse
+      to open, exactly like the guard in <code class="inline">scripts/smoke-razorpay.ts</code>.</p>
+    </div>
+  </section>
+
+  <section class="step" id="s3">
+    <div class="step-head"><span class="step-num">3</span><h2>Pay</h2></div>
+    <p class="step-intro">Opens Razorpay's Standard Checkout for the order above. In test mode this shows a
+      mock bank page — click through it and enter any OTP 4–10 digits long to succeed.</p>
+
+    <button class="pay-btn" id="payBtn" type="button" disabled>Pay with Razorpay (test mode)</button>
+
+    <div class="result-box callout success" id="successBox">
+      <div class="result-row">
+        <div class="result-label">razorpay_payment_id</div>
+        <div class="result-value" id="resultPaymentId"></div>
+      </div>
+      <div class="result-row">
+        <div class="result-label">razorpay_order_id</div>
+        <div class="result-value" id="resultOrderId"></div>
+      </div>
+    </div>
+
+    <div class="result-box callout warn" id="dismissedBox">
+      <p><strong>Checkout closed before a payment completed.</strong> Either it was cancelled, or an
+      attempt failed and the retry screen was closed. Nothing was charged. Click Pay to try again, or check
+      Transactions → Payments in the dashboard to confirm nothing went through.</p>
+    </div>
+
+    <div class="result-box callout danger" id="errorBox">
+      <p id="errorText"></p>
+    </div>
+  </section>
+
+  <section class="step" id="s4">
+    <div class="step-head"><span class="step-num">4</span><h2>What happens next</h2></div>
+    <div class="callout note">
+      <p>Once the mock bank page confirms the payment, it appears in the Razorpay dashboard under
+      <strong>Transactions → Payments</strong> (confirm the exact menu wording once you're in your own
+      dashboard — it may have shifted). The order itself moves on from
+      <code class="inline">status: "created"</code>. Nothing on this page pushes that update anywhere else
+      — checking the dashboard is a separate, manual step.</p>
+    </div>
+  </section>
+
+  <footer>
+    Test Mode only. No live keys, no Key Secret, no real money. The only network request this page
+    makes besides Razorpay's own checkout flow is loading checkout.razorpay.com/v1/checkout.js.
+  </footer>
+
+</main>
+
+<button class="theme-toggle" id="themeToggle" type="button">Theme: System</button>
+
+<script>
+(function () {
+  "use strict";
+
+  var KEYID_STORAGE_KEY = "complete-payment-keyid-v1";
+  var THEME_KEY = "complete-payment-theme-v1";
+
+  // Real Razorpay order ids and test key ids are alphanumeric after their
+  // fixed prefix. Anything else is not a shape this page will act on.
+  var ORDER_ID_RE = /^order_[A-Za-z0-9]+$/;
+  var KEY_ID_RE = /^rzp_test_[A-Za-z0-9]+$/;
+
+  function safeGet(key) {
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function safeSet(key, value) {
+    try {
+      localStorage.setItem(key, value);
+    } catch (e) {
+      /* storage unavailable (private mode, quota, etc) — page still works, just doesn't persist */
+    }
+  }
+
+  var orderIdInput = document.getElementById("orderIdInput");
+  var keyIdInput = document.getElementById("keyIdInput");
+  var orderIdError = document.getElementById("orderIdError");
+  var keyIdError = document.getElementById("keyIdError");
+  var payBtn = document.getElementById("payBtn");
+
+  var successBox = document.getElementById("successBox");
+  var dismissedBox = document.getElementById("dismissedBox");
+  var errorBox = document.getElementById("errorBox");
+  var errorText = document.getElementById("errorText");
+
+  var savedKeyId = safeGet(KEYID_STORAGE_KEY);
+  if (savedKeyId) {
+    keyIdInput.value = savedKeyId;
+  }
+
+  function hideResults() {
+    successBox.classList.remove("visible");
+    dismissedBox.classList.remove("visible");
+    errorBox.classList.remove("visible");
+  }
+
+  function showError(message) {
+    hideResults();
+    errorText.textContent = message;
+    errorBox.classList.add("visible");
+  }
+
+  function showDismissed() {
+    hideResults();
+    dismissedBox.classList.add("visible");
+  }
+
+  function showSuccess(paymentId, orderId) {
+    hideResults();
+    document.getElementById("resultPaymentId").textContent = paymentId || "(missing)";
+    document.getElementById("resultOrderId").textContent = orderId || "(missing)";
+    successBox.classList.add("visible");
+  }
+
+  function validate() {
+    var orderId = orderIdInput.value.trim();
+    var keyId = keyIdInput.value.trim();
+
+    var orderOk = ORDER_ID_RE.test(orderId);
+    var keyOk = KEY_ID_RE.test(keyId);
+
+    orderIdInput.classList.toggle("invalid", orderId.length > 0 && !orderOk);
+    keyIdInput.classList.toggle("invalid", keyId.length > 0 && !keyOk);
+
+    orderIdError.textContent = orderId.length > 0 && !orderOk
+      ? "Doesn't look like an order id (expected order_ followed by letters/digits)."
+      : "";
+    keyIdError.textContent = keyId.length > 0 && !keyOk
+      ? "Must start with rzp_test_ — this page refuses anything else, including live keys."
+      : "";
+
+    payBtn.disabled = !(orderOk && keyOk);
+
+    if (keyOk) {
+      safeSet(KEYID_STORAGE_KEY, keyId);
+    }
+
+    return { orderId: orderId, keyId: keyId, orderOk: orderOk, keyOk: keyOk };
+  }
+
+  orderIdInput.addEventListener("input", validate);
+  keyIdInput.addEventListener("input", validate);
+  validate();
+
+  payBtn.addEventListener("click", function () {
+    var v = validate();
+    if (!v.orderOk || !v.keyOk) return;
+
+    // Belt-and-suspenders: the same rzp_test_ guard as scripts/smoke-razorpay.ts,
+    // checked again right before checkout opens rather than trusting the
+    // input-validation state alone.
+    if (v.keyId.indexOf("rzp_test_") !== 0) {
+      showError("Refusing to open checkout: key id does not start with rzp_test_.");
+      return;
+    }
+
+    if (typeof Razorpay === "undefined") {
+      showError(
+        "Razorpay's checkout script hasn't loaded (checkout.razorpay.com unreachable?). " +
+        "Check your network connection and reload this page."
+      );
+      return;
+    }
+
+    hideResults();
+
+    // Only fields this page is confident are correct. amount/currency are
+    // deliberately omitted — order_id already carries them, and inventing an
+    // unconfirmed field here is worse than leaving it out.
+    var options = {
+      key: v.keyId,
+      order_id: v.orderId,
+      name: "Dukaan MCP — test payment",
+      description: "Human-approved authorization for an agent-created order",
+      handler: function (response) {
+        showSuccess(response.razorpay_payment_id, response.razorpay_order_id);
+      },
+      modal: {
+        ondismiss: function () {
+          showDismissed();
+        }
+      },
+      theme: {
+        color: "#2f5fdc"
+      }
+    };
+
+    var rzp = new Razorpay(options);
+    rzp.open();
+  });
+
+  var themeToggle = document.getElementById("themeToggle");
+  var savedTheme = safeGet(THEME_KEY);
+  var order = ["system", "light", "dark"];
+
+  function applyTheme(mode) {
+    if (mode === "light") {
+      document.documentElement.setAttribute("data-theme", "light");
+    } else if (mode === "dark") {
+      document.documentElement.setAttribute("data-theme", "dark");
+    } else {
+      document.documentElement.removeAttribute("data-theme");
+    }
+    if (themeToggle) {
+      themeToggle.textContent = "Theme: " + mode.charAt(0).toUpperCase() + mode.slice(1);
+    }
+  }
+
+  var currentTheme = (savedTheme && order.indexOf(savedTheme) !== -1) ? savedTheme : "system";
+  applyTheme(currentTheme);
+
+  if (themeToggle) {
+    themeToggle.addEventListener("click", function () {
+      var idx = order.indexOf(currentTheme);
+      currentTheme = order[(idx + 1) % order.length];
+      applyTheme(currentTheme);
+      safeSet(THEME_KEY, currentTheme);
+    });
+  }
+})();
+</script>
+</body>
+</html>
