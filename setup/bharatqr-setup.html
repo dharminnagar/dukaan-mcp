@@ -1,0 +1,823 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>BharatQR &amp; S2S JSON v2 Support Requests</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #f7f7f8;
+    --bg-elevated: #ffffff;
+    --fg: #1c1d1f;
+    --fg-muted: #5b5f66;
+    --border: #d9dbe0;
+    --accent: #2f5fdc;
+    --accent-fg: #ffffff;
+    --code-bg: #f0f1f4;
+    --code-fg: #1c1d1f;
+    --code-border: #d9dbe0;
+    --success: #1a7f4e;
+    --success-bg: #e7f6ee;
+    --warn-bg: #fff6e0;
+    --warn-border: #e3b93a;
+    --warn-fg: #6b5205;
+    --danger-bg: #fdecec;
+    --danger-border: #d9534f;
+    --danger-fg: #7a1f1a;
+    --link: #2f5fdc;
+    --track: #e4e5e9;
+    --shadow: 0 1px 2px rgba(20, 20, 25, 0.06);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #16171a;
+      --bg-elevated: #1e2024;
+      --fg: #e7e8ea;
+      --fg-muted: #9a9da5;
+      --border: #33353c;
+      --accent: #6f93f2;
+      --accent-fg: #0f1116;
+      --code-bg: #111214;
+      --code-fg: #dfe1e5;
+      --code-border: #33353c;
+      --success: #4fd390;
+      --success-bg: #113325;
+      --warn-bg: #2e2408;
+      --warn-border: #c9a233;
+      --warn-fg: #ecd07f;
+      --danger-bg: #33191a;
+      --danger-border: #b9524d;
+      --danger-fg: #f0a6a2;
+      --link: #8ab0ff;
+      --track: #2a2c31;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #16171a;
+    --bg-elevated: #1e2024;
+    --fg: #e7e8ea;
+    --fg-muted: #9a9da5;
+    --border: #33353c;
+    --accent: #6f93f2;
+    --accent-fg: #0f1116;
+    --code-bg: #111214;
+    --code-fg: #dfe1e5;
+    --code-border: #33353c;
+    --success: #4fd390;
+    --success-bg: #113325;
+    --warn-bg: #2e2408;
+    --warn-border: #c9a233;
+    --warn-fg: #ecd07f;
+    --danger-bg: #33191a;
+    --danger-border: #b9524d;
+    --danger-fg: #f0a6a2;
+    --link: #8ab0ff;
+    --track: #2a2c31;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+
+  * { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  main {
+    max-width: 840px;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem 6rem;
+  }
+
+  header.page-head {
+    padding: 1.75rem 0 1rem;
+  }
+
+  h1 {
+    font-size: 1.6rem;
+    margin: 0 0 0.35rem;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    color: var(--fg-muted);
+    font-size: 0.95rem;
+    margin: 0 0 1.1rem;
+  }
+
+  .progress-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: var(--bg);
+    padding: 0.6rem 0 0.9rem;
+  }
+
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .progress-track {
+    flex: 1;
+    height: 8px;
+    background: var(--track);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    border-radius: 999px;
+    transition: width 0.25s ease;
+  }
+
+  .progress-label {
+    font-size: 0.85rem;
+    color: var(--fg-muted);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  section.step {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1.25rem 1.4rem;
+    margin: 1.1rem 0;
+    box-shadow: var(--shadow);
+  }
+
+  .step-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--accent-fg);
+    font-size: 0.85rem;
+    font-weight: 600;
+    flex: none;
+  }
+
+  h2 {
+    font-size: 1.15rem;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  .step-intro {
+    color: var(--fg-muted);
+    font-size: 0.92rem;
+    margin: 0.2rem 0 0.9rem;
+  }
+
+  .checklist {
+    list-style: none;
+    margin: 0 0 0.9rem;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+  }
+
+  .checklist input[type="checkbox"] {
+    margin-top: 0.2rem;
+    width: 1.05rem;
+    height: 1.05rem;
+    flex: none;
+    accent-color: var(--accent);
+  }
+
+  .checklist label {
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+
+  .checklist label .fine {
+    display: block;
+    color: var(--fg-muted);
+    font-size: 0.85rem;
+    margin-top: 0.15rem;
+  }
+
+  .checklist input[type="checkbox"]:checked + label {
+    color: var(--fg-muted);
+    text-decoration: line-through;
+    text-decoration-color: var(--border);
+  }
+
+  code.inline {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    color: var(--code-fg);
+    padding: 0.1rem 0.35rem;
+    border-radius: 5px;
+    font-size: 0.85em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  .code-block {
+    position: relative;
+    margin: 0.7rem 0;
+    border: 1px solid var(--code-border);
+    border-radius: 10px;
+    background: var(--code-bg);
+    overflow: hidden;
+  }
+
+  .code-block .code-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: var(--fg-muted);
+    border-bottom: 1px solid var(--code-border);
+  }
+
+  .code-scroll {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+
+  pre {
+    margin: 0;
+    padding: 0.85rem 1rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.82rem;
+    color: var(--code-fg);
+    white-space: pre-wrap;
+    line-height: 1.55;
+  }
+
+  .copy-btn {
+    font: inherit;
+    font-size: 0.75rem;
+    background: var(--bg-elevated);
+    color: var(--fg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.25rem 0.55rem;
+    cursor: pointer;
+  }
+
+  .copy-btn:hover { border-color: var(--accent); }
+  .copy-btn:active { transform: translateY(1px); }
+  .copy-btn.copied { color: var(--success); border-color: var(--success); }
+
+  .callout {
+    border-radius: 10px;
+    padding: 0.75rem 0.9rem;
+    margin: 0.8rem 0;
+    font-size: 0.9rem;
+    border: 1px solid var(--border);
+  }
+
+  .callout.note {
+    background: var(--code-bg);
+    border-color: var(--code-border);
+    color: var(--fg);
+  }
+
+  .callout.warn {
+    background: var(--warn-bg);
+    border-color: var(--warn-border);
+    color: var(--warn-fg);
+  }
+
+  .callout.danger {
+    background: var(--danger-bg);
+    border-color: var(--danger-border);
+    color: var(--danger-fg);
+  }
+
+  .callout.success {
+    background: var(--success-bg);
+    border-color: var(--success);
+    color: var(--fg);
+  }
+
+  .callout strong { font-weight: 700; }
+
+  .callout p { margin: 0.3rem 0; }
+  .callout p:first-child { margin-top: 0; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  a { color: var(--link); }
+
+  ul.plain, ol.plain {
+    margin: 0.5rem 0;
+    padding-left: 1.3rem;
+    font-size: 0.9rem;
+  }
+  ul.plain li, ol.plain li { margin: 0.25rem 0; }
+
+  .record-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.9rem;
+    margin: 0.8rem 0;
+  }
+
+  @media (max-width: 560px) {
+    .record-grid { grid-template-columns: 1fr; }
+  }
+
+  .record-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.85rem 0.9rem;
+    background: var(--code-bg);
+  }
+
+  .record-card h3 {
+    margin: 0 0 0.6rem;
+    font-size: 0.9rem;
+  }
+
+  .field {
+    margin-bottom: 0.6rem;
+  }
+
+  .field:last-child { margin-bottom: 0; }
+
+  .field label {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--fg-muted);
+    margin-bottom: 0.2rem;
+  }
+
+  .field input[type="text"],
+  .field input[type="date"] {
+    width: 100%;
+    font: inherit;
+    font-size: 0.88rem;
+    padding: 0.4rem 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-elevated);
+    color: var(--fg);
+  }
+
+  .field input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .save-hint {
+    font-size: 0.75rem;
+    color: var(--fg-muted);
+    margin-top: 0.4rem;
+  }
+
+  footer {
+    color: var(--fg-muted);
+    font-size: 0.82rem;
+    text-align: center;
+    padding: 1.5rem 0 0.5rem;
+  }
+
+  .theme-toggle {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    z-index: 6;
+    font-size: 0.75rem;
+    background: var(--bg-elevated);
+    color: var(--fg-muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.4rem 0.75rem;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+  }
+
+  @media (max-width: 520px) {
+    h1 { font-size: 1.35rem; }
+    section.step { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+  <header class="page-head">
+    <h1>BharatQR &amp; S2S JSON v2 Support Requests</h1>
+    <p class="subtitle">
+      DUK-7: raise two Razorpay support tickets, Test Mode only, for the AI Buildathon build.
+      Rated ~15 minutes of work. Copy, paste, submit, move on — nothing downstream waits on either reply.
+    </p>
+  </header>
+
+  <div class="progress-wrap">
+    <div class="progress-row">
+      <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="progressTrack">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-label" id="progressLabel">0 / 0 done</div>
+    </div>
+  </div>
+
+  <section class="step" id="s1">
+    <div class="step-head"><span class="step-num">1</span><h2>Why this is still worth ten minutes</h2></div>
+    <p class="step-intro">Be honest with yourself about the odds before you start, so you don't feel let down when nothing arrives.</p>
+
+    <div class="callout warn">
+      <p><strong>This will almost certainly not land in time.</strong> Support review windows for this class of
+      request are commonly cited as roughly two to three weeks. The submission deadline is approximately
+      <strong>5 September 2026</strong> (per secondary sources — the official Buildathon page does not state it
+      directly, so treat the date itself as reasonably firm but not primary-sourced). Raise both tickets today
+      anyway, because lead time only starts once you submit — waiting a week to "do it properly" only shrinks
+      the already-thin chance further.</p>
+    </div>
+
+    <div class="callout note">
+      <p><strong>The value here is narrative, not technical.</strong> The submission form has a
+      "Build Challenges and Technical Obstacles" field. "I found the platform constraint, raised the
+      documented request, and it did not clear in time" is a specific, verifiable answer almost nobody else
+      submitting will have, because almost nobody else will have looked hard enough to hit this wall in the
+      first place. The capability itself — actually getting S2S JSON v2 or BharatQR enabled — is a bonus on
+      top of that, not the point.</p>
+    </div>
+
+    <div class="callout success">
+      <p><strong>Nothing in the build waits on either outcome.</strong> The payment loop already closes via a
+      human-approved handoff — the agent shops, the policy gate decides, a real Order is created through
+      <code class="inline">POST /v1/orders</code>, and a human completes authorization. That is the current
+      legal shape under Indian payments regulation for an autonomous agent regardless of what these tickets
+      come back with, so the pitch does not change if both are refused. If BharatQR is granted, the payment
+      loop upgrades from a human-approved handoff to a headless simulated authorization via
+      <code class="inline">POST /v1/bharatqr/pay/test</code> — a nicer demo, not a different architecture.</p>
+    </div>
+  </section>
+
+  <section class="step" id="s2">
+    <div class="step-head"><span class="step-num">2</span><h2>Where to raise the request</h2></div>
+    <p class="step-intro">Same account, same Test Mode session you use for the rest of the build.</p>
+
+    <ul class="checklist">
+      <li>
+        <input type="checkbox" id="s2-1"><label for="s2-1">Log into the Razorpay Dashboard, confirm you're still in
+          Test Mode, and open <strong>Dashboard → Support</strong> (or <strong>Help</strong> — sometimes shown as a
+          headphone icon in the top bar).
+          <span class="fine">Confirm the exact current menu item once you're in the dashboard — Razorpay's UI
+          reshuffles this occasionally, and asserting a precise click path here without re-checking it today
+          would be a guess.</span>
+        </label>
+      </li>
+      <li>
+        <input type="checkbox" id="s2-2"><label for="s2-2">Find whatever leads to raising a new query/ticket
+          (look for wording like "Raise New Query" or "Contact Support"), pick the closest topic/sub-topic to
+          payments or API access, and paste the ticket body.</label>
+      </li>
+    </ul>
+
+    <div class="callout warn">
+      <p><strong>Confirm this:</strong> the exact menu path and button label are not re-verified as part of this
+      page — they were last observed as "Account &amp; Settings → Support Tickets → + Raise New Query" in an
+      earlier session, but dashboard UI text and layout can drift. If that path is gone, look for any
+      "Support" or "Help" entry point and use the nearest matching topic. Do not spend more than a minute or
+      two hunting for it.</p>
+    </div>
+  </section>
+
+  <section class="step" id="s3">
+    <div class="step-head"><span class="step-num">3</span><h2>Ticket 1 — S2S JSON v2 on Test Mode</h2></div>
+    <p class="step-intro">Why this one: a headless AI agent cannot complete authorization through Standard
+      Checkout, because that flow requires a human to click through a mock bank page and enter an OTP in a
+      browser. S2S JSON v2 is the documented server-to-server alternative — except it is gated behind this
+      exact request.</p>
+
+    <div class="code-block">
+      <div class="code-label"><span>Ticket 1 — S2S JSON v2 (copy this whole block)</span><button class="copy-btn" data-copy-target="code-ticket1">Copy</button></div>
+      <div class="code-scroll"><pre id="code-ticket1">Subject: Request to enable Server-to-Server (S2S) JSON v2 on Test Mode
+
+Hi team,
+
+I'm building an MCP server for the Razorpay AI Buildathon 2026 that exposes
+buyer-side catalog and checkout tools to AI agents. It runs entirely on
+Test Mode — no live traffic, no real money involved.
+
+I'd like to request Server-to-Server (S2S) JSON v2 activation on my test
+account. A headless AI agent cannot complete payment authorization through
+Standard Checkout, since that flow requires a human to click through a
+mock bank page and enter an OTP in a browser — there is no other
+documented headless path to authorize a payment on a vanilla test account.
+
+Could you enable S2S JSON v2 for Test Mode, or let me know what you need
+from me to proceed? Happy to share more about the project if it helps.
+
+Thanks,
+Dharmin Nagar</pre></div>
+    </div>
+
+    <ul class="checklist">
+      <li>
+        <input type="checkbox" id="s3-1"><label for="s3-1">Submitted this ticket.</label>
+      </li>
+    </ul>
+
+    <div class="callout warn">
+      <p>S2S generally requires PCI-DSS certification, which a solo student project does not have. Expect a
+      no — the value is in having asked and being able to say so, per Section 1.</p>
+    </div>
+  </section>
+
+  <section class="step" id="s4">
+    <div class="step-head"><span class="step-num">4</span><h2>Ticket 2 — BharatQR on Test Mode</h2></div>
+    <p class="step-intro">Why this one: <code class="inline">POST /v1/bharatqr/pay/test</code> is the only
+      documented endpoint on the entire platform for simulating a payment headlessly. Every other test-mode
+      payment route requires either a browser click-through (Standard Checkout) or a Dashboard button (Smart
+      Collect). BharatQR itself needs a support ticket before that endpoint can be used at all.</p>
+
+    <div class="code-block">
+      <div class="code-label"><span>Ticket 2 — BharatQR (copy this whole block)</span><button class="copy-btn" data-copy-target="code-ticket2">Copy</button></div>
+      <div class="code-scroll"><pre id="code-ticket2">Subject: Request to enable BharatQR on Test Mode
+
+Hi team,
+
+I'm building an MCP server for the Razorpay AI Buildathon 2026 that exposes
+buyer-side catalog and checkout tools to AI agents. It runs entirely on
+Test Mode — no live traffic, no real money involved.
+
+POST /v1/bharatqr/pay/test is the only documented endpoint I've found for
+simulating a payment headlessly; every other test-mode payment route
+requires a browser click-through (Standard Checkout) or a Dashboard button
+(Smart Collect), neither of which an autonomous agent can drive on its
+own. I'd like to request BharatQR activation on my test account so I can
+use this endpoint.
+
+Could you enable BharatQR for Test Mode, or let me know the process and
+what's needed from me? Thanks for your time.
+
+Best,
+Dharmin Nagar</pre></div>
+    </div>
+
+    <ul class="checklist">
+      <li>
+        <input type="checkbox" id="s4-1"><label for="s4-1">Submitted this ticket.</label>
+      </li>
+    </ul>
+
+    <div class="callout warn">
+      <p>BharatQR activation for a test-mode-only account with no KYC is undocumented territory and may simply
+      be refused. That's fine — see Section 1.</p>
+    </div>
+  </section>
+
+  <section class="step" id="s5">
+    <div class="step-head"><span class="step-num">5</span><h2>Record what happened</h2></div>
+    <p class="step-intro">DUK-7's acceptance criteria call for the ticket IDs to be recorded — both here and,
+      separately, in the repo README under limitations, so the "Build Challenges" answer can cite them by
+      number. Saved locally in this browser only (never sent anywhere).</p>
+
+    <div class="record-grid">
+      <div class="record-card">
+        <h3>Ticket 1 — S2S JSON v2</h3>
+        <div class="field">
+          <label for="rec-s2s-id">Ticket reference / ID</label>
+          <input type="text" id="rec-s2s-id" placeholder="e.g. TCK-000000">
+        </div>
+        <div class="field">
+          <label for="rec-s2s-date">Date raised</label>
+          <input type="date" id="rec-s2s-date">
+        </div>
+      </div>
+      <div class="record-card">
+        <h3>Ticket 2 — BharatQR</h3>
+        <div class="field">
+          <label for="rec-bqr-id">Ticket reference / ID</label>
+          <input type="text" id="rec-bqr-id" placeholder="e.g. TCK-000000">
+        </div>
+        <div class="field">
+          <label for="rec-bqr-date">Date raised</label>
+          <input type="date" id="rec-bqr-date">
+        </div>
+      </div>
+    </div>
+    <p class="save-hint">Saves automatically to this browser's local storage as you type.</p>
+
+    <ul class="checklist">
+      <li>
+        <input type="checkbox" id="s5-1"><label for="s5-1">Both ticket references recorded above.</label>
+      </li>
+      <li>
+        <input type="checkbox" id="s5-2"><label for="s5-2">Both ticket references also copied into the README's
+          limitations section, per DUK-7's acceptance criteria — this reads as diligence, not as an excuse.</label>
+      </li>
+    </ul>
+  </section>
+
+  <section class="step" id="s6">
+    <div class="step-head"><span class="step-num">6</span><h2>Follow-up, then forget about it</h2></div>
+    <p class="step-intro">DUK-7 calls for a Day 6 status check. Don't let that turn into checking daily.</p>
+
+    <ul class="checklist">
+      <li>
+        <input type="checkbox" id="s6-1"><label for="s6-1">Set a reminder to check both ticket threads once,
+          around Day 6 of the build.
+          <span class="fine">Not a specific calendar date here on purpose — pin it to wherever Day 6 falls in
+          your actual build schedule rather than trusting a guessed date.</span>
+        </label>
+      </li>
+      <li>
+        <input type="checkbox" id="s6-2"><label for="s6-2">If either is granted with more than ~4 days left
+          before the deadline: verify it with a single call against the documented endpoint before assuming it
+          works, then wire it in as a second path alongside the human-approved handoff — do not rewrite the
+          architecture around it.</label>
+      </li>
+      <li>
+        <input type="checkbox" id="s6-3"><label for="s6-3">If either is granted with fewer than ~4 days left:
+          note it in the README as granted-but-not-integrated and stop there. The handoff path already works.</label>
+      </li>
+      <li>
+        <input type="checkbox" id="s6-4"><label for="s6-4">If both are refused or silent by submission time:
+          that's the expected outcome. The README limitations note and the Build Challenges answer already
+          capture the value regardless of the ticket outcome.</label>
+      </li>
+    </ul>
+  </section>
+
+  <footer>
+    Test Mode only. No live keys, no real money. Nothing here blocks on a support reply.
+  </footer>
+
+</main>
+
+<button class="theme-toggle" id="themeToggle" type="button">Theme: System</button>
+
+<script>
+(function () {
+  "use strict";
+
+  var STORAGE_KEY = "bharatqr-setup-checklist-v1";
+  var THEME_KEY = "bharatqr-setup-theme-v1";
+  var RECORD_KEY = "bharatqr-setup-tickets-v1";
+
+  function safeGet(key) {
+    try {
+      var raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function safeSet(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (e) {
+      /* storage unavailable (private mode, quota, etc) — page still works, just doesn't persist */
+    }
+  }
+
+  var checkboxes = Array.prototype.slice.call(document.querySelectorAll('.checklist input[type="checkbox"]'));
+  var state = safeGet(STORAGE_KEY) || {};
+
+  function updateProgress() {
+    var total = checkboxes.length;
+    var done = checkboxes.filter(function (cb) { return cb.checked; }).length;
+    var pct = total ? Math.round((done / total) * 100) : 0;
+    var fill = document.getElementById("progressFill");
+    var label = document.getElementById("progressLabel");
+    var track = document.getElementById("progressTrack");
+    if (fill) fill.style.width = pct + "%";
+    if (label) label.textContent = done + " / " + total + " done";
+    if (track) track.setAttribute("aria-valuenow", String(pct));
+  }
+
+  checkboxes.forEach(function (cb) {
+    if (Object.prototype.hasOwnProperty.call(state, cb.id)) {
+      cb.checked = !!state[cb.id];
+    }
+    cb.addEventListener("change", function () {
+      state[cb.id] = cb.checked;
+      safeSet(STORAGE_KEY, state);
+      updateProgress();
+    });
+  });
+
+  updateProgress();
+
+  function fallbackCopy(text) {
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    var ok = false;
+    try {
+      ok = document.execCommand("copy");
+    } catch (e) {
+      ok = false;
+    }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).then(
+        function () { return true; },
+        function () { return fallbackCopy(text); }
+      );
+    }
+    return Promise.resolve(fallbackCopy(text));
+  }
+
+  Array.prototype.slice.call(document.querySelectorAll(".copy-btn")).forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var targetId = btn.getAttribute("data-copy-target");
+      var target = targetId ? document.getElementById(targetId) : null;
+      if (!target) return;
+      var text = target.textContent || "";
+      copyText(text).then(function (ok) {
+        var original = btn.textContent;
+        btn.textContent = ok ? "Copied" : "Failed";
+        btn.classList.toggle("copied", !!ok);
+        setTimeout(function () {
+          btn.textContent = original;
+          btn.classList.remove("copied");
+        }, 1500);
+      });
+    });
+  });
+
+  var recordFields = ["rec-s2s-id", "rec-s2s-date", "rec-bqr-id", "rec-bqr-date"];
+  var recordState = safeGet(RECORD_KEY) || {};
+  recordFields.forEach(function (id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    if (Object.prototype.hasOwnProperty.call(recordState, id)) {
+      el.value = recordState[id];
+    }
+    el.addEventListener("input", function () {
+      recordState[id] = el.value;
+      safeSet(RECORD_KEY, recordState);
+    });
+  });
+
+  var themeToggle = document.getElementById("themeToggle");
+  var savedTheme = safeGet(THEME_KEY);
+  var order = ["system", "light", "dark"];
+
+  function applyTheme(mode) {
+    if (mode === "light") {
+      document.documentElement.setAttribute("data-theme", "light");
+    } else if (mode === "dark") {
+      document.documentElement.setAttribute("data-theme", "dark");
+    } else {
+      document.documentElement.removeAttribute("data-theme");
+    }
+    if (themeToggle) {
+      themeToggle.textContent = "Theme: " + mode.charAt(0).toUpperCase() + mode.slice(1);
+    }
+  }
+
+  var currentTheme = (savedTheme && order.indexOf(savedTheme) !== -1) ? savedTheme : "system";
+  applyTheme(currentTheme);
+
+  if (themeToggle) {
+    themeToggle.addEventListener("click", function () {
+      var idx = order.indexOf(currentTheme);
+      currentTheme = order[(idx + 1) % order.length];
+      applyTheme(currentTheme);
+      safeSet(THEME_KEY, currentTheme);
+    });
+  }
+})();
+</script>
+</body>
+</html>
