@@ -12,14 +12,14 @@ That decision layer is what I'm building. It returns allow, block, or escalate, 
 
 ## Project summary
 
-| | |
-|---|---|
-| Track | 01, AI Growth & Agentic Commerce |
-| The product | The gate. A policy decision layer on every agent-initiated money action |
-| The plumbing | Self-serve merchant onboarding and one multi-tenant MCP server |
-| One-liner | Razorpay can't let an arbitrary merchant sell to AI agents because it can't vouch for them. This is the underwriting layer that makes self-serve safe, and it publishes its own rule coverage, its escapes, and what it costs a merchant when it's wrong. |
-| The bar this targets | "Every money action explainable, bounded and gated. Show the audit trail and one failure handled gracefully." |
-| Borrowed bar, Track 02 | "Honest metrics including false-positive cost." Supplied voluntarily. Track 01 doesn't ask for it. |
+|                        |                                                                                                                                                                                                                                                           |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Track                  | 01, AI Growth & Agentic Commerce                                                                                                                                                                                                                          |
+| The product            | The gate. A policy decision layer on every agent-initiated money action                                                                                                                                                                                   |
+| The plumbing           | Self-serve merchant onboarding and one multi-tenant MCP server                                                                                                                                                                                            |
+| One-liner              | Razorpay can't let an arbitrary merchant sell to AI agents because it can't vouch for them. This is the underwriting layer that makes self-serve safe, and it publishes its own rule coverage, its escapes, and what it costs a merchant when it's wrong. |
+| The bar this targets   | "Every money action explainable, bounded and gated. Show the audit trail and one failure handled gracefully."                                                                                                                                             |
+| Borrowed bar, Track 02 | "Honest metrics including false-positive cost." Supplied voluntarily. Track 01 doesn't ask for it.                                                                                                                                                        |
 
 ## The problem
 
@@ -85,13 +85,13 @@ This isn't a hackathon. It's a student-only hiring funnel for a 6 or 12 month AI
 
 Submission is a single Google Form. Among twelve required fields it collects Selected Track as a locked dropdown, Project Name, Project Objectives, a GitHub repository URL, a 5-minute pitch video link, and Build Challenges & Technical Obstacles. The final checkbox reads "I understand that no further changes or edits can be made after submitting." There is no separate later upload step. I don't touch the form until the build is done.
 
-| | |
-|---|---|
-| Time | About 3 focused hours a day, solo, to a roughly 5 September deadline. 39 hours nominal. |
-| Deadline confidence | 5 September comes from third-party sources only. It appears on no Razorpay-owned page. Build to it, treat the date as unconfirmed risk. |
-| Stack | Bun, TypeScript, Next.js, Postgres 17 |
-| Payments | Razorpay test mode, which needs signup only and no KYC. Their docs: "The Test mode is available to you as soon as you complete the sign-up process." |
-| Judged artifacts | Public repo, 5-minute video, architecture. Engineers read the repo on an unhurried timeline, so "we only had 48 hours" isn't available as an excuse. |
+|                     |                                                                                                                                                      |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Time                | About 3 focused hours a day, solo, to a roughly 5 September deadline. 39 hours nominal.                                                              |
+| Deadline confidence | 5 September comes from third-party sources only. It appears on no Razorpay-owned page. Build to it, treat the date as unconfirmed risk.              |
+| Stack               | Bun, TypeScript, Next.js, Postgres 17                                                                                                                |
+| Payments            | Razorpay test mode, which needs signup only and no KYC. Their docs: "The Test mode is available to you as soon as you complete the sign-up process." |
+| Judged artifacts    | Public repo, 5-minute video, architecture. Engineers read the repo on an unhurried timeline, so "we only had 48 hours" isn't available as an excuse. |
 
 An adversarial schedule review put the full build at 51 hours against those 39. The cuts that close the gap are recorded in the scope section below, and the two that matter are that the evaluation suite runs on scripted transcripts rather than live agent sessions, and that both UIs ship deliberately ugly.
 
@@ -99,7 +99,7 @@ An adversarial schedule review put the full build at 51 hours against those 39. 
 
 ### Requirements
 
-Functional. Merchant onboarding, catalog and policy, in seconds. One multi-tenant MCP server exposing `list_products`, `get_product`, `checkout` and `get_order_status`. A gate enforcing spend cap, category allowlist, approval threshold and price/stock integrity, returning allow, block or escalate with a reason code. A Claude-API buyer agent that shops within budget and handles a structured tool error without crashing. A queryable audit trail. Real Razorpay test-mode Orders. An evaluation suite producing per-rule coverage and cost figures over a held-out session set. One failure handled gracefully.
+Functional. Merchant onboarding, catalog and policy, in seconds. One multi-tenant MCP server exposing `list_products`, `get_product`, `checkout` and `get_order_status`. A gate enforcing spend cap, category allowlist, approval threshold and price/stock integrity, returning allow, block or escalate with a reason code. An LLM buyer agent that shops within budget and handles a structured tool error without crashing. A queryable audit trail. Real Razorpay test-mode Orders. An evaluation suite producing per-rule coverage and cost figures over a held-out session set. One failure handled gracefully.
 
 Non-functional. Gate decisions well under human-perceptible latency. The architecture has to generalize across merchants with no code change, because the pitch leans on that claim. Every gate decision has to be reconstructible after the fact from the audit log alone.
 
@@ -109,7 +109,7 @@ Constraints. Solo, roughly 39 hours, Razorpay test mode only, and the payment-au
 
 ```
 Onboarding UI                    Buyer agent
-(catalog CSV + policy)           (Claude API + MCP client)
+(catalog CSV + policy)           (LLM + MCP client)
       |                                |
       v                                v
 Merchant service  ------------->  MCP server
@@ -134,7 +134,7 @@ Merchant service  ------------->  MCP server
                           codes      Razorpay test-mode API
 ```
 
-The eval suite drives the gate directly with scripted transcripts. It does not go through the Claude agent. That keeps the metrics deterministic, reproducible by anyone who clones the repo, free of API spend, and independent of the riskiest component in the build.
+The eval suite drives the gate directly with scripted transcripts. It does not go through the buyer agent. That keeps the metrics deterministic, reproducible by anyone who clones the repo, free of API spend, and independent of the riskiest component in the build.
 
 ### Data model
 
@@ -176,17 +176,17 @@ This is the differentiator, so it's the part most worth being careful about. Vol
 
 **What gets generated.** A seeded generator produces session transcripts, which are JSON arrays of tool calls with asserted prices and quantities. Benign sessions are ordinary shopping within policy. Adversarial sessions each target a rule.
 
-| Attack | What it probes |
-|---|---|
-| Budget-split evasion | Many small orders that clear the cap individually and breach it cumulatively, including across fresh sessions |
-| Category laundering | Mislabeled or ambiguously categorized line items |
-| Stale-price exploit | Agent replays a price cached from an earlier `list_products` |
-| Threshold straddling | Repeated orders sitting just under the approval threshold |
-| Merchant-side misclaim | Catalog advertises one price or stock level, checkout asserts another |
+| Attack                 | What it probes                                                                                                |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Budget-split evasion   | Many small orders that clear the cap individually and breach it cumulatively, including across fresh sessions |
+| Category laundering    | Mislabeled or ambiguously categorized line items                                                              |
+| Stale-price exploit    | Agent replays a price cached from an earlier `list_products`                                                  |
+| Threshold straddling   | Repeated orders sitting just under the approval threshold                                                     |
+| Merchant-side misclaim | Catalog advertises one price or stock level, checkout asserts another                                         |
 
-**Breaking the circularity, partly.** If I write the rules and I write the attacks, the attack set can only contain attacks I already thought of. Coverage measured over that set tells you the gate implements its spec. It tells you nothing about an adversary I didn't imagine. So the adversarial transcripts are generated by a separate Claude call whose context holds the MCP tool schema and the merchant's policy JSON and nothing else. It never sees the gate implementation. That is a genuinely different author, and anything it finds is a real finding rather than a scripted one.
+**Breaking the circularity, partly.** If I write the rules and I write the attacks, the attack set can only contain attacks I already thought of. Coverage measured over that set tells you the gate implements its spec. It tells you nothing about an adversary I didn't imagine. So the adversarial transcripts are generated by a separate AI call whose context holds the MCP tool schema and the merchant's policy JSON and nothing else. It never sees the gate implementation. That is a genuinely different author, and anything it finds is a real finding rather than a scripted one.
 
-It is a partial fix, not a solution, and the README says so in these words: *these numbers measure whether the gate correctly implements its stated policy against a declared threat model. They do not measure robustness against an attacker outside that model.*
+It is a partial fix, not a solution, and the README says so in these words: _these numbers measure whether the gate correctly implements its stated policy against a declared threat model. They do not measure robustness against an attacker outside that model._
 
 **Hold-out discipline instead of a train/test split.** Hand-written rules have no fitted parameters, so there is nothing to overfit in the statistical sense and borrowing that vocabulary would imply a rigor this doesn't have. What the split actually controls for is me tuning thresholds after looking at failures. So: the split is frozen before any tuning, the training split is the only data I'm allowed to look at while tuning, and the held-out split runs exactly once at the end. Whatever it reports is what gets published. Running it twice with tuning in between means it was never held out, and the README states which of those happened.
 
@@ -231,17 +231,17 @@ Secondary case, Razorpay 429. Razorpay documents a rate limiter but publishes no
 
 ### Trade-offs
 
-| Decision | Chose | Over | Because |
-|---|---|---|---|
-| Payment rail | Orders API | Payment Links | Payment Links cap at 30 per business in test mode, and they're a human-facing object an autonomous buyer agent has no business creating |
-| Tenancy | One test account, `merchant_id` as logical tenancy, stated openly | Partner Auth OAuth with `X-Razorpay-Account` | Partner OAuth needs Technology Partner status. Everyone onboards as a Service Partner by default, and the type switch is manually reviewed over "around 2 to 3 weeks" plus full KYC. The deadline is about 2 weeks out. Partner Auth is the right production answer and the doc names it as such |
-| Payment authorization | Human-approved handoff after a real Order | Playwright driving the hosted checkout | 6 to 10 hours to fake an autonomy NPCI doesn't currently permit. The honest version costs less and reads better |
-| Eval input | Deterministic scripted transcripts | Live Claude agent sessions | Reproducible by anyone who clones the repo, runs in seconds, no API spend, and it decouples the differentiator from the riskiest component in the build |
-| Cap scope | `(merchant_id, agent_id, window)` | `session_id` | A session-scoped cap dies the moment an agent opens a new session, which is the first adversarial class in the suite |
-| Buyer agent | Custom Claude-API MCP client | Live inside Claude Desktop | Reasoning trace, tool calls and gate decisions can sit side by side in the video, and one hero session is all the video needs |
-| Razorpay integration | Direct REST calls in the adapter | Passthrough Razorpay's own MCP server | Razorpay's MCP has no catalog tools, so passthrough was never an option. Direct calls also give control over error shaping and audit formatting |
-| Storage | Postgres 17, Docker locally, managed in production | SQLite | The MCP server and dashboard are deployed live, and SQLite on an ephemeral hosting filesystem is untenable. Postgres also gives real `TEXT[]`, `JSONB`, `TIMESTAMPTZ` and `INCLUDE` covering indexes. Cost paid: every DB call becomes async, and a judge running locally needs Docker |
-| Spend limits | App-level gate only | Gate plus UPI Reserve Pay | Reserve Pay has no public API reference and no test-mode sandbox. It's a closed pilot. Citing it as part of the build would mean claiming something unbuildable |
+| Decision              | Chose                                                             | Over                                         | Because                                                                                                                                                                                                                                                                                          |
+| --------------------- | ----------------------------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Payment rail          | Orders API                                                        | Payment Links                                | Payment Links cap at 30 per business in test mode, and they're a human-facing object an autonomous buyer agent has no business creating                                                                                                                                                          |
+| Tenancy               | One test account, `merchant_id` as logical tenancy, stated openly | Partner Auth OAuth with `X-Razorpay-Account` | Partner OAuth needs Technology Partner status. Everyone onboards as a Service Partner by default, and the type switch is manually reviewed over "around 2 to 3 weeks" plus full KYC. The deadline is about 2 weeks out. Partner Auth is the right production answer and the doc names it as such |
+| Payment authorization | Human-approved handoff after a real Order                         | Playwright driving the hosted checkout       | 6 to 10 hours to fake an autonomy NPCI doesn't currently permit. The honest version costs less and reads better                                                                                                                                                                                  |
+| Eval input            | Deterministic scripted transcripts                                | Live LLM agent sessions                      | Reproducible by anyone who clones the repo, runs in seconds, no API spend, and it decouples the differentiator from the riskiest component in the build                                                                                                                                          |
+| Cap scope             | `(merchant_id, agent_id, window)`                                 | `session_id`                                 | A session-scoped cap dies the moment an agent opens a new session, which is the first adversarial class in the suite                                                                                                                                                                             |
+| Buyer agent           | Custom MCP client driving a model over OpenRouter                 | Live inside Claude Desktop                   | Reasoning trace, tool calls and gate decisions can sit side by side in the video, and one hero session is all the video needs                                                                                                                                                                    |
+| Razorpay integration  | Direct REST calls in the adapter                                  | Passthrough Razorpay's own MCP server        | Razorpay's MCP has no catalog tools, so passthrough was never an option. Direct calls also give control over error shaping and audit formatting                                                                                                                                                  |
+| Storage               | Postgres 17, Docker locally, managed in production                | SQLite                                       | The MCP server and dashboard are deployed live, and SQLite on an ephemeral hosting filesystem is untenable. Postgres also gives real `TEXT[]`, `JSONB`, `TIMESTAMPTZ` and `INCLUDE` covering indexes. Cost paid: every DB call becomes async, and a judge running locally needs Docker           |
+| Spend limits          | App-level gate only                                               | Gate plus UPI Reserve Pay                    | Reserve Pay has no public API reference and no test-mode sandbox. It's a closed pilot. Citing it as part of the build would mean claiming something unbuildable                                                                                                                                  |
 
 ### Scope, and what gets cut first
 
@@ -277,6 +277,7 @@ Collected in one place, because a reader finding them scattered assumes I hid th
 - Tenancy is logical, not Razorpay-native. Production would use Partner Auth with `X-Razorpay-Account`.
 - Payment authorization is a human step because UPI regulation currently requires one.
 - Running the evaluation locally needs Docker. That is the price of Postgres, which the live deployment required.
+- The buyer agent and the adversarial transcript generator both run a model over OpenRouter rather than a single vendor's API, and the model id is read from the environment rather than hardcoded. That is deliberate: the model currently in use is a preview slug, and preview slugs get renamed or withdrawn at short notice. Swapping providers is a one-variable change, and the README names whichever model produced the published numbers.
 - The hosted endpoint is gated by a demo token published in the README, so anyone with the repo can call it. Acceptable because the account is test mode, but it is not an authentication scheme.
 - Catalog truth is asserted by the merchant at upload. The gate enforces internal consistency between what the catalog says and what checkout claims. It cannot detect a merchant who is wrong about their own stock.
 
