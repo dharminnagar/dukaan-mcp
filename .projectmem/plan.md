@@ -28,7 +28,7 @@ days and there is no video.
       *Exit: blocked, re-planned, substituted, succeeded — three linked AuditEvents*
       *Not working by 21:00? Switch to scripted transcripts tomorrow. Do NOT debug on D8.*
 - [~] **D8 (30 Aug)** — DUK-18 eval pt1: deterministic half DONE 25 Aug (200 transcripts, stratified frozen split, replay runner). LLM adversarial generator BLOCKED on ANTHROPIC_API_KEY (#0017).
-- [ ] **D9 (31 Aug)** — DUK-19 eval pt2: metrics reporter, tuning on training split ONLY
+- [x] **D9 (31 Aug, done early on 25 Aug)** — DUK-19 metrics reporter. Escapes-first, integers not percentages, recovery honestly NOT MEASURABLE. Surfaced #0021.
       *Exit: real metrics table with a non-empty escapes list. **Risk retired: the differentiator***
 - [ ] **D10 (1 Sept)** — DUK-20 held-out run (ONCE) + onboarding form + audit CLI printer · DUK-27 CSV column mapping + merchant confirm (DROPPABLE, starts only if D5-D9 landed on time)
 - [ ] **D11 (2 Sept)** — DUK-21 README + architecture + video script
@@ -55,6 +55,9 @@ the metrics table with its escapes list and honesty framing · one real `order_`
 id on camera · the video · the README · the two long-form form fields.
 
 ## Open
+
+- **#0021 FALSE-POSITIVE COST HAS NO DATA — fix before DUK-20.** Blocked benign GMV is 0.00 because 84 of 84 benign transcripts were allowed. The metric IDEA.md calls the cross-track differentiator currently measures nothing. Root cause is src/eval/benign.ts generating only comfortably-in-policy baskets, so the gate never gets a chance to be wrong. Add near-boundary benign sessions (just under a cap, just under the approval threshold, the household-vs-personal-care ambiguity) so the cost figure has a denominator.
+- **#0020 stale-open projectmem issues.** 13 open, several resolved long ago. .projectmem/ ships publicly as Build Challenges evidence, so an issue titled 'core novelty claim is globally FALSE' sitting open inverts the signal. Walk each, close with record_fix naming the decision that absorbed it. #0015 stays open — DUK-28 was deferred and it is a real limitation.
 
 - **#0018 SPEND CAP RACE — needs a decision.** Three concurrent checkouts, 40000 paise each against a 100000 cap, all allowed; 120000 persisted. It is budget-split evasion in parallel form, and the sequential eval will report that class as CAUGHT while this variant escapes. Fix is ~15 lines: a transaction-scoped advisory lock on (merchant_id, agent_id) in the checkout handler, leaving decide() pure so src/eval is untouched. Alternative is a README limitation.
 - **#0017 ANTHROPIC_API_KEY missing — blocks DUK-17 entirely** (highest-risk ticket, hard gate 29 Aug) and the DUK-18 LLM generator. No workaround. `bun add @anthropic-ai/sdk` plus the key in .env.
