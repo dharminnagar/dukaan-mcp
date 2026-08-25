@@ -7,9 +7,9 @@
  * check is defined exactly once. Postgres's `policy_threshold_reachable`
  * CHECK constraint is the second, independent copy of the same rule.
  */
-import { z } from 'zod';
-import { Policy } from '../shared/contracts';
-import { rupeesToPaise } from './csv';
+import { z } from "zod";
+import { Policy } from "../shared/contracts";
+import { rupeesToPaise } from "./csv";
 
 const WINDOW_UNIT_SECONDS: Record<string, number> = {
   s: 1,
@@ -23,7 +23,7 @@ export function parseWindow(s: string): number {
   const match = /^(\d+)(s|m|h|d)$/.exec(s.trim());
   if (match === null) {
     throw new Error(
-      `Invalid window ${JSON.stringify(s)}: expected a positive integer followed by s, m, h, or d`,
+      `Invalid window ${JSON.stringify(s)}: expected a positive integer followed by s, m, h, or d`
     );
   }
   const [, amountStr, unit] = match;
@@ -44,8 +44,8 @@ export function parsePolicy(json: unknown, merchantId: string): Policy {
   const rawResult = RawPolicyInput.safeParse(json);
   if (!rawResult.success) {
     const messages = rawResult.error.issues
-      .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
-      .join('; ');
+      .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
+      .join("; ");
     throw new Error(`invalid policy input: ${messages}`);
   }
   const raw = rawResult.data;
@@ -60,7 +60,9 @@ export function parsePolicy(json: unknown, merchantId: string): Policy {
 
   const result = Policy.safeParse(candidate);
   if (!result.success) {
-    const messages = result.error.issues.map((issue) => issue.message).join('; ');
+    const messages = result.error.issues
+      .map((issue) => issue.message)
+      .join("; ");
     throw new Error(`invalid policy: ${messages}`);
   }
   return result.data;

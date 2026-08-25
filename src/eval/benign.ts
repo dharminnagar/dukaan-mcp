@@ -6,20 +6,24 @@
  * no `Math.random()`, no `Date.now()` — so calling this twice with the same
  * seed produces byte-identical transcripts.
  */
-import type { CatalogSnapshot } from './catalog-snapshot';
-import { loadCatalogSnapshots } from './catalog-snapshot';
-import type { Rng } from './prng';
-import { pick, randInt } from './prng';
-import type { Product } from '../shared/contracts';
-import type { EvalMerchant, Transcript } from './transcript';
+import type { CatalogSnapshot } from "./catalog-snapshot";
+import { loadCatalogSnapshots } from "./catalog-snapshot";
+import type { Rng } from "./prng";
+import { pick, randInt } from "./prng";
+import type { Product } from "../shared/contracts";
+import type { EvalMerchant, Transcript } from "./transcript";
 
 /** A product only counts as "affordable" for a benign basket if a single unit,
  * on its own, stays comfortably under the threshold — otherwise the very
  * first pick could escalate a transcript that is supposed to be benign. */
 function affordableProducts(snapshot: CatalogSnapshot): readonly Product[] {
-  const safetyMargin = Math.floor(snapshot.policy.approval_threshold_paise * 0.9);
+  const safetyMargin = Math.floor(
+    snapshot.policy.approval_threshold_paise * 0.9
+  );
   return snapshot.products.filter(
-    (p) => snapshot.policy.category_allowlist.includes(p.category) && p.price_paise <= safetyMargin,
+    (p) =>
+      snapshot.policy.category_allowlist.includes(p.category) &&
+      p.price_paise <= safetyMargin
   );
 }
 
@@ -27,14 +31,20 @@ function buildBenignTranscript(
   index: string,
   merchant: EvalMerchant,
   snapshot: CatalogSnapshot,
-  rng: Rng,
+  rng: Rng
 ): Transcript {
   const id = `hand-benign-${index}`;
   const pool = affordableProducts(snapshot);
-  const safetyMargin = Math.floor(snapshot.policy.approval_threshold_paise * 0.9);
+  const safetyMargin = Math.floor(
+    snapshot.policy.approval_threshold_paise * 0.9
+  );
   const desiredLines = randInt(rng, 1, 3);
 
-  const items: { item_id: string; quantity: number; asserted_price_paise: number }[] = [];
+  const items: {
+    item_id: string;
+    quantity: number;
+    asserted_price_paise: number;
+  }[] = [];
   let runningTotal = 0;
   // The SAME product can be picked more than once for one basket — the
   // gate's stock check is on the AGGREGATE quantity across all line items
@@ -52,14 +62,22 @@ function buildBenignTranscript(
 
     const maxAffordableQty = Math.max(
       1,
-      Math.floor((safetyMargin - runningTotal) / product.price_paise),
+      Math.floor((safetyMargin - runningTotal) / product.price_paise)
     );
     if (maxAffordableQty < 1) break; // basket is full; stop rather than risk crossing the threshold
-    const quantity = randInt(rng, 1, Math.min(3, maxAffordableQty, remainingStock));
+    const quantity = randInt(
+      rng,
+      1,
+      Math.min(3, maxAffordableQty, remainingStock)
+    );
     const amount = product.price_paise * quantity;
     if (runningTotal + amount > safetyMargin) break;
 
-    items.push({ item_id: product.id, quantity, asserted_price_paise: product.price_paise });
+    items.push({
+      item_id: product.id,
+      quantity,
+      asserted_price_paise: product.price_paise,
+    });
     requestedByItem.set(product.id, alreadyRequested + quantity);
     runningTotal += amount;
   }
@@ -68,13 +86,13 @@ function buildBenignTranscript(
   // above always adds at least one line on its first iteration.
   if (items.length === 0) {
     throw new Error(
-      `benign generator produced an empty basket for ${id} — affordableProducts() pool is empty`,
+      `benign generator produced an empty basket for ${id} — affordableProducts() pool is empty`
     );
   }
 
   return {
     id,
-    origin: 'hand',
+    origin: "hand",
     attack_class: null,
     merchant,
     agent_id: `a-benign-${index}`,
@@ -89,16 +107,19 @@ function buildBenignTranscript(
   };
 }
 
-export function generateBenignTranscripts(rng: Rng, count: number): readonly Transcript[] {
+export function generateBenignTranscripts(
+  rng: Rng,
+  count: number
+): readonly Transcript[] {
   const snapshots = loadCatalogSnapshots();
-  const merchants: readonly EvalMerchant[] = ['kirana', 'electronics'];
+  const merchants: readonly EvalMerchant[] = ["kirana", "electronics"];
   return Array.from({ length: count }, (_, i) => {
     const merchant = pick(rng, merchants);
     return buildBenignTranscript(
-      String(i + 1).padStart(4, '0'),
+      String(i + 1).padStart(4, "0"),
       merchant,
       snapshots[merchant],
-      rng,
+      rng
     );
   });
 }

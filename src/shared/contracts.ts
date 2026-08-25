@@ -9,7 +9,7 @@
  *     shapes JSON-round-trippable and sidesteps exactOptionalPropertyTypes.
  *   - Money is BIGINT paise, always suffixed `_paise`, never a float.
  */
-import { z } from 'zod';
+import { z } from "zod";
 
 /* ------------------------------------------------------------------ money */
 
@@ -28,33 +28,38 @@ export const PositivePaise = z.int().positive();
  * INVALID_REQUEST is the catch-all so no code path invents a string.
  */
 export const REASON_CODES = [
-  'ALLOWED',
-  'STALE_CATALOG',
-  'SPEND_CAP_EXCEEDED',
-  'CATEGORY_NOT_ALLOWED',
-  'PENDING_APPROVAL',
-  'RAZORPAY_ERROR',
-  'UNAUTHENTICATED',
-  'INVALID_REQUEST',
+  "ALLOWED",
+  "STALE_CATALOG",
+  "SPEND_CAP_EXCEEDED",
+  "CATEGORY_NOT_ALLOWED",
+  "PENDING_APPROVAL",
+  "RAZORPAY_ERROR",
+  "UNAUTHENTICATED",
+  "INVALID_REQUEST",
 ] as const;
 
 export const ReasonCode = z.enum(REASON_CODES);
 export type ReasonCode = z.infer<typeof ReasonCode>;
 
-export const Decision = z.enum(['allow', 'block', 'escalate']);
+export const Decision = z.enum(["allow", "block", "escalate"]);
 export type Decision = z.infer<typeof Decision>;
 
 export const GateRule = z.enum([
-  'AUTHORITATIVE_REREAD',
-  'SPEND_CAP',
-  'CATEGORY_ALLOWLIST',
-  'APPROVAL_THRESHOLD',
-  'ALLOW',
-  'AUTH',
+  "AUTHORITATIVE_REREAD",
+  "SPEND_CAP",
+  "CATEGORY_ALLOWLIST",
+  "APPROVAL_THRESHOLD",
+  "ALLOW",
+  "AUTH",
 ]);
 export type GateRule = z.infer<typeof GateRule>;
 
-export const ToolAction = z.enum(['list_products', 'get_product', 'checkout', 'get_order_status']);
+export const ToolAction = z.enum([
+  "list_products",
+  "get_product",
+  "checkout",
+  "get_order_status",
+]);
 export type ToolAction = z.infer<typeof ToolAction>;
 
 /* ------------------------------------------------- the tool-error envelope */
@@ -67,9 +72,9 @@ export type ToolAction = z.infer<typeof ToolAction>;
  * infers the kind by comparing numbers, which is fragile.
  */
 export const StaleCatalogError = z.object({
-  reason_code: z.literal('STALE_CATALOG'),
+  reason_code: z.literal("STALE_CATALOG"),
   message: z.string().min(1),
-  mismatch: z.enum(['price', 'stock', 'missing']),
+  mismatch: z.enum(["price", "stock", "missing"]),
   item_id: z.string().min(1),
   asserted_price_paise: Paise.nullable(),
   true_price_paise: Paise.nullable(),
@@ -78,7 +83,7 @@ export const StaleCatalogError = z.object({
 });
 
 export const SpendCapExceededError = z.object({
-  reason_code: z.literal('SPEND_CAP_EXCEEDED'),
+  reason_code: z.literal("SPEND_CAP_EXCEEDED"),
   message: z.string().min(1),
   cap_paise: PositivePaise,
   spent_paise: Paise,
@@ -88,7 +93,7 @@ export const SpendCapExceededError = z.object({
 });
 
 export const CategoryNotAllowedError = z.object({
-  reason_code: z.literal('CATEGORY_NOT_ALLOWED'),
+  reason_code: z.literal("CATEGORY_NOT_ALLOWED"),
   message: z.string().min(1),
   item_id: z.string().min(1),
   category: z.string().min(1),
@@ -96,7 +101,7 @@ export const CategoryNotAllowedError = z.object({
 });
 
 export const PendingApprovalError = z.object({
-  reason_code: z.literal('PENDING_APPROVAL'),
+  reason_code: z.literal("PENDING_APPROVAL"),
   message: z.string().min(1),
   order_id: z.string().min(1),
   amount_paise: PositivePaise,
@@ -105,7 +110,7 @@ export const PendingApprovalError = z.object({
 });
 
 export const RazorpayError = z.object({
-  reason_code: z.literal('RAZORPAY_ERROR'),
+  reason_code: z.literal("RAZORPAY_ERROR"),
   message: z.string().min(1),
   http_status: z.int().nullable(),
   razorpay_code: z.string().nullable(),
@@ -113,13 +118,13 @@ export const RazorpayError = z.object({
 });
 
 export const UnauthenticatedError = z.object({
-  reason_code: z.literal('UNAUTHENTICATED'),
+  reason_code: z.literal("UNAUTHENTICATED"),
   message: z.string().min(1),
   www_authenticate: z.string().min(1),
 });
 
 export const InvalidRequestError = z.object({
-  reason_code: z.literal('INVALID_REQUEST'),
+  reason_code: z.literal("INVALID_REQUEST"),
   message: z.string().min(1),
   field: z.string().nullable(),
 });
@@ -128,7 +133,7 @@ export const InvalidRequestError = z.object({
  * Discriminated on reason_code so the buyer agent gets an exhaustive switch.
  * ALLOWED deliberately absent: it is an AuditEvent reason code, never an error.
  */
-export const ToolError = z.discriminatedUnion('reason_code', [
+export const ToolError = z.discriminatedUnion("reason_code", [
   StaleCatalogError,
   SpendCapExceededError,
   CategoryNotAllowedError,
@@ -157,11 +162,11 @@ export type InvalidRequestError = z.infer<typeof InvalidRequestError>;
  * `structuredContent`, because a tool declaring an outputSchema for its
  * success shape would then fail SDK validation on the error path.
  */
-export const ERROR_META_KEY = 'dukaan.error' as const;
+export const ERROR_META_KEY = "dukaan.error" as const;
 
 export interface ToolErrorResult {
   readonly isError: true;
-  readonly content: readonly [{ readonly type: 'text'; readonly text: string }];
+  readonly content: readonly [{ readonly type: "text"; readonly text: string }];
   readonly _meta: { readonly [ERROR_META_KEY]: ToolError };
 }
 
@@ -169,7 +174,7 @@ export function toolError(err: ToolError): ToolErrorResult {
   const parsed = ToolError.parse(err); // fail loudly here, not at the agent
   return {
     isError: true,
-    content: [{ type: 'text', text: JSON.stringify(parsed) }],
+    content: [{ type: "text", text: JSON.stringify(parsed) }],
     _meta: { [ERROR_META_KEY]: parsed },
   };
 }
@@ -202,7 +207,7 @@ export const AuditEvent = z
     latency_ms: z.int().nonnegative(),
     ts: z.date(),
   })
-  .refine((e) => (e.decision === 'allow') === (e.reason_code === 'ALLOWED'), {
+  .refine((e) => (e.decision === "allow") === (e.reason_code === "ALLOWED"), {
     message: 'decision "allow" requires reason_code "ALLOWED", and vice versa',
   });
 export type AuditEvent = z.infer<typeof AuditEvent>;
@@ -221,7 +226,7 @@ export const AuditEventInput = z
     detail: z.record(z.string(), z.unknown()).nullable(),
     latency_ms: z.int().nonnegative(),
   })
-  .refine((e) => (e.decision === 'allow') === (e.reason_code === 'ALLOWED'), {
+  .refine((e) => (e.decision === "allow") === (e.reason_code === "ALLOWED"), {
     message: 'decision "allow" requires reason_code "ALLOWED", and vice versa',
   });
 export type AuditEventInput = z.infer<typeof AuditEventInput>;
@@ -244,8 +249,9 @@ export const Policy = z
     window_seconds: z.int().positive(),
   })
   .refine((p) => p.approval_threshold_paise <= p.spend_cap_paise, {
-    message: 'approval_threshold must be <= spend_cap, or the escalate branch is unreachable',
-    path: ['approval_threshold_paise'],
+    message:
+      "approval_threshold must be <= spend_cap, or the escalate branch is unreachable",
+    path: ["approval_threshold_paise"],
   });
 export type Policy = z.infer<typeof Policy>;
 
@@ -276,7 +282,12 @@ export const Session = z.object({
 });
 export type Session = z.infer<typeof Session>;
 
-export const OrderStatus = z.enum(['created', 'authorized', 'escalated', 'failed']);
+export const OrderStatus = z.enum([
+  "created",
+  "authorized",
+  "escalated",
+  "failed",
+]);
 export type OrderStatus = z.infer<typeof OrderStatus>;
 
 export const LineItem = z.object({
@@ -315,10 +326,18 @@ export interface TenantContext {
 /* ------------------------------------------------------------ gate result */
 
 export type GateOutcome =
-  | { readonly decision: 'allow'; readonly rule: 'ALLOW'; readonly amount_paise: number }
-  | { readonly decision: 'block'; readonly rule: GateRule; readonly error: ToolError }
   | {
-      readonly decision: 'escalate';
-      readonly rule: 'APPROVAL_THRESHOLD';
+      readonly decision: "allow";
+      readonly rule: "ALLOW";
+      readonly amount_paise: number;
+    }
+  | {
+      readonly decision: "block";
+      readonly rule: GateRule;
+      readonly error: ToolError;
+    }
+  | {
+      readonly decision: "escalate";
+      readonly rule: "APPROVAL_THRESHOLD";
       readonly error: PendingApprovalError;
     };

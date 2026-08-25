@@ -12,26 +12,26 @@
  * is the actual defence. `hashesEqual` below exists as a belt-and-braces
  * post-fetch assertion, not as the thing making this safe.
  */
-import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
+import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 
 export interface MintedToken {
   readonly raw: string;
   readonly hash: string;
 }
 
-const TOKEN_PREFIX = 'dk_';
+const TOKEN_PREFIX = "dk_";
 const TOKEN_ENTROPY_BYTES = 32;
 const HEX_DIGEST_RE = /^[0-9a-f]{64}$/;
 
 /** raw = `dk_<43 chars base64url>` — 32 random bytes, base64url has no padding. */
 export function mintAgentToken(): MintedToken {
-  const raw = `${TOKEN_PREFIX}${randomBytes(TOKEN_ENTROPY_BYTES).toString('base64url')}`;
+  const raw = `${TOKEN_PREFIX}${randomBytes(TOKEN_ENTROPY_BYTES).toString("base64url")}`;
   return { raw, hash: hashToken(raw) };
 }
 
 /** sha256 hex digest, always 64 lowercase hex chars. */
 export function hashToken(raw: string): string {
-  return createHash('sha256').update(raw, 'utf8').digest('hex');
+  return createHash("sha256").update(raw, "utf8").digest("hex");
 }
 
 /**
@@ -42,8 +42,8 @@ export function hashToken(raw: string): string {
  */
 export function hashesEqual(a: string, b: string): boolean {
   if (!HEX_DIGEST_RE.test(a) || !HEX_DIGEST_RE.test(b)) return false;
-  const bufA = Buffer.from(a, 'hex');
-  const bufB = Buffer.from(b, 'hex');
+  const bufA = Buffer.from(a, "hex");
+  const bufB = Buffer.from(b, "hex");
   if (bufA.length !== bufB.length) return false;
   return timingSafeEqual(bufA, bufB);
 }
@@ -56,5 +56,5 @@ export function parseBearer(header: string | null | undefined): string | null {
   const token = match[1];
   if (token === undefined) return null;
   const trimmed = token.trim();
-  return trimmed === '' ? null : trimmed;
+  return trimmed === "" ? null : trimmed;
 }

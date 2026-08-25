@@ -10,16 +10,24 @@
  * committed fixture and to regenerate it if hand-attacks.ts/benign.ts ever
  * change (which would then require re-freezing, deliberately, not silently).
  */
-import { writeFileSync } from 'node:fs';
-import { ATTACK_CLASSES } from './transcript';
-import type { SplitTranscript } from './transcript';
-import { buildFrozenDataset, DATASET_SEED, FREEZE_NOTE, FROZEN_AT } from './dataset';
+import { writeFileSync } from "node:fs";
+import { ATTACK_CLASSES } from "./transcript";
+import type { SplitTranscript } from "./transcript";
+import {
+  buildFrozenDataset,
+  DATASET_SEED,
+  FREEZE_NOTE,
+  FROZEN_AT,
+} from "./dataset";
 
 const FIXTURES_DIR = `${import.meta.dir}/../../fixtures/eval`;
 const TRANSCRIPTS_PATH = `${FIXTURES_DIR}/transcripts.json`;
 const MANIFEST_PATH = `${FIXTURES_DIR}/manifest.json`;
 
-function countBy<T>(items: readonly T[], key: (item: T) => string): Record<string, number> {
+function countBy<T>(
+  items: readonly T[],
+  key: (item: T) => string
+): Record<string, number> {
   const counts: Record<string, number> = {};
   for (const item of items) {
     const k = key(item);
@@ -29,13 +37,13 @@ function countBy<T>(items: readonly T[], key: (item: T) => string): Record<strin
 }
 
 function buildManifest(dataset: readonly SplitTranscript[]) {
-  const byClass = countBy(dataset, (t) => t.attack_class ?? 'benign');
+  const byClass = countBy(dataset, (t) => t.attack_class ?? "benign");
   const bySplit = countBy(dataset, (t) => t.split);
   const byClassAndSplit: Record<string, Record<string, number>> = {};
-  for (const cls of ['benign', ...ATTACK_CLASSES]) {
+  for (const cls of ["benign", ...ATTACK_CLASSES]) {
     byClassAndSplit[cls] = countBy(
-      dataset.filter((t) => (t.attack_class ?? 'benign') === cls),
-      (t) => t.split,
+      dataset.filter((t) => (t.attack_class ?? "benign") === cls),
+      (t) => t.split
     );
   }
 

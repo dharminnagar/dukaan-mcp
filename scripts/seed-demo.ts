@@ -19,10 +19,10 @@
  * CSPRNG by design — both change on every reseed. The token is printed once
  * per run; there is no fixed-token mechanism here (see DUK-25).
  */
-import { readFileSync, writeFileSync } from 'node:fs';
-import { pool, closePool } from '../src/db/pool';
-import { createMerchant } from '../src/onboard/create-merchant';
-import { parseCatalogCsv } from '../src/catalog/csv';
+import { readFileSync, writeFileSync } from "node:fs";
+import { pool, closePool } from "../src/db/pool";
+import { createMerchant } from "../src/onboard/create-merchant";
+import { parseCatalogCsv } from "../src/catalog/csv";
 
 const FIXTURES_DIR = `${import.meta.dir}/../fixtures`;
 const DISTRIBUTION_PATH = `${FIXTURES_DIR}/demo-price-distribution.json`;
@@ -37,18 +37,18 @@ interface DemoMerchantConfig {
 
 const DEMO_MERCHANTS: readonly DemoMerchantConfig[] = [
   {
-    merchantId: 'm_demo_kirana',
-    name: 'Demo Kirana Store',
+    merchantId: "m_demo_kirana",
+    name: "Demo Kirana Store",
     csvPath: `${FIXTURES_DIR}/demo-merchant-a.csv`,
     policyPath: `${FIXTURES_DIR}/demo-merchant-a.policy.json`,
-    agentLabel: 'demo-kirana-agent',
+    agentLabel: "demo-kirana-agent",
   },
   {
-    merchantId: 'm_demo_electronics',
-    name: 'Demo Electronics Store',
+    merchantId: "m_demo_electronics",
+    name: "Demo Electronics Store",
     csvPath: `${FIXTURES_DIR}/demo-merchant-b.csv`,
     policyPath: `${FIXTURES_DIR}/demo-merchant-b.policy.json`,
-    agentLabel: 'demo-electronics-agent',
+    agentLabel: "demo-electronics-agent",
   },
 ];
 
@@ -89,13 +89,17 @@ async function main(): Promise<void> {
   const merchantIds = DEMO_MERCHANTS.map((m) => m.merchantId);
 
   // Idempotent reseed: wipe both demo merchants first.
-  await pool.query('DELETE FROM merchants WHERE id = ANY($1::text[])', [merchantIds]);
+  await pool.query("DELETE FROM merchants WHERE id = ANY($1::text[])", [
+    merchantIds,
+  ]);
 
   const priceStats: PriceStats[] = [];
 
   for (const config of DEMO_MERCHANTS) {
-    const csv = readFileSync(config.csvPath, 'utf8');
-    const policyJson: unknown = JSON.parse(readFileSync(config.policyPath, 'utf8'));
+    const csv = readFileSync(config.csvPath, "utf8");
+    const policyJson: unknown = JSON.parse(
+      readFileSync(config.policyPath, "utf8")
+    );
 
     const result = await createMerchant({
       merchantId: config.merchantId,
@@ -108,21 +112,25 @@ async function main(): Promise<void> {
     const stats = computePriceStats(config.merchantId, csv);
     priceStats.push(stats);
 
-    console.log(`merchant created: ${result.merchant.id} (${result.merchant.name})`);
+    console.log(
+      `merchant created: ${result.merchant.id} (${result.merchant.name})`
+    );
     console.log(`  products loaded: ${result.productCount}`);
     console.log(
       `  policy: spend_cap=${formatRupees(result.policy.spend_cap_paise)} ` +
         `approval_threshold=${formatRupees(result.policy.approval_threshold_paise)} ` +
         `window=${result.policy.window_seconds}s ` +
-        `allowlist=[${result.policy.category_allowlist.join(', ')}]`,
+        `allowlist=[${result.policy.category_allowlist.join(", ")}]`
     );
     console.log(
       `  price distribution: mean=${formatRupees(stats.mean_price_paise)} ` +
         `range=[${formatRupees(stats.min_price_paise)}, ${formatRupees(stats.max_price_paise)}] ` +
-        `over ${stats.item_count} SKUs`,
+        `over ${stats.item_count} SKUs`
     );
     console.log(`  agent: ${result.agent.id} (${result.agent.label})`);
-    console.log('  agent token (shown once — save it now, it will differ on the next reseed):');
+    console.log(
+      "  agent token (shown once — save it now, it will differ on the next reseed):"
+    );
     console.log(`  ${result.token}`);
   }
 

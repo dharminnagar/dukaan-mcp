@@ -27,11 +27,11 @@ export function randInt(rng: Rng, min: number, max: number): number {
 
 export function pick<T>(rng: Rng, items: readonly T[]): T {
   if (items.length === 0) {
-    throw new Error('pick: cannot choose from an empty array');
+    throw new Error("pick: cannot choose from an empty array");
   }
   const item = items[randInt(rng, 0, items.length - 1)];
   if (item === undefined) {
-    throw new Error('pick: index out of range (unreachable)');
+    throw new Error("pick: index out of range (unreachable)");
   }
   return item;
 }

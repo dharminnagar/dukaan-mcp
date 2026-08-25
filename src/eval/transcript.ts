@@ -12,7 +12,7 @@
  * sees". Reuses `LineItem` and `GateRule` from shared/contracts.ts rather
  * than redeclaring parallel shapes.
  */
-import type { GateRule, LineItem } from '../shared/contracts';
+import type { GateRule, LineItem } from "../shared/contracts";
 
 /**
  * 'hand' — authored by whoever wrote the gate's rules (this ticket).
@@ -22,15 +22,15 @@ import type { GateRule, LineItem } from '../shared/contracts';
  *          what lets the README state honestly which attacks share an
  *          author with the rules and which don't (projectmem #0010).
  */
-export const ORIGINS = ['hand', 'llm'] as const;
+export const ORIGINS = ["hand", "llm"] as const;
 export type Origin = (typeof ORIGINS)[number];
 
 export const ATTACK_CLASSES = [
-  'budget_split',
-  'threshold_straddling',
-  'stale_price',
-  'merchant_misclaim',
-  'category_laundering',
+  "budget_split",
+  "threshold_straddling",
+  "stale_price",
+  "merchant_misclaim",
+  "category_laundering",
 ] as const;
 export type AttackClass = (typeof ATTACK_CLASSES)[number];
 
@@ -42,7 +42,7 @@ export type AttackClass = (typeof ATTACK_CLASSES)[number];
  * a typo in a hand-authored transcript fails typecheck instead of silently
  * resolving to nothing at replay time.
  */
-export const EVAL_MERCHANTS = ['kirana', 'electronics'] as const;
+export const EVAL_MERCHANTS = ["kirana", "electronics"] as const;
 export type EvalMerchant = (typeof EVAL_MERCHANTS)[number];
 
 /**
@@ -83,7 +83,7 @@ export interface Transcript {
   readonly expected_tripped_rule: GateRule | null;
 }
 
-export const TRAIN_SPLITS = ['train', 'holdout'] as const;
+export const TRAIN_SPLITS = ["train", "holdout"] as const;
 export type Split = (typeof TRAIN_SPLITS)[number];
 
 /** A transcript plus its frozen train/held-out assignment. */

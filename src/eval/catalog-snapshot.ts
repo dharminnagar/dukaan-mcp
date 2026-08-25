@@ -6,11 +6,11 @@
  * fixtures/demo-merchant-{a,b}.csv the day someone edits them. This module
  * only reads files already owned by DUK-11; it never writes to them.
  */
-import { readFileSync } from 'node:fs';
-import { parseCatalogCsv } from '../catalog/csv';
-import { parsePolicy } from '../catalog/policy';
-import type { Policy, Product } from '../shared/contracts';
-import type { EvalMerchant } from './transcript';
+import { readFileSync } from "node:fs";
+import { parseCatalogCsv } from "../catalog/csv";
+import { parsePolicy } from "../catalog/policy";
+import type { Policy, Product } from "../shared/contracts";
+import type { EvalMerchant } from "./transcript";
 
 const FIXTURES_DIR = `${import.meta.dir}/../../fixtures`;
 
@@ -21,12 +21,12 @@ const DEMO_SOURCE: Record<
   kirana: {
     csvPath: `${FIXTURES_DIR}/demo-merchant-a.csv`,
     policyPath: `${FIXTURES_DIR}/demo-merchant-a.policy.json`,
-    sourceMerchantId: 'm_demo_kirana',
+    sourceMerchantId: "m_demo_kirana",
   },
   electronics: {
     csvPath: `${FIXTURES_DIR}/demo-merchant-b.csv`,
     policyPath: `${FIXTURES_DIR}/demo-merchant-b.policy.json`,
-    sourceMerchantId: 'm_demo_electronics',
+    sourceMerchantId: "m_demo_electronics",
   },
 };
 
@@ -41,11 +41,19 @@ let cache: Record<EvalMerchant, CatalogSnapshot> | null = null;
 
 function loadOne(merchant: EvalMerchant): CatalogSnapshot {
   const source = DEMO_SOURCE[merchant];
-  const csv = readFileSync(source.csvPath, 'utf8');
-  const policyJson: unknown = JSON.parse(readFileSync(source.policyPath, 'utf8'));
+  const csv = readFileSync(source.csvPath, "utf8");
+  const policyJson: unknown = JSON.parse(
+    readFileSync(source.policyPath, "utf8")
+  );
 
-  const { products: rawProducts } = parseCatalogCsv(csv, source.sourceMerchantId);
-  const products: Product[] = rawProducts.map((p) => ({ ...p, updated_at: new Date(0) }));
+  const { products: rawProducts } = parseCatalogCsv(
+    csv,
+    source.sourceMerchantId
+  );
+  const products: Product[] = rawProducts.map((p) => ({
+    ...p,
+    updated_at: new Date(0),
+  }));
   const policy = parsePolicy(policyJson, source.sourceMerchantId);
 
   return {
@@ -59,7 +67,7 @@ function loadOne(merchant: EvalMerchant): CatalogSnapshot {
 /** Loaded once per process; the underlying files never change mid-run. */
 export function loadCatalogSnapshots(): Record<EvalMerchant, CatalogSnapshot> {
   if (cache === null) {
-    cache = { kirana: loadOne('kirana'), electronics: loadOne('electronics') };
+    cache = { kirana: loadOne("kirana"), electronics: loadOne("electronics") };
   }
   return cache;
 }
@@ -68,7 +76,7 @@ export function getProduct(snapshot: CatalogSnapshot, itemId: string): Product {
   const product = snapshot.productsById.get(itemId);
   if (product === undefined) {
     throw new Error(
-      `catalog-snapshot: "${itemId}" is not in the ${snapshot.merchant} demo catalog`,
+      `catalog-snapshot: "${itemId}" is not in the ${snapshot.merchant} demo catalog`
     );
   }
   return product;

@@ -7,12 +7,12 @@
  * pool with raw SQL inside withTransaction rather than through TenantRepo
  * (which requires an already-resolved TenantContext).
  */
-import { mintAgentToken } from '../auth/token';
-import { withTransaction } from '../db/pool';
-import { Agent, Merchant } from '../shared/contracts';
-import type { Policy } from '../shared/contracts';
-import { parseCatalogCsv } from '../catalog/csv';
-import { parsePolicy } from '../catalog/policy';
+import { mintAgentToken } from "../auth/token";
+import { withTransaction } from "../db/pool";
+import { Agent, Merchant } from "../shared/contracts";
+import type { Policy } from "../shared/contracts";
+import { parseCatalogCsv } from "../catalog/csv";
+import { parsePolicy } from "../catalog/policy";
 
 interface MerchantRow {
   id: string;
@@ -47,17 +47,19 @@ export async function createMerchant(args: {
   const { products } = parseCatalogCsv(csv, merchantId);
   const policy = parsePolicy(policyJson, merchantId);
   const { raw: token, hash: tokenHash } = mintAgentToken();
-  const agentId = `ag_${crypto.randomUUID().replace(/-/g, '')}`;
+  const agentId = `ag_${crypto.randomUUID().replace(/-/g, "")}`;
 
   const { merchantRow, agentRow } = await withTransaction(async (client) => {
     const merchantResult = await client.query<MerchantRow>(
       `INSERT INTO merchants (id, name) VALUES ($1, $2)
        RETURNING id, name, created_at`,
-      [merchantId, name],
+      [merchantId, name]
     );
     const insertedMerchant = merchantResult.rows[0];
     if (insertedMerchant === undefined) {
-      throw new Error(`insert into merchants returned no row for ${merchantId}`);
+      throw new Error(
+        `insert into merchants returned no row for ${merchantId}`
+      );
     }
 
     await client.query(
@@ -70,7 +72,7 @@ export async function createMerchant(args: {
         policy.approval_threshold_paise,
         policy.category_allowlist,
         policy.window_seconds,
-      ],
+      ]
     );
 
     for (const product of products) {
@@ -84,7 +86,7 @@ export async function createMerchant(args: {
           product.price_paise,
           product.stock,
           product.category,
-        ],
+        ]
       );
     }
 
@@ -92,7 +94,7 @@ export async function createMerchant(args: {
       `INSERT INTO agents (id, merchant_id, label, token_hash)
        VALUES ($1, $2, $3, $4)
        RETURNING id, merchant_id, label, created_at`,
-      [agentId, merchantId, agentLabel, tokenHash],
+      [agentId, merchantId, agentLabel, tokenHash]
     );
     const insertedAgent = agentResult.rows[0];
     if (insertedAgent === undefined) {

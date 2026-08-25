@@ -1,6 +1,6 @@
-import pg from 'pg';
-import type { PoolClient, QueryResultRow } from 'pg';
-import { env } from '../config';
+import pg from "pg";
+import type { PoolClient, QueryResultRow } from "pg";
+import { env } from "../config";
 
 const { Pool, types } = pg;
 
@@ -22,16 +22,16 @@ export const pool = new Pool({
   max: 10,
   idleTimeoutMillis: 30_000,
   connectionTimeoutMillis: 5_000,
-  application_name: 'dukaan-mcp',
+  application_name: "dukaan-mcp",
 });
 
-pool.on('error', (err: Error) => {
-  console.error('[pg] idle client error:', err.message);
+pool.on("error", (err: Error) => {
+  console.error("[pg] idle client error:", err.message);
 });
 
 export async function query<R extends QueryResultRow>(
   text: string,
-  params: readonly unknown[] = [],
+  params: readonly unknown[] = []
 ): Promise<R[]> {
   const res = await pool.query<R>(text, params as unknown[]);
   return res.rows;
@@ -39,21 +39,23 @@ export async function query<R extends QueryResultRow>(
 
 export async function queryOne<R extends QueryResultRow>(
   text: string,
-  params: readonly unknown[] = [],
+  params: readonly unknown[] = []
 ): Promise<R | null> {
   const rows = await query<R>(text, params);
   return rows[0] ?? null;
 }
 
-export async function withTransaction<T>(fn: (c: PoolClient) => Promise<T>): Promise<T> {
+export async function withTransaction<T>(
+  fn: (c: PoolClient) => Promise<T>
+): Promise<T> {
   const client = await pool.connect();
   try {
-    await client.query('BEGIN');
+    await client.query("BEGIN");
     const out = await fn(client);
-    await client.query('COMMIT');
+    await client.query("COMMIT");
     return out;
   } catch (err) {
-    await client.query('ROLLBACK').catch(() => {
+    await client.query("ROLLBACK").catch(() => {
       /* connection already dead */
     });
     throw err;
@@ -77,16 +79,19 @@ export async function withTransaction<T>(fn: (c: PoolClient) => Promise<T>): Pro
  * mutual exclusion comes from every caller contending on `hashtext(key)`,
  * not from `fn()`'s queries running inside this transaction.
  */
-export async function withAdvisoryLock<T>(key: string, fn: () => Promise<T>): Promise<T> {
+export async function withAdvisoryLock<T>(
+  key: string,
+  fn: () => Promise<T>
+): Promise<T> {
   const client = await pool.connect();
   try {
-    await client.query('BEGIN');
-    await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [key]);
+    await client.query("BEGIN");
+    await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [key]);
     const out = await fn();
-    await client.query('COMMIT');
+    await client.query("COMMIT");
     return out;
   } catch (err) {
-    await client.query('ROLLBACK').catch(() => {
+    await client.query("ROLLBACK").catch(() => {
       /* connection already dead */
     });
     throw err;

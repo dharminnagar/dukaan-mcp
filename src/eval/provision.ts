@@ -23,13 +23,13 @@
  * runs against have byte-identical catalogs/policies to the real demo
  * merchants, just under different ids.
  */
-import { createMerchant } from '../onboard/create-merchant';
-import { pool, query } from '../db/pool';
-import { hashToken } from '../auth/token';
-import { TenantRepo } from '../db/repo';
-import type { TenantContext } from '../shared/contracts';
-import { loadCatalogSnapshots } from './catalog-snapshot';
-import type { EvalMerchant } from './transcript';
+import { createMerchant } from "../onboard/create-merchant";
+import { pool, query } from "../db/pool";
+import { hashToken } from "../auth/token";
+import { TenantRepo } from "../db/repo";
+import type { TenantContext } from "../shared/contracts";
+import { loadCatalogSnapshots } from "./catalog-snapshot";
+import type { EvalMerchant } from "./transcript";
 
 export interface EvalMerchantIds {
   readonly kirana: string;
@@ -42,21 +42,28 @@ function merchantId(namespace: string, merchant: EvalMerchant): string {
 
 /** Lowercases and replaces every non `[a-z0-9_]` run with a single `_`, matching agents/sessions CHECK constraints. */
 function slug(s: string): string {
-  return s.toLowerCase().replace(/[^a-z0-9_]+/g, '_');
+  return s.toLowerCase().replace(/[^a-z0-9_]+/g, "_");
 }
 
 export function evalAgentId(namespace: string, logicalAgentId: string): string {
   const id = `ag_${slug(namespace)}_${slug(logicalAgentId)}`;
   if (id.length > 51 || !/^ag_[a-z0-9_]{1,48}$/.test(id)) {
-    throw new Error(`evalAgentId: "${id}" does not fit the agents.id CHECK constraint`);
+    throw new Error(
+      `evalAgentId: "${id}" does not fit the agents.id CHECK constraint`
+    );
   }
   return id;
 }
 
-export function evalSessionId(namespace: string, logicalSessionId: string): string {
+export function evalSessionId(
+  namespace: string,
+  logicalSessionId: string
+): string {
   const id = `s_${slug(namespace)}_${slug(logicalSessionId)}`;
   if (id.length > 66 || !/^s_[a-zA-Z0-9_-]{1,64}$/.test(id)) {
-    throw new Error(`evalSessionId: "${id}" does not fit the sessions.id CHECK constraint`);
+    throw new Error(
+      `evalSessionId: "${id}" does not fit the sessions.id CHECK constraint`
+    );
   }
   return id;
 }
@@ -68,18 +75,25 @@ export function evalSessionId(namespace: string, logicalSessionId: string): stri
  * in-flight spend history gets erased out from under a still-running
  * transcript.
  */
-export async function resetEvalMerchants(namespace: string): Promise<EvalMerchantIds> {
+export async function resetEvalMerchants(
+  namespace: string
+): Promise<EvalMerchantIds> {
   const ids: EvalMerchantIds = {
-    kirana: merchantId(namespace, 'kirana'),
-    electronics: merchantId(namespace, 'electronics'),
+    kirana: merchantId(namespace, "kirana"),
+    electronics: merchantId(namespace, "electronics"),
   };
 
-  await query('DELETE FROM merchants WHERE id = ANY($1::text[])', [Object.values(ids)]);
+  await query("DELETE FROM merchants WHERE id = ANY($1::text[])", [
+    Object.values(ids),
+  ]);
 
   const snapshots = loadCatalogSnapshots();
   for (const merchant of Object.keys(ids) as (keyof EvalMerchantIds)[]) {
     const snapshot = snapshots[merchant];
-    const csv = ['sku,name,price,stock,category', ...snapshot.products.map(csvRow)].join('\n');
+    const csv = [
+      "sku,name,price,stock,category",
+      ...snapshot.products.map(csvRow),
+    ].join("\n");
     await createMerchant({
       merchantId: ids[merchant],
       name: `Eval merchant (${namespace}/${merchant})`,
@@ -111,7 +125,9 @@ function policyToRawJson(policy: {
 }): unknown {
   return {
     spend_cap_rupees: (policy.spend_cap_paise / 100).toFixed(2),
-    approval_threshold_rupees: (policy.approval_threshold_paise / 100).toFixed(2),
+    approval_threshold_rupees: (policy.approval_threshold_paise / 100).toFixed(
+      2
+    ),
     category_allowlist: policy.category_allowlist,
     window: `${policy.window_seconds}s`,
   };
@@ -127,13 +143,13 @@ function policyToRawJson(policy: {
 export async function ensureEvalAgent(
   merchantId: string,
   agentId: string,
-  label: string,
+  label: string
 ): Promise<void> {
   await query(
     `INSERT INTO agents (id, merchant_id, label, token_hash)
      VALUES ($1, $2, $3, $4)
      ON CONFLICT (id) DO NOTHING`,
-    [agentId, merchantId, label, hashToken(agentId)],
+    [agentId, merchantId, label, hashToken(agentId)]
   );
 }
 

@@ -7,15 +7,15 @@
  * Prints the raw agent token to stdout exactly once. Nothing else in this
  * codebase is allowed to print a raw token.
  */
-import { readFileSync } from 'node:fs';
-import { closePool } from '../src/db/pool';
-import { createMerchant } from '../src/onboard/create-merchant';
+import { readFileSync } from "node:fs";
+import { closePool } from "../src/db/pool";
+import { createMerchant } from "../src/onboard/create-merchant";
 
 function parseArgs(argv: string[]): Record<string, string> {
   const args: Record<string, string> = {};
   for (const arg of argv) {
-    if (!arg.startsWith('--')) continue;
-    const eq = arg.indexOf('=');
+    if (!arg.startsWith("--")) continue;
+    const eq = arg.indexOf("=");
     if (eq === -1) continue;
     args[arg.slice(2, eq)] = arg.slice(eq + 1);
   }
@@ -32,21 +32,29 @@ function requireArg(args: Record<string, string>, name: string): string {
 
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
-  const merchantId = requireArg(args, 'merchant-id');
-  const name = requireArg(args, 'name');
-  const csvPath = requireArg(args, 'csv');
-  const policyPath = requireArg(args, 'policy');
-  const agentLabel = args['agent-label'] ?? 'default-agent';
+  const merchantId = requireArg(args, "merchant-id");
+  const name = requireArg(args, "name");
+  const csvPath = requireArg(args, "csv");
+  const policyPath = requireArg(args, "policy");
+  const agentLabel = args["agent-label"] ?? "default-agent";
 
-  const csv = readFileSync(csvPath, 'utf8');
-  const policyJson: unknown = JSON.parse(readFileSync(policyPath, 'utf8'));
+  const csv = readFileSync(csvPath, "utf8");
+  const policyJson: unknown = JSON.parse(readFileSync(policyPath, "utf8"));
 
-  const result = await createMerchant({ merchantId, name, csv, policyJson, agentLabel });
+  const result = await createMerchant({
+    merchantId,
+    name,
+    csv,
+    policyJson,
+    agentLabel,
+  });
 
-  console.log(`merchant created: ${result.merchant.id} (${result.merchant.name})`);
+  console.log(
+    `merchant created: ${result.merchant.id} (${result.merchant.name})`
+  );
   console.log(`products loaded: ${result.productCount}`);
   console.log(`agent created: ${result.agent.id} (${result.agent.label})`);
-  console.log('agent token (shown once — save it now):');
+  console.log("agent token (shown once — save it now):");
   console.log(result.token);
 }
 

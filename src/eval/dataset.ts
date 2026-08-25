@@ -11,26 +11,33 @@
  * not change these constants to chase a metric; that is exactly the
  * tuning-after-seeing-results the freeze exists to prevent.
  */
-import { generateBenignTranscripts } from './benign';
-import { generateHandScriptedAdversarial } from './hand-attacks';
-import { mulberry32, shuffle } from './prng';
-import type { SplitTranscript, Transcript, TranscriptSource } from './transcript';
+import { generateBenignTranscripts } from "./benign";
+import { generateHandScriptedAdversarial } from "./hand-attacks";
+import { mulberry32, shuffle } from "./prng";
+import type {
+  SplitTranscript,
+  Transcript,
+  TranscriptSource,
+} from "./transcript";
 
 /** Fixed at authoring time. Never `Date.now()` — see the module comment. */
-export const FROZEN_AT = '2026-08-25T00:00:00.000Z';
-export const REFROZEN_AT = '2026-08-25T12:00:00.000Z';
+export const FROZEN_AT = "2026-08-25T00:00:00.000Z";
+export const REFROZEN_AT = "2026-08-25T12:00:00.000Z";
 export const FREEZE_NOTE =
-  'Train/held-out assignment re-frozen 2026-08-25 to stratify per attack class. The first assignment pooled all transcripts and left category_laundering with 1 holdout instance and stale_price with 2, which cannot support a per-rule figure. No gate rule or threshold was changed at any point before or after either freeze: the only replays so far were construction checks confirming each class triggers its target rule. The held-out split is scored once, at DUK-20.';
+  "Train/held-out assignment re-frozen 2026-08-25 to stratify per attack class. The first assignment pooled all transcripts and left category_laundering with 1 holdout instance and stale_price with 2, which cannot support a per-rule figure. No gate rule or threshold was changed at any point before or after either freeze: the only replays so far were construction checks confirming each class triggers its target rule. The held-out split is scored once, at DUK-20.";
 
 export const DATASET_SEED = 0xd0417a51; // "d0 47a51" — arbitrary, fixed, never regenerated per-run.
 export const BENIGN_COUNT = 140;
 export const TRAIN_FRACTION = 0.6;
 
 export const handScriptedSource: TranscriptSource = {
-  origin: 'hand',
+  origin: "hand",
   generate(seed: number): readonly Transcript[] {
     const rng = mulberry32(seed);
-    return [...generateBenignTranscripts(rng, BENIGN_COUNT), ...generateHandScriptedAdversarial()];
+    return [
+      ...generateBenignTranscripts(rng, BENIGN_COUNT),
+      ...generateHandScriptedAdversarial(),
+    ];
   },
 };
 
@@ -53,10 +60,13 @@ export const handScriptedSource: TranscriptSource = {
  * reused verbatim, so a change to basket generation cannot accidentally
  * correlate with which half of the shuffle an id lands in.
  */
-function assignSplit(transcripts: readonly Transcript[], seed: number): readonly SplitTranscript[] {
+function assignSplit(
+  transcripts: readonly Transcript[],
+  seed: number
+): readonly SplitTranscript[] {
   const strata = new Map<string, Transcript[]>();
   for (const t of transcripts) {
-    const key = t.attack_class ?? 'benign';
+    const key = t.attack_class ?? "benign";
     const bucket = strata.get(key);
     if (bucket === undefined) strata.set(key, [t]);
     else bucket.push(t);
@@ -73,14 +83,15 @@ function assignSplit(transcripts: readonly Transcript[], seed: number): readonly
     const rng = mulberry32(seed + hashStratum(key));
     const order = shuffle(
       rng,
-      bucket.map((t) => t.id),
+      bucket.map((t) => t.id)
     );
-    for (const id of order.slice(0, Math.round(order.length * TRAIN_FRACTION))) trainIds.add(id);
+    for (const id of order.slice(0, Math.round(order.length * TRAIN_FRACTION)))
+      trainIds.add(id);
   }
 
   return transcripts.map((t) => ({
     ...t,
-    split: trainIds.has(t.id) ? 'train' : 'holdout',
+    split: trainIds.has(t.id) ? "train" : "holdout",
   }));
 }
 

@@ -1,0 +1,453 @@
+import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { writeAuditEvent } from "../src/audit/write";
+import { query } from "../src/db/pool";
+import { TenantRepo } from "../src/db/repo";
+import { decide } from "../src/gate";
+import { loadCatalogSnapshots } from "../src/eval/catalog-snapshot";
+import { buildFrozenDataset } from "../src/eval/dataset";
+import {
+  ensureEvalAgent,
+  ensureEvalSession,
+  evalAgentId,
+  evalSessionId,
+  resetEvalMerchants,
+} from "../src/eval/provision";
+import type { EvalMerchantIds } from "../src/eval/provision";
+import {
+  computeEscapes,
+  loadSkuPriceDistribution,
+  parseSplitArg,
+  renderReport,
+} from "../src/eval/report";
+import { replayBatch, replayTranscript } from "../src/eval/runner";
+import type { ReplayResult, ReplayStepResult } from "../src/eval/runner";
+import type { SplitTranscript, TranscriptStep } from "../src/eval/transcript";
+import type {
+  AuditEvent,
+  Decision,
+  GateOutcome,
+  GateRule,
+  ReasonCode,
+  TenantContext,
+} from "../src/shared/contracts";
+
+/* ------------------------------------------------------------------------
+ * Part 1 — pure rendering tests, no Postgres. Everything below builds
+ * synthetic ReplayResult objects by hand so the escapes / empty-escapes /
+ * cost / price-distribution behaviour can be tested deterministically
+ * without depending on the frozen corpus's current pass rate.
+ * ---------------------------------------------------------------------- */
+
+function fakeAudit(
+  decision: Decision,
+  rule: GateRule,
+  reasonCode: ReasonCode
+): AuditEvent {
+  return {
+    id: "fake-audit",
+    merchant_id: "m_fake",
+    session_id: "s_fake",
+    agent_id: "a_fake",
+    order_id: null,
+    action: "checkout",
+    amount_paise: null,
+    rule,
+    decision,
+    reason_code: reasonCode,
+    detail: null,
+    latency_ms: 0,
+    ts: new Date(),
+  };
+}
+
+function allowOutcome(amountPaise: number): GateOutcome {
+  return { decision: "allow", rule: "ALLOW", amount_paise: amountPaise };
+}
+
+function blockOutcome(rule: GateRule): GateOutcome {
+  return {
+    decision: "block",
+    rule,
+    error: {
+      reason_code: "CATEGORY_NOT_ALLOWED",
+      message: "blocked for test",
+      item_id: "sku-test",
+      category: "test-category",
+      category_allowlist: ["ok-category"],
+    },
+  };
+}
+
+function makeStep(
+  sessionId: string,
+  pricePaise: number,
+  qty = 1
+): TranscriptStep {
+  return {
+    session_id: sessionId,
+    items: [
+      { item_id: "sku-test", quantity: qty, asserted_price_paise: pricePaise },
+    ],
+    note: "synthetic test step",
+  };
+}
+
+function makeTranscript(
+  overrides: Partial<SplitTranscript> & { id: string }
+): SplitTranscript {
+  return {
+    origin: "hand",
+    attack_class: null,
+    merchant: "kirana",
+    agent_id: `a-${overrides.id}`,
+    steps: [makeStep("s-1", 2000)],
+    expected_tripped_rule: null,
+    split: "train",
+    ...overrides,
+  };
+}
+
+function makeResult(
+  transcript: SplitTranscript,
+  outcomes: readonly GateOutcome[]
+): ReplayResult<SplitTranscript> {
+  const steps: ReplayStepResult[] = outcomes.map((outcome, i) => ({
+    stepIndex: i,
+    sessionId: `s-${i}`,
+    outcome,
+    audit: fakeAudit(
+      outcome.decision,
+      outcome.rule,
+      outcome.decision === "allow"
+        ? "ALLOWED"
+        : outcome.decision === "escalate"
+          ? "PENDING_APPROVAL"
+          : "CATEGORY_NOT_ALLOWED"
+    ),
+  }));
+  return { transcript, steps };
+}
+
+/** Slices out one `## `-level section by header text, up to (not including) the next `## ` header. */
+function extractSection(markdown: string, header: string): string {
+  const start = markdown.indexOf(header);
+  expect(start).toBeGreaterThanOrEqual(0);
+  const rest = markdown.slice(start + header.length);
+  const nextHeaderOffset = rest.search(/\n## /);
+  return nextHeaderOffset === -1 ? rest : rest.slice(0, nextHeaderOffset);
+}
+
+const REQUIRED_SCOPE_SENTENCE =
+  "these numbers measure whether the gate correctly implements its stated policy against a declared threat model. They do not measure robustness against an attacker outside that model.";
+
+describe("renderReport (pure, synthetic data, no Postgres)", () => {
+  const priceDistribution = loadSkuPriceDistribution();
+
+  test("escapes section renders before any aggregate section", () => {
+    const escaped = makeTranscript({
+      id: "synthetic-escape-01",
+      attack_class: "category_laundering",
+      expected_tripped_rule: "CATEGORY_ALLOWLIST",
+      steps: [makeStep("s-1", 5000)],
+    });
+    const escapedResult = makeResult(escaped, [allowOutcome(5000)]); // should have been blocked
+
+    const benign = makeTranscript({ id: "synthetic-benign-01" });
+    const benignResult = makeResult(benign, [allowOutcome(2000)]);
+
+    const report = renderReport(
+      "train",
+      [escapedResult, benignResult],
+      priceDistribution
+    );
+
+    expect(report).toContain("synthetic-escape-01");
+    const escapesIndex = report.indexOf("## Escapes");
+    const coverageIndex = report.indexOf(
+      "## Rule coverage over a declared threat model"
+    );
+    const escalationIndex = report.indexOf(
+      "## Escalation, block and allow rate"
+    );
+    const costIndex = report.indexOf("## Cost of blocking benign traffic");
+    expect(escapesIndex).toBeGreaterThanOrEqual(0);
+    expect(escapesIndex).toBeLessThan(coverageIndex);
+    expect(escapesIndex).toBeLessThan(escalationIndex);
+    expect(escapesIndex).toBeLessThan(costIndex);
+  });
+
+  test('an empty escapes list produces the "proved nothing" wording, not a claim of success', () => {
+    const caught = makeTranscript({
+      id: "synthetic-caught-01",
+      attack_class: "category_laundering",
+      expected_tripped_rule: "CATEGORY_ALLOWLIST",
+      steps: [makeStep("s-1", 5000)],
+    });
+    const caughtResult = makeResult(caught, [
+      blockOutcome("CATEGORY_ALLOWLIST"),
+    ]);
+    const benign = makeTranscript({ id: "synthetic-benign-02" });
+    const benignResult = makeResult(benign, [allowOutcome(2000)]);
+
+    const report = renderReport(
+      "train",
+      [caughtResult, benignResult],
+      priceDistribution
+    );
+
+    expect(computeEscapes([caughtResult, benignResult]).length).toBe(0);
+    expect(report).toContain("proved nothing");
+    expect(report).not.toContain("synthetic-escape"); // no escape id should leak in
+  });
+
+  test("no percentage sign appears anywhere in the per-rule coverage block", () => {
+    const caught = makeTranscript({
+      id: "synthetic-caught-02",
+      attack_class: "budget_split",
+      expected_tripped_rule: "SPEND_CAP",
+      steps: [makeStep("s-1", 90_000), makeStep("s-2", 90_000)],
+    });
+    const caughtResult = makeResult(caught, [
+      allowOutcome(90_000),
+      blockOutcome("SPEND_CAP"),
+    ]);
+    const benign = makeTranscript({ id: "synthetic-benign-03" });
+    const benignResult = makeResult(benign, [allowOutcome(2000)]);
+
+    const report = renderReport(
+      "train",
+      [caughtResult, benignResult],
+      priceDistribution
+    );
+    const coverageSection = extractSection(
+      report,
+      "## Rule coverage over a declared threat model"
+    );
+
+    expect(coverageSection).not.toMatch(/%/);
+    expect(coverageSection).toContain("1 of 1");
+  });
+
+  test("all three cost figures are present, and blocked GMV is explicitly an upper bound", () => {
+    const blockedBenign = makeTranscript({ id: "synthetic-benign-blocked-01" });
+    const blockedResult = makeResult(blockedBenign, [
+      blockOutcome("CATEGORY_ALLOWLIST"),
+    ]);
+
+    const report = renderReport("train", [blockedResult], priceDistribution);
+    const costSection = extractSection(
+      report,
+      "## Cost of blocking benign traffic"
+    );
+
+    expect(costSection).toContain("UPPER BOUND");
+    expect(costSection).toContain("NOT MEASURABLE"); // single-step benign transcript: no follow-up step to recover in
+    expect(costSection).toContain("NOT COMPUTABLE"); // net cannot be derived without a measurable recovery rate
+    expect(costSection).not.toMatch(/lost revenue/i);
+  });
+
+  test("the price distribution prints, with per-SKU and per-order figures clearly distinguished", () => {
+    const benignKirana = makeTranscript({
+      id: "synthetic-benign-price-01",
+      merchant: "kirana",
+    });
+    const benignResult = makeResult(benignKirana, [allowOutcome(2000)]);
+
+    const report = renderReport("train", [benignResult], priceDistribution);
+    const priceSection = extractSection(report, "## Price distribution");
+
+    expect(priceSection).toContain("Per-SKU catalog price");
+    expect(priceSection).toContain("Per-order value");
+    expect(priceSection.indexOf("Per-SKU catalog price")).toBeLessThan(
+      priceSection.indexOf("Per-order value")
+    );
+  });
+
+  test("the required scope-of-measurement sentence appears verbatim", () => {
+    const benign = makeTranscript({ id: "synthetic-benign-04" });
+    const benignResult = makeResult(benign, [allowOutcome(2000)]);
+    const report = renderReport("train", [benignResult], priceDistribution);
+
+    expect(report).toContain(REQUIRED_SCOPE_SENTENCE);
+  });
+
+  test("--split=holdout renders a loud warning", () => {
+    const benign = makeTranscript({
+      id: "synthetic-benign-05",
+      split: "holdout",
+    });
+    const benignResult = makeResult(benign, [allowOutcome(2000)]);
+    const report = renderReport("holdout", [benignResult], priceDistribution);
+
+    expect(report).toContain("WARNING: HOLDOUT SPLIT SCORED");
+    expect(report.indexOf("WARNING: HOLDOUT SPLIT SCORED")).toBeLessThan(
+      report.indexOf("## Escapes")
+    );
+  });
+
+  test("parseSplitArg defaults to train, accepts holdout, rejects garbage", () => {
+    expect(parseSplitArg([])).toBe("train");
+    expect(parseSplitArg(["--split=train"])).toBe("train");
+    expect(parseSplitArg(["--split=holdout"])).toBe("holdout");
+    expect(() => parseSplitArg(["--split=bogus"])).toThrow();
+  });
+});
+
+/* ------------------------------------------------------------------------
+ * Part 2 — real replay against Postgres, "reporttest" namespace (distinct
+ * from "eval" used by `bun run eval`, "evaltest" used by tests/eval.test.ts,
+ * and "report" used by `bun run src/eval/report.ts`). See projectmem #0013:
+ * never call closePool() here — the Pool is a process-wide singleton shared
+ * with every other test file running in the same `bun test` process.
+ * ---------------------------------------------------------------------- */
+
+const NAMESPACE = "reporttest";
+const REPORTTEST_MERCHANT_IDS = [
+  "m_reporttest_kirana",
+  "m_reporttest_electronics",
+];
+
+async function wipeReportTestData(): Promise<void> {
+  await query("DELETE FROM audit_events WHERE merchant_id = ANY($1::text[])", [
+    REPORTTEST_MERCHANT_IDS,
+  ]);
+  await query("DELETE FROM merchants WHERE id = ANY($1::text[])", [
+    REPORTTEST_MERCHANT_IDS,
+  ]);
+}
+
+beforeAll(wipeReportTestData);
+afterAll(wipeReportTestData);
+
+describe("report over the real frozen train split (Postgres, eval-namespaced)", () => {
+  let merchantIds: EvalMerchantIds;
+  const trainDataset = buildFrozenDataset().filter((t) => t.split === "train");
+
+  beforeAll(async () => {
+    merchantIds = await resetEvalMerchants(NAMESPACE);
+  });
+
+  test("renders a full report over the real train split", async () => {
+    const results = await replayBatch(NAMESPACE, merchantIds, trainDataset);
+    const report = renderReport("train", results, loadSkuPriceDistribution());
+
+    // The gate today catches every hand-scripted attack in the train split
+    // (see tests/eval.test.ts's 100%-catch-rate assertion over the whole
+    // corpus) — so the honest output here is the "proved nothing" framing,
+    // not a claimed clean sweep.
+    expect(report).toContain("proved nothing");
+    expect(report.indexOf("## Escapes")).toBeLessThan(
+      report.indexOf("## Rule coverage over a declared threat model")
+    );
+
+    // Raw per-class counts, straight from fixtures/eval/manifest.json's
+    // by_class_and_split.*.train.
+    expect(report).toContain("| budget_split | SPEND_CAP | 7 of 7 |");
+    expect(report).toContain(
+      "| threshold_straddling | APPROVAL_THRESHOLD | 7 of 7 |"
+    );
+    expect(report).toContain("| stale_price | AUTHORITATIVE_REREAD | 7 of 7 |");
+    expect(report).toContain(
+      "| merchant_misclaim | AUTHORITATIVE_REREAD | 7 of 7 |"
+    );
+    expect(report).toContain(
+      "| category_laundering | CATEGORY_ALLOWLIST | 7 of 7 |"
+    );
+    expect(report).toContain("| benign (should ALLOW) | ALLOW | 84 of 84 |");
+  }, 30_000);
+
+  /**
+   * The ticket's own test of whether the reporter measures anything: weaken
+   * one gate rule and confirm the escapes list grows. `src/gate/**` and
+   * `src/eval/runner.ts` are out of scope for this ticket, so this does NOT
+   * edit either — it calls `decide()` directly (its `GateDeps.repo` is
+   * already an injectable, exported seam) with a `getPolicy` override that
+   * widens `category_allowlist` to every category in the real demo catalog,
+   * which is equivalent to deleting the CATEGORY_ALLOWLIST check for this
+   * replay only. This mirrors replayTranscript's own loop closely enough to
+   * produce a real ReplayResult, without touching runner.ts.
+   */
+  async function replayWithCategoryAllowlistDisabled(
+    transcript: SplitTranscript
+  ): Promise<ReplayResult<SplitTranscript>> {
+    const merchantId = merchantIds[transcript.merchant];
+    const agentId = evalAgentId(NAMESPACE, transcript.agent_id);
+    await ensureEvalAgent(merchantId, agentId, transcript.id);
+
+    const snapshots = loadCatalogSnapshots();
+    const everyCategory = [
+      ...new Set(
+        snapshots[transcript.merchant].products.map((p) => p.category)
+      ),
+    ];
+
+    const steps: ReplayStepResult[] = [];
+    for (let i = 0; i < transcript.steps.length; i++) {
+      const step = transcript.steps[i];
+      if (step === undefined) continue;
+      const sessionId = evalSessionId(
+        NAMESPACE,
+        `${transcript.id}-weakened-${step.session_id}`
+      );
+      const ctx: TenantContext = {
+        merchant_id: merchantId,
+        agent_id: agentId,
+        session_id: sessionId,
+      };
+      await ensureEvalSession(ctx);
+
+      const repo = new TenantRepo(ctx);
+      const weakenedRepo = {
+        getProduct: repo.getProduct.bind(repo),
+        spentInWindowPaise: repo.spentInWindowPaise.bind(repo),
+        getPolicy: async () => {
+          const policy = await repo.getPolicy();
+          return { ...policy, category_allowlist: everyCategory };
+        },
+      };
+
+      const collected: AuditEvent[] = [];
+      const captureAudit: typeof writeAuditEvent = async (input) => {
+        const event = await writeAuditEvent(input);
+        collected.push(event);
+        return event;
+      };
+
+      const outcome = await decide(
+        ctx,
+        { items: step.items },
+        { repo: weakenedRepo, writeAudit: captureAudit }
+      );
+      const audit = collected[0];
+      if (audit === undefined)
+        throw new Error(
+          `no audit event written for ${transcript.id} step ${i}`
+        );
+      steps.push({ stepIndex: i, sessionId, outcome, audit });
+    }
+    return { transcript, steps };
+  }
+
+  test("weakening CATEGORY_ALLOWLIST grows the escapes list for category_laundering", async () => {
+    const categoryLaundering = trainDataset.filter(
+      (t) => t.attack_class === "category_laundering"
+    );
+    expect(categoryLaundering.length).toBeGreaterThan(0);
+
+    merchantIds = await resetEvalMerchants(NAMESPACE);
+    const baseline: ReplayResult<SplitTranscript>[] = [];
+    for (const t of categoryLaundering)
+      baseline.push(await replayTranscript(NAMESPACE, merchantIds, t));
+    const baselineEscapes = computeEscapes(baseline);
+    expect(baselineEscapes.length).toBe(0); // the real, un-weakened gate catches all of these today
+
+    merchantIds = await resetEvalMerchants(NAMESPACE); // fresh spend history for the weakened run
+    const weakened: ReplayResult<SplitTranscript>[] = [];
+    for (const t of categoryLaundering)
+      weakened.push(await replayWithCategoryAllowlistDisabled(t));
+    const weakenedEscapes = computeEscapes(weakened);
+
+    expect(weakenedEscapes.length).toBeGreaterThan(baselineEscapes.length);
+    expect(weakenedEscapes.length).toBe(categoryLaundering.length); // every one escapes once the rule is gone
+  }, 30_000);
+});

@@ -43,9 +43,9 @@
  * session_id stays audit grouping/display only and is never threaded into
  * the enforcement query.
  */
-import { randomUUID } from 'node:crypto';
-import type { writeAuditEvent } from '../audit/write';
-import type { TenantRepo } from '../db/repo';
+import { randomUUID } from "node:crypto";
+import type { writeAuditEvent } from "../audit/write";
+import type { TenantRepo } from "../db/repo";
 import type {
   CategoryNotAllowedError,
   GateOutcome,
@@ -56,10 +56,13 @@ import type {
   SpendCapExceededError,
   StaleCatalogError,
   TenantContext,
-} from '../shared/contracts';
+} from "../shared/contracts";
 
 export interface GateDeps {
-  readonly repo: Pick<TenantRepo, 'getProduct' | 'getPolicy' | 'spentInWindowPaise'>;
+  readonly repo: Pick<
+    TenantRepo,
+    "getProduct" | "getPolicy" | "spentInWindowPaise"
+  >;
   readonly writeAudit: typeof writeAuditEvent;
   // Deliberately NO injectable clock. The cap window is enforced inside
   // `repo.spentInWindowPaise`'s SQL against Postgres's own now(), so a clock
@@ -77,13 +80,16 @@ export interface CheckoutRequest {
 }
 
 function totalAssertedPaise(items: readonly LineItem[]): number {
-  return items.reduce((sum, item) => sum + item.quantity * item.asserted_price_paise, 0);
+  return items.reduce(
+    (sum, item) => sum + item.quantity * item.asserted_price_paise,
+    0
+  );
 }
 
 export async function decide(
   ctx: TenantContext,
   req: CheckoutRequest,
-  deps: GateDeps,
+  deps: GateDeps
 ): Promise<GateOutcome> {
   const start = performance.now();
   const elapsedMs = (): number => Math.round(performance.now() - start);
@@ -92,15 +98,19 @@ export async function decide(
     order_id: string | null;
     amount_paise: number | null;
     rule:
-      'AUTHORITATIVE_REREAD' | 'SPEND_CAP' | 'CATEGORY_ALLOWLIST' | 'APPROVAL_THRESHOLD' | 'ALLOW';
-    decision: 'allow' | 'block' | 'escalate';
+      | "AUTHORITATIVE_REREAD"
+      | "SPEND_CAP"
+      | "CATEGORY_ALLOWLIST"
+      | "APPROVAL_THRESHOLD"
+      | "ALLOW";
+    decision: "allow" | "block" | "escalate";
     reason_code:
-      | 'ALLOWED'
-      | 'STALE_CATALOG'
-      | 'SPEND_CAP_EXCEEDED'
-      | 'CATEGORY_NOT_ALLOWED'
-      | 'PENDING_APPROVAL'
-      | 'INVALID_REQUEST';
+      | "ALLOWED"
+      | "STALE_CATALOG"
+      | "SPEND_CAP_EXCEEDED"
+      | "CATEGORY_NOT_ALLOWED"
+      | "PENDING_APPROVAL"
+      | "INVALID_REQUEST";
     detail: Record<string, unknown> | null;
   }): Promise<unknown> =>
     deps.writeAudit({
@@ -108,7 +118,7 @@ export async function decide(
       session_id: ctx.session_id,
       agent_id: ctx.agent_id,
       order_id: fields.order_id,
-      action: 'checkout',
+      action: "checkout",
       amount_paise: fields.amount_paise,
       rule: fields.rule,
       decision: fields.decision,
@@ -127,19 +137,19 @@ export async function decide(
   // would need a migration for no behavioural gain.
   if (req.items.length === 0) {
     const error: InvalidRequestError = {
-      reason_code: 'INVALID_REQUEST',
-      message: 'Checkout requires at least one line item.',
-      field: 'items',
+      reason_code: "INVALID_REQUEST",
+      message: "Checkout requires at least one line item.",
+      field: "items",
     };
     await audit({
       order_id: null,
       amount_paise: null,
-      rule: 'AUTHORITATIVE_REREAD',
-      decision: 'block',
-      reason_code: 'INVALID_REQUEST',
-      detail: { field: 'items' },
+      rule: "AUTHORITATIVE_REREAD",
+      decision: "block",
+      reason_code: "INVALID_REQUEST",
+      detail: { field: "items" },
     });
-    return { decision: 'block', rule: 'AUTHORITATIVE_REREAD', error };
+    return { decision: "block", rule: "AUTHORITATIVE_REREAD", error };
   }
 
   // ---- check 1: authoritative re-read -------------------------------------
@@ -156,7 +166,10 @@ export async function decide(
   // single order.
   const requestedByItem = new Map<string, number>();
   for (const item of req.items) {
-    requestedByItem.set(item.item_id, (requestedByItem.get(item.item_id) ?? 0) + item.quantity);
+    requestedByItem.set(
+      item.item_id,
+      (requestedByItem.get(item.item_id) ?? 0) + item.quantity
+    );
   }
 
   const productById = new Map<string, Product>();
@@ -166,9 +179,9 @@ export async function decide(
       product = await deps.repo.getProduct(item.item_id);
       if (product === null) {
         const error: StaleCatalogError = {
-          reason_code: 'STALE_CATALOG',
+          reason_code: "STALE_CATALOG",
           message: `Item ${item.item_id} is not in the catalog.`,
-          mismatch: 'missing',
+          mismatch: "missing",
           item_id: item.item_id,
           asserted_price_paise: item.asserted_price_paise,
           true_price_paise: null,
@@ -178,21 +191,21 @@ export async function decide(
         await audit({
           order_id: null,
           amount_paise: null,
-          rule: 'AUTHORITATIVE_REREAD',
-          decision: 'block',
-          reason_code: 'STALE_CATALOG',
-          detail: { item_id: item.item_id, mismatch: 'missing' },
+          rule: "AUTHORITATIVE_REREAD",
+          decision: "block",
+          reason_code: "STALE_CATALOG",
+          detail: { item_id: item.item_id, mismatch: "missing" },
         });
-        return { decision: 'block', rule: 'AUTHORITATIVE_REREAD', error };
+        return { decision: "block", rule: "AUTHORITATIVE_REREAD", error };
       }
       productById.set(item.item_id, product);
     }
 
     if (product.price_paise !== item.asserted_price_paise) {
       const error: StaleCatalogError = {
-        reason_code: 'STALE_CATALOG',
+        reason_code: "STALE_CATALOG",
         message: `Item ${item.item_id} price has changed: asserted ${item.asserted_price_paise} paise, catalog is ${product.price_paise} paise.`,
-        mismatch: 'price',
+        mismatch: "price",
         item_id: item.item_id,
         asserted_price_paise: item.asserted_price_paise,
         true_price_paise: product.price_paise,
@@ -202,12 +215,16 @@ export async function decide(
       await audit({
         order_id: null,
         amount_paise: null,
-        rule: 'AUTHORITATIVE_REREAD',
-        decision: 'block',
-        reason_code: 'STALE_CATALOG',
-        detail: { item_id: item.item_id, mismatch: 'price', true_price_paise: product.price_paise },
+        rule: "AUTHORITATIVE_REREAD",
+        decision: "block",
+        reason_code: "STALE_CATALOG",
+        detail: {
+          item_id: item.item_id,
+          mismatch: "price",
+          true_price_paise: product.price_paise,
+        },
       });
-      return { decision: 'block', rule: 'AUTHORITATIVE_REREAD', error };
+      return { decision: "block", rule: "AUTHORITATIVE_REREAD", error };
     }
   }
 
@@ -215,9 +232,9 @@ export async function decide(
     const product = productById.get(itemId)!;
     if (requestedQuantity > product.stock) {
       const error: StaleCatalogError = {
-        reason_code: 'STALE_CATALOG',
+        reason_code: "STALE_CATALOG",
         message: `Item ${itemId} has insufficient stock: requested qty ${requestedQuantity} across all line items, catalog stock is ${product.stock}.`,
-        mismatch: 'stock',
+        mismatch: "stock",
         item_id: itemId,
         asserted_price_paise: product.price_paise,
         true_price_paise: product.price_paise,
@@ -227,17 +244,17 @@ export async function decide(
       await audit({
         order_id: null,
         amount_paise: null,
-        rule: 'AUTHORITATIVE_REREAD',
-        decision: 'block',
-        reason_code: 'STALE_CATALOG',
+        rule: "AUTHORITATIVE_REREAD",
+        decision: "block",
+        reason_code: "STALE_CATALOG",
         detail: {
           item_id: itemId,
-          mismatch: 'stock',
+          mismatch: "stock",
           requested_quantity: requestedQuantity,
           true_stock: product.stock,
         },
       });
-      return { decision: 'block', rule: 'AUTHORITATIVE_REREAD', error };
+      return { decision: "block", rule: "AUTHORITATIVE_REREAD", error };
     }
   }
 
@@ -249,7 +266,7 @@ export async function decide(
 
   if (spentPaise + attemptedPaise > policy.spend_cap_paise) {
     const error: SpendCapExceededError = {
-      reason_code: 'SPEND_CAP_EXCEEDED',
+      reason_code: "SPEND_CAP_EXCEEDED",
       message: `This order (${attemptedPaise} paise) would take agent spend to ${spentPaise + attemptedPaise} paise, past the ${policy.spend_cap_paise} paise cap over the last ${policy.window_seconds}s.`,
       cap_paise: policy.spend_cap_paise,
       spent_paise: spentPaise,
@@ -260,16 +277,16 @@ export async function decide(
     await audit({
       order_id: null,
       amount_paise: attemptedPaise,
-      rule: 'SPEND_CAP',
-      decision: 'block',
-      reason_code: 'SPEND_CAP_EXCEEDED',
+      rule: "SPEND_CAP",
+      decision: "block",
+      reason_code: "SPEND_CAP_EXCEEDED",
       detail: {
         spent_paise: spentPaise,
         cap_paise: policy.spend_cap_paise,
         attempted_paise: attemptedPaise,
       },
     });
-    return { decision: 'block', rule: 'SPEND_CAP', error };
+    return { decision: "block", rule: "SPEND_CAP", error };
   }
 
   // ---- check 3: category allowlist -----------------------------------------
@@ -277,7 +294,7 @@ export async function decide(
     const product = productById.get(item.item_id)!;
     if (!policy.category_allowlist.includes(product.category)) {
       const error: CategoryNotAllowedError = {
-        reason_code: 'CATEGORY_NOT_ALLOWED',
+        reason_code: "CATEGORY_NOT_ALLOWED",
         message: `Item ${item.item_id} is in category "${product.category}", which is not in this agent's allowlist.`,
         item_id: item.item_id,
         category: product.category,
@@ -286,12 +303,12 @@ export async function decide(
       await audit({
         order_id: null,
         amount_paise: attemptedPaise,
-        rule: 'CATEGORY_ALLOWLIST',
-        decision: 'block',
-        reason_code: 'CATEGORY_NOT_ALLOWED',
+        rule: "CATEGORY_ALLOWLIST",
+        decision: "block",
+        reason_code: "CATEGORY_NOT_ALLOWED",
         detail: { item_id: item.item_id, category: product.category },
       });
-      return { decision: 'block', rule: 'CATEGORY_ALLOWLIST', error };
+      return { decision: "block", rule: "CATEGORY_ALLOWLIST", error };
     }
   }
 
@@ -302,7 +319,7 @@ export async function decide(
     // 'escalated' order under this exact id.
     const orderId = `o_${randomUUID()}`;
     const error: PendingApprovalError = {
-      reason_code: 'PENDING_APPROVAL',
+      reason_code: "PENDING_APPROVAL",
       message: `This order (${attemptedPaise} paise) is above the ${policy.approval_threshold_paise} paise approval threshold and needs merchant sign-off.`,
       order_id: orderId,
       amount_paise: attemptedPaise,
@@ -312,22 +329,22 @@ export async function decide(
     await audit({
       order_id: orderId,
       amount_paise: attemptedPaise,
-      rule: 'APPROVAL_THRESHOLD',
-      decision: 'escalate',
-      reason_code: 'PENDING_APPROVAL',
+      rule: "APPROVAL_THRESHOLD",
+      decision: "escalate",
+      reason_code: "PENDING_APPROVAL",
       detail: { approval_threshold_paise: policy.approval_threshold_paise },
     });
-    return { decision: 'escalate', rule: 'APPROVAL_THRESHOLD', error };
+    return { decision: "escalate", rule: "APPROVAL_THRESHOLD", error };
   }
 
   // ---- check 5: allow ---------------------------------------------------------
   await audit({
     order_id: null,
     amount_paise: attemptedPaise,
-    rule: 'ALLOW',
-    decision: 'allow',
-    reason_code: 'ALLOWED',
+    rule: "ALLOW",
+    decision: "allow",
+    reason_code: "ALLOWED",
     detail: { item_count: req.items.length },
   });
-  return { decision: 'allow', rule: 'ALLOW', amount_paise: attemptedPaise };
+  return { decision: "allow", rule: "ALLOW", amount_paise: attemptedPaise };
 }

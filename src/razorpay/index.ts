@@ -31,7 +31,7 @@
  * with `rzp_test_`, because the Orders API base URL is identical for test
  * and live and the key prefix is the only guard.
  */
-import type { RazorpayError } from '../shared/contracts';
+import type { RazorpayError } from "../shared/contracts";
 
 export interface CreateOrderInput {
   readonly amount_paise: number;
@@ -48,7 +48,7 @@ export interface RazorpayAdapter {
   createOrder(input: CreateOrderInput): Promise<CreateOrderResult>;
 }
 
-const ORDERS_URL = 'https://api.razorpay.com/v1/orders';
+const ORDERS_URL = "https://api.razorpay.com/v1/orders";
 
 /** Retries capped at 1: one initial attempt plus one retry, never more. */
 const MAX_RETRIES = 1;
@@ -64,17 +64,17 @@ function nonBlank(value: string): boolean {
 function validateInput(input: CreateOrderInput): void {
   if (!Number.isInteger(input.amount_paise) || input.amount_paise <= 0) {
     throw new Error(
-      `createOrder: amount_paise must be a positive integer, got ${JSON.stringify(input.amount_paise)}`,
+      `createOrder: amount_paise must be a positive integer, got ${JSON.stringify(input.amount_paise)}`
     );
   }
   if (!nonBlank(input.merchant_id)) {
-    throw new Error('createOrder: merchant_id must not be blank');
+    throw new Error("createOrder: merchant_id must not be blank");
   }
   if (!nonBlank(input.session_id)) {
-    throw new Error('createOrder: session_id must not be blank');
+    throw new Error("createOrder: session_id must not be blank");
   }
   if (!nonBlank(input.receipt)) {
-    throw new Error('createOrder: receipt must not be blank');
+    throw new Error("createOrder: receipt must not be blank");
   }
 }
 
@@ -90,7 +90,7 @@ interface RazorpayErrorBody {
 function extractRazorpayCode(text: string): string | null {
   try {
     const parsed = JSON.parse(text) as RazorpayErrorBody;
-    return typeof parsed.error?.code === 'string' ? parsed.error.code : null;
+    return typeof parsed.error?.code === "string" ? parsed.error.code : null;
   } catch {
     return null;
   }
@@ -100,7 +100,7 @@ async function safeReadText(response: Response): Promise<string> {
   try {
     return await response.text();
   } catch {
-    return '';
+    return "";
   }
 }
 
@@ -108,10 +108,10 @@ function razorpayError(
   message: string,
   httpStatus: number | null,
   razorpayCode: string | null,
-  retryable: boolean,
+  retryable: boolean
 ): RazorpayError {
   return {
-    reason_code: 'RAZORPAY_ERROR',
+    reason_code: "RAZORPAY_ERROR",
     message,
     http_status: httpStatus,
     razorpay_code: razorpayCode,
@@ -139,19 +139,24 @@ export class RazorpayHttpAdapter implements RazorpayAdapter {
   private readonly sleepFn: (ms: number) => Promise<void>;
   private readonly randomFn: () => number;
 
-  constructor(keyId: string, keySecret: string, deps: RazorpayHttpAdapterDeps = {}) {
-    if (!keyId.startsWith('rzp_test_')) {
+  constructor(
+    keyId: string,
+    keySecret: string,
+    deps: RazorpayHttpAdapterDeps = {}
+  ) {
+    if (!keyId.startsWith("rzp_test_")) {
       throw new Error(
-        'RazorpayHttpAdapter: RAZORPAY_KEY_ID does not start with rzp_test_. Refusing to construct: ' +
-          'the Orders API base URL is identical for test and live, so the key prefix is the only guard ' +
-          'against this adapter accidentally moving real money.',
+        "RazorpayHttpAdapter: RAZORPAY_KEY_ID does not start with rzp_test_. Refusing to construct: " +
+          "the Orders API base URL is identical for test and live, so the key prefix is the only guard " +
+          "against this adapter accidentally moving real money."
       );
     }
     // Never retained as a bare keyId/keySecret field — pre-encoded once here
     // so no later code path can log the raw secret by accident.
-    this.authorizationHeader = `Basic ${Buffer.from(`${keyId}:${keySecret}`).toString('base64')}`;
+    this.authorizationHeader = `Basic ${Buffer.from(`${keyId}:${keySecret}`).toString("base64")}`;
     this.fetchFn = deps.fetch ?? fetch;
-    this.sleepFn = deps.sleep ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
+    this.sleepFn =
+      deps.sleep ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
     this.randomFn = deps.random ?? Math.random;
   }
 
@@ -160,7 +165,7 @@ export class RazorpayHttpAdapter implements RazorpayAdapter {
 
     const body = JSON.stringify({
       amount: input.amount_paise,
-      currency: 'INR',
+      currency: "INR",
       receipt: input.receipt,
       notes: { merchant_id: input.merchant_id, session_id: input.session_id },
     });
@@ -169,8 +174,11 @@ export class RazorpayHttpAdapter implements RazorpayAdapter {
       let response: Response;
       try {
         response = await this.fetchFn(ORDERS_URL, {
-          method: 'POST',
-          headers: { authorization: this.authorizationHeader, 'content-type': 'application/json' },
+          method: "POST",
+          headers: {
+            authorization: this.authorizationHeader,
+            "content-type": "application/json",
+          },
           body,
         });
       } catch (err) {
@@ -182,21 +190,21 @@ export class RazorpayHttpAdapter implements RazorpayAdapter {
             `Network error contacting Razorpay: ${(err as Error).message}`,
             null,
             null,
-            true,
+            true
           ),
         };
       }
 
       if (response.ok) {
         const parsed = (await response.json()) as RazorpayOrderBody;
-        if (typeof parsed.id !== 'string' || !parsed.id.startsWith('order_')) {
+        if (typeof parsed.id !== "string" || !parsed.id.startsWith("order_")) {
           return {
             ok: false,
             error: razorpayError(
               `Razorpay returned HTTP ${response.status} with no valid order_ id in the body`,
               response.status,
               null,
-              false,
+              false
             ),
           };
         }
@@ -214,10 +222,10 @@ export class RazorpayHttpAdapter implements RazorpayAdapter {
       return {
         ok: false,
         error: razorpayError(
-          `Razorpay returned HTTP ${response.status}${text ? `: ${text}` : ''}`,
+          `Razorpay returned HTTP ${response.status}${text ? `: ${text}` : ""}`,
           response.status,
           extractRazorpayCode(text),
-          response.status === 429 || response.status >= 500,
+          response.status === 429 || response.status >= 500
         ),
       };
     }
@@ -225,7 +233,7 @@ export class RazorpayHttpAdapter implements RazorpayAdapter {
     // Unreachable: the loop above always returns on its last iteration
     // (attempt === MAX_RETRIES never satisfies canRetry).
     throw new Error(
-      'createOrder: retry loop exited without returning — this is a bug in RazorpayHttpAdapter',
+      "createOrder: retry loop exited without returning — this is a bug in RazorpayHttpAdapter"
     );
   }
 }
@@ -256,7 +264,7 @@ export class FakeRazorpayAdapter implements RazorpayAdapter {
     const next = this.queue.shift();
     if (next === undefined) {
       throw new Error(
-        'FakeRazorpayAdapter.createOrder called with an empty response queue — call enqueue() first.',
+        "FakeRazorpayAdapter.createOrder called with an empty response queue — call enqueue() first."
       );
     }
     return next;

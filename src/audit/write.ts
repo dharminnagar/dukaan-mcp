@@ -1,10 +1,10 @@
-import { randomUUID } from 'node:crypto';
-import { query } from '../db/pool';
-import { AuditEvent, AuditEventInput } from '../shared/contracts';
+import { randomUUID } from "node:crypto";
+import { query } from "../db/pool";
+import { AuditEvent, AuditEventInput } from "../shared/contracts";
 import type {
   AuditEvent as AuditEventType,
   AuditEventInput as AuditEventInputType,
-} from '../shared/contracts';
+} from "../shared/contracts";
 
 /**
  * The ONLY module permitted to `INSERT INTO audit_events`. Every gate branch —
@@ -12,7 +12,9 @@ import type {
  * single source of truth an eval reporter or auditor can reconstruct decisions
  * from. A second insert path anywhere else defeats that guarantee.
  */
-export async function writeAuditEvent(input: AuditEventInputType): Promise<AuditEventType> {
+export async function writeAuditEvent(
+  input: AuditEventInputType
+): Promise<AuditEventType> {
   const parsed = AuditEventInput.parse(input);
   const id = `ae_${randomUUID()}`;
 
@@ -50,12 +52,12 @@ export async function writeAuditEvent(input: AuditEventInputType): Promise<Audit
       parsed.reason_code,
       parsed.detail,
       parsed.latency_ms,
-    ],
+    ]
   );
 
   const row = rows[0];
   if (row === undefined) {
-    throw new Error('writeAuditEvent: INSERT ... RETURNING produced no row');
+    throw new Error("writeAuditEvent: INSERT ... RETURNING produced no row");
   }
 
   return AuditEvent.parse(row);

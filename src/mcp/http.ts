@@ -1,19 +1,19 @@
-import { randomUUID } from 'node:crypto';
-import { createMcpHandler, McpServer } from '@modelcontextprotocol/server';
-import type { CallToolResult } from '@modelcontextprotocol/server';
-import { z } from 'zod';
-import { resolveTenant } from '../auth/resolve';
-import { writeAuditEvent } from '../audit/write';
-import { requireRazorpay } from '../config';
-import { TenantRepo } from '../db/repo';
-import { withAdvisoryLock } from '../db/pool';
-import { decide } from '../gate/index';
-import { RazorpayHttpAdapter } from '../razorpay/index';
-import type { RazorpayAdapter } from '../razorpay/index';
-import { LineItem, toolError } from '../shared/contracts';
-import type { ToolError, UnauthenticatedError } from '../shared/contracts';
+import { randomUUID } from "node:crypto";
+import { createMcpHandler, McpServer } from "@modelcontextprotocol/server";
+import type { CallToolResult } from "@modelcontextprotocol/server";
+import { z } from "zod";
+import { resolveTenant } from "../auth/resolve";
+import { writeAuditEvent } from "../audit/write";
+import { requireRazorpay } from "../config";
+import { TenantRepo } from "../db/repo";
+import { withAdvisoryLock } from "../db/pool";
+import { decide } from "../gate/index";
+import { RazorpayHttpAdapter } from "../razorpay/index";
+import type { RazorpayAdapter } from "../razorpay/index";
+import { LineItem, toolError } from "../shared/contracts";
+import type { ToolError, UnauthenticatedError } from "../shared/contracts";
 
-const PORT = Number.parseInt(process.env.PORT ?? '8787', 10);
+const PORT = Number.parseInt(process.env.PORT ?? "8787", 10);
 
 /**
  * `toolError()` (src/shared/contracts.ts) returns a `ToolErrorResult` whose
@@ -80,8 +80,8 @@ export function setRazorpayAdapter(adapter: RazorpayAdapter): void {
  */
 export const mcpHandler = createMcpHandler(
   async ({ requestInfo }) => {
-    const authorization = requestInfo?.headers.get('authorization') ?? null;
-    const sessionHint = requestInfo?.headers.get('mcp-session-id') ?? null;
+    const authorization = requestInfo?.headers.get("authorization") ?? null;
+    const sessionHint = requestInfo?.headers.get("mcp-session-id") ?? null;
 
     const resolved = await resolveTenant(authorization, sessionHint);
     if (!resolved.ok) {
@@ -89,7 +89,9 @@ export const mcpHandler = createMcpHandler(
       // ever runs, so getting here means the token was revoked in the gap
       // between that check and now. Fail loudly rather than silently
       // building a server with no tenant scope.
-      throw new Error(`resolveTenant failed inside MCP factory: ${resolved.error.message}`);
+      throw new Error(
+        `resolveTenant failed inside MCP factory: ${resolved.error.message}`
+      );
     }
     const ctx = resolved.ctx;
     const repo = new TenantRepo(ctx);
@@ -100,17 +102,17 @@ export const mcpHandler = createMcpHandler(
     // is why this lives here rather than inside each handler.
     await repo.ensureSession();
 
-    const server = new McpServer({ name: 'dukaan-mcp', version: '0.1.0' });
+    const server = new McpServer({ name: "dukaan-mcp", version: "0.1.0" });
 
     server.registerTool(
-      'list_products',
+      "list_products",
       {
-        title: 'List Products',
+        title: "List Products",
         description:
-          'List every product in your catalog: id, name, price_paise, stock, and category. ' +
-          'Call this first to see what you can buy and at what price. Prices and stock ' +
-          'change over time, so re-call this (or get_product) right before checkout rather ' +
-          'than reusing a price you saw earlier — checkout rejects a stale asserted price ' +
+          "List every product in your catalog: id, name, price_paise, stock, and category. " +
+          "Call this first to see what you can buy and at what price. Prices and stock " +
+          "change over time, so re-call this (or get_product) right before checkout rather " +
+          "than reusing a price you saw earlier — checkout rejects a stale asserted price " +
           "with a STALE_CATALOG error. Always scoped to your own merchant's catalog; there " +
           "is no way to list another merchant's products.",
         inputSchema: z.object({}),
@@ -123,37 +125,41 @@ export const mcpHandler = createMcpHandler(
           session_id: ctx.session_id,
           agent_id: ctx.agent_id,
           order_id: null,
-          action: 'list_products',
+          action: "list_products",
           amount_paise: null,
-          rule: 'ALLOW',
-          decision: 'allow',
-          reason_code: 'ALLOWED',
+          rule: "ALLOW",
+          decision: "allow",
+          reason_code: "ALLOWED",
           detail: { count: products.length },
           latency_ms: Math.round(performance.now() - start),
         });
         return {
-          content: [{ type: 'text' as const, text: JSON.stringify({ products }) }],
+          content: [
+            { type: "text" as const, text: JSON.stringify({ products }) },
+          ],
         };
-      },
+      }
     );
 
     server.registerTool(
-      'get_product',
+      "get_product",
       {
-        title: 'Get Product',
+        title: "Get Product",
         description:
-          'Fetch one product by id from your catalog, with its CURRENT price_paise and ' +
-          'stock. Always call this (or list_products) immediately before checkout so the ' +
-          'price you act on is fresh, not one you cached earlier — checkout rejects a stale ' +
-          'asserted price with a STALE_CATALOG error. Returns { product: null } if the id ' +
-          'is not in your catalog. That includes an id that belongs to a different ' +
-          'merchant: this tool never reveals whether such an id exists elsewhere, it just ' +
+          "Fetch one product by id from your catalog, with its CURRENT price_paise and " +
+          "stock. Always call this (or list_products) immediately before checkout so the " +
+          "price you act on is fresh, not one you cached earlier — checkout rejects a stale " +
+          "asserted price with a STALE_CATALOG error. Returns { product: null } if the id " +
+          "is not in your catalog. That includes an id that belongs to a different " +
+          "merchant: this tool never reveals whether such an id exists elsewhere, it just " +
           "isn't yours.",
         inputSchema: z.object({
           id: z
             .string()
             .min(1)
-            .describe('The product id (sku), exactly as returned by list_products.'),
+            .describe(
+              "The product id (sku), exactly as returned by list_products."
+            ),
         }),
       },
       async ({ id }) => {
@@ -164,46 +170,48 @@ export const mcpHandler = createMcpHandler(
           session_id: ctx.session_id,
           agent_id: ctx.agent_id,
           order_id: null,
-          action: 'get_product',
+          action: "get_product",
           amount_paise: null,
-          rule: 'ALLOW',
-          decision: 'allow',
-          reason_code: 'ALLOWED',
+          rule: "ALLOW",
+          decision: "allow",
+          reason_code: "ALLOWED",
           detail: { item_id: id, found: product !== null },
           latency_ms: Math.round(performance.now() - start),
         });
         return {
-          content: [{ type: 'text' as const, text: JSON.stringify({ product }) }],
+          content: [
+            { type: "text" as const, text: JSON.stringify({ product }) },
+          ],
         };
-      },
+      }
     );
 
     server.registerTool(
-      'checkout',
+      "checkout",
       {
-        title: 'Checkout',
+        title: "Checkout",
         description:
-          'Place an order for one or more line items, asserting the item_id, quantity, and ' +
-          'price_paise you believe is current for each — get these from list_products or ' +
-          'get_product IMMEDIATELY beforehand, not from earlier in the conversation. Your ' +
-          'asserted price is NOT trusted: checkout re-reads the live catalog and rejects a ' +
-          'stale price with a STALE_CATALOG error (isError: true) instead of charging you. ' +
-          'A spend-cap or category-allowlist violation also returns a structured block error ' +
+          "Place an order for one or more line items, asserting the item_id, quantity, and " +
+          "price_paise you believe is current for each — get these from list_products or " +
+          "get_product IMMEDIATELY beforehand, not from earlier in the conversation. Your " +
+          "asserted price is NOT trusted: checkout re-reads the live catalog and rejects a " +
+          "stale price with a STALE_CATALOG error (isError: true) instead of charging you. " +
+          "A spend-cap or category-allowlist violation also returns a structured block error " +
           "with isError: true and never reaches Razorpay. An order above the merchant's " +
           "approval threshold is recorded as an 'escalated' order and returned as a " +
-          'PENDING_APPROVAL error — also isError: true, also never reaching Razorpay — so a ' +
-          'PENDING_APPROVAL response means the order needs merchant sign-off, not that it ' +
-          'failed. On success this actually creates a Razorpay order and returns the order ' +
+          "PENDING_APPROVAL error — also isError: true, also never reaching Razorpay — so a " +
+          "PENDING_APPROVAL response means the order needs merchant sign-off, not that it " +
+          "failed. On success this actually creates a Razorpay order and returns the order " +
           "row (id, status: 'created', razorpay_order_id, amount_paise). Every outcome, " +
-          'including a Razorpay-side failure, is written to the audit log.',
+          "including a Razorpay-side failure, is written to the audit log.",
         inputSchema: z.object({
           items: z
             .array(LineItem)
             .min(1)
             .describe(
               "The line items to buy. Each item's price_paise MUST be the CURRENT catalog " +
-                'price for that item_id, not one you saw earlier — checkout re-checks it and ' +
-                'returns STALE_CATALOG if it has changed.',
+                "price for that item_id, not one you saw earlier — checkout re-checks it and " +
+                "returns STALE_CATALOG if it has changed."
             ),
         }),
       },
@@ -230,125 +238,134 @@ export const mcpHandler = createMcpHandler(
         // that one agent's own checkouts serialise behind Razorpay's
         // latency; other agents and merchants are untouched, since each
         // contends on its own key.
-        return withAdvisoryLock(`${ctx.merchant_id}:${ctx.agent_id}`, async () => {
-          const outcome = await decide(ctx, { items }, { repo, writeAudit: writeAuditEvent });
+        return withAdvisoryLock(
+          `${ctx.merchant_id}:${ctx.agent_id}`,
+          async () => {
+            const outcome = await decide(
+              ctx,
+              { items },
+              { repo, writeAudit: writeAuditEvent }
+            );
 
-          if (outcome.decision === 'block') {
-            // The gate already wrote this decision's AuditEvent. No order row:
-            // `orders` is written on allow and escalate only, never on block.
-            return errorResult(outcome.error);
-          }
+            if (outcome.decision === "block") {
+              // The gate already wrote this decision's AuditEvent. No order row:
+              // `orders` is written on allow and escalate only, never on block.
+              return errorResult(outcome.error);
+            }
 
-          if (outcome.decision === 'escalate') {
-            // Escalated orders never count toward the spend cap —
-            // SPEND_CAP_SQL filters status IN ('created','authorized') — so
-            // this insert doesn't need the lock for cap correctness. It runs
-            // under it anyway because decide() already had to; splitting the
-            // lock scope by outcome would only add complexity for no gain.
-            //
-            // The gate minted this id (there is no order yet for it to
-            // attach to) and already wrote its own AuditEvent under it.
-            // Reuse that exact id so the audit row and the order row agree,
-            // and stop here — zero Razorpay calls on this path.
-            await repo.insertOrder({
-              id: outcome.error.order_id,
+            if (outcome.decision === "escalate") {
+              // Escalated orders never count toward the spend cap —
+              // SPEND_CAP_SQL filters status IN ('created','authorized') — so
+              // this insert doesn't need the lock for cap correctness. It runs
+              // under it anyway because decide() already had to; splitting the
+              // lock scope by outcome would only add complexity for no gain.
+              //
+              // The gate minted this id (there is no order yet for it to
+              // attach to) and already wrote its own AuditEvent under it.
+              // Reuse that exact id so the audit row and the order row agree,
+              // and stop here — zero Razorpay calls on this path.
+              await repo.insertOrder({
+                id: outcome.error.order_id,
+                merchant_id: ctx.merchant_id,
+                agent_id: ctx.agent_id,
+                session_id: ctx.session_id,
+                items,
+                amount_paise: outcome.error.amount_paise,
+                status: "escalated",
+                razorpay_order_id: null,
+              });
+              return errorResult(outcome.error);
+            }
+
+            // decision === 'allow'. The gate already wrote the ALLOW/ALLOWED
+            // AuditEvent; only a Razorpay-side failure below needs a second one.
+            const receipt = orderId;
+            const razorpayResult = await getRazorpayAdapter().createOrder({
+              amount_paise: outcome.amount_paise,
               merchant_id: ctx.merchant_id,
-              agent_id: ctx.agent_id,
               session_id: ctx.session_id,
-              items,
-              amount_paise: outcome.error.amount_paise,
-              status: 'escalated',
-              razorpay_order_id: null,
+              receipt,
             });
-            return errorResult(outcome.error);
-          }
 
-          // decision === 'allow'. The gate already wrote the ALLOW/ALLOWED
-          // AuditEvent; only a Razorpay-side failure below needs a second one.
-          const receipt = orderId;
-          const razorpayResult = await getRazorpayAdapter().createOrder({
-            amount_paise: outcome.amount_paise,
-            merchant_id: ctx.merchant_id,
-            session_id: ctx.session_id,
-            receipt,
-          });
+            if (!razorpayResult.ok) {
+              await repo.insertOrder({
+                id: orderId,
+                merchant_id: ctx.merchant_id,
+                agent_id: ctx.agent_id,
+                session_id: ctx.session_id,
+                items,
+                amount_paise: outcome.amount_paise,
+                status: "failed",
+                razorpay_order_id: null,
+              });
+              // audit_events.rule has no RAZORPAY member, and the
+              // audit_allow_implies_allowed CHECK forces decision != 'allow'
+              // whenever reason_code isn't ALLOWED — so rule: 'ALLOW' paired
+              // with decision: 'block' is the only shape that fits the existing
+              // schema without a migration. This mirrors the precedent the gate
+              // already set for INVALID_REQUEST under AUTHORITATIVE_REREAD (see
+              // src/gate/index.ts): audit a branch under the rule enum that was
+              // closest to true, not the one purpose-built for it. It matters
+              // here because a Razorpay failure is a money-path event, and the
+              // project's claim that every money action is reconstructible from
+              // the audit log alone would otherwise have a hole.
+              await writeAuditEvent({
+                merchant_id: ctx.merchant_id,
+                session_id: ctx.session_id,
+                agent_id: ctx.agent_id,
+                order_id: orderId,
+                action: "checkout",
+                amount_paise: outcome.amount_paise,
+                rule: "ALLOW",
+                decision: "block",
+                reason_code: "RAZORPAY_ERROR",
+                detail: {
+                  http_status: razorpayResult.error.http_status,
+                  razorpay_code: razorpayResult.error.razorpay_code,
+                  retryable: razorpayResult.error.retryable,
+                },
+                latency_ms: Math.round(performance.now() - start),
+              });
+              return errorResult(razorpayResult.error);
+            }
 
-          if (!razorpayResult.ok) {
-            await repo.insertOrder({
+            const order = await repo.insertOrder({
               id: orderId,
               merchant_id: ctx.merchant_id,
               agent_id: ctx.agent_id,
               session_id: ctx.session_id,
               items,
               amount_paise: outcome.amount_paise,
-              status: 'failed',
-              razorpay_order_id: null,
+              status: "created",
+              razorpay_order_id: razorpayResult.razorpay_order_id,
             });
-            // audit_events.rule has no RAZORPAY member, and the
-            // audit_allow_implies_allowed CHECK forces decision != 'allow'
-            // whenever reason_code isn't ALLOWED — so rule: 'ALLOW' paired
-            // with decision: 'block' is the only shape that fits the existing
-            // schema without a migration. This mirrors the precedent the gate
-            // already set for INVALID_REQUEST under AUTHORITATIVE_REREAD (see
-            // src/gate/index.ts): audit a branch under the rule enum that was
-            // closest to true, not the one purpose-built for it. It matters
-            // here because a Razorpay failure is a money-path event, and the
-            // project's claim that every money action is reconstructible from
-            // the audit log alone would otherwise have a hole.
-            await writeAuditEvent({
-              merchant_id: ctx.merchant_id,
-              session_id: ctx.session_id,
-              agent_id: ctx.agent_id,
-              order_id: orderId,
-              action: 'checkout',
-              amount_paise: outcome.amount_paise,
-              rule: 'ALLOW',
-              decision: 'block',
-              reason_code: 'RAZORPAY_ERROR',
-              detail: {
-                http_status: razorpayResult.error.http_status,
-                razorpay_code: razorpayResult.error.razorpay_code,
-                retryable: razorpayResult.error.retryable,
-              },
-              latency_ms: Math.round(performance.now() - start),
-            });
-            return errorResult(razorpayResult.error);
+            return {
+              content: [
+                { type: "text" as const, text: JSON.stringify({ order }) },
+              ],
+            };
           }
-
-          const order = await repo.insertOrder({
-            id: orderId,
-            merchant_id: ctx.merchant_id,
-            agent_id: ctx.agent_id,
-            session_id: ctx.session_id,
-            items,
-            amount_paise: outcome.amount_paise,
-            status: 'created',
-            razorpay_order_id: razorpayResult.razorpay_order_id,
-          });
-          return {
-            content: [{ type: 'text' as const, text: JSON.stringify({ order }) }],
-          };
-        });
-      },
+        );
+      }
     );
 
     server.registerTool(
-      'get_order_status',
+      "get_order_status",
       {
-        title: 'Get Order Status',
+        title: "Get Order Status",
         description:
-          'Fetch one of your own orders by id, with its current status (created, authorized, ' +
-          'escalated, or failed) and razorpay_order_id when one exists. Returns { order: null } ' +
-          'if the id is not one of your orders. That includes an id that belongs to a different ' +
-          'merchant: this tool never reveals whether such an order exists elsewhere, it just ' +
+          "Fetch one of your own orders by id, with its current status (created, authorized, " +
+          "escalated, or failed) and razorpay_order_id when one exists. Returns { order: null } " +
+          "if the id is not one of your orders. That includes an id that belongs to a different " +
+          "merchant: this tool never reveals whether such an order exists elsewhere, it just " +
           "isn't yours.",
         inputSchema: z.object({
           order_id: z
             .string()
             .min(1)
             .describe(
-              'The order id, exactly as returned by checkout (in its success result or in a ' +
-                'PENDING_APPROVAL error).',
+              "The order id, exactly as returned by checkout (in its success result or in a " +
+                "PENDING_APPROVAL error)."
             ),
         }),
       },
@@ -360,31 +377,31 @@ export const mcpHandler = createMcpHandler(
           session_id: ctx.session_id,
           agent_id: ctx.agent_id,
           order_id: order !== null ? order.id : null,
-          action: 'get_order_status',
+          action: "get_order_status",
           amount_paise: null,
-          rule: 'ALLOW',
-          decision: 'allow',
-          reason_code: 'ALLOWED',
+          rule: "ALLOW",
+          decision: "allow",
+          reason_code: "ALLOWED",
           detail: { order_id, found: order !== null },
           latency_ms: Math.round(performance.now() - start),
         });
         return {
-          content: [{ type: 'text' as const, text: JSON.stringify({ order }) }],
+          content: [{ type: "text" as const, text: JSON.stringify({ order }) }],
         };
-      },
+      }
     );
 
     return server;
   },
-  { onerror: (err) => console.error('[mcp]', err.message) },
+  { onerror: (err) => console.error("[mcp]", err.message) }
 );
 
 function unauthorizedResponse(error: UnauthenticatedError): Response {
   return new Response(JSON.stringify(error), {
     status: 401,
     headers: {
-      'content-type': 'application/json',
-      'www-authenticate': error.www_authenticate,
+      "content-type": "application/json",
+      "www-authenticate": error.www_authenticate,
     },
   });
 }
@@ -397,12 +414,13 @@ function unauthorizedResponse(error: UnauthenticatedError): Response {
  */
 export async function fetchMcp(req: Request): Promise<Response> {
   const url = new URL(req.url);
-  if (url.pathname === '/health') return new Response('ok\n');
-  if (url.pathname !== '/mcp') return new Response('not found\n', { status: 404 });
+  if (url.pathname === "/health") return new Response("ok\n");
+  if (url.pathname !== "/mcp")
+    return new Response("not found\n", { status: 404 });
 
   const resolved = await resolveTenant(
-    req.headers.get('authorization'),
-    req.headers.get('mcp-session-id'),
+    req.headers.get("authorization"),
+    req.headers.get("mcp-session-id")
   );
   if (!resolved.ok) {
     return unauthorizedResponse(resolved.error);

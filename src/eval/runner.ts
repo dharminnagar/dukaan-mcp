@@ -23,14 +23,23 @@
  * branch exactly. On 'block', nothing is written to `orders` — same as
  * production, since a blocked order never happened.
  */
-import { randomUUID } from 'node:crypto';
-import { writeAuditEvent } from '../audit/write';
-import { TenantRepo } from '../db/repo';
-import { decide } from '../gate';
-import type { AuditEvent, GateOutcome, TenantContext } from '../shared/contracts';
-import { ensureEvalAgent, ensureEvalSession, evalAgentId, evalSessionId } from './provision';
-import type { EvalMerchantIds } from './provision';
-import type { Transcript } from './transcript';
+import { randomUUID } from "node:crypto";
+import { writeAuditEvent } from "../audit/write";
+import { TenantRepo } from "../db/repo";
+import { decide } from "../gate";
+import type {
+  AuditEvent,
+  GateOutcome,
+  TenantContext,
+} from "../shared/contracts";
+import {
+  ensureEvalAgent,
+  ensureEvalSession,
+  evalAgentId,
+  evalSessionId,
+} from "./provision";
+import type { EvalMerchantIds } from "./provision";
+import type { Transcript } from "./transcript";
 
 export interface ReplayStepResult {
   readonly stepIndex: number;
@@ -47,10 +56,10 @@ export interface ReplayResult<T extends Transcript = Transcript> {
 async function persistOrderIfNeeded(
   repo: TenantRepo,
   ctx: TenantContext,
-  items: Transcript['steps'][number]['items'],
-  outcome: GateOutcome,
+  items: Transcript["steps"][number]["items"],
+  outcome: GateOutcome
 ): Promise<void> {
-  if (outcome.decision === 'allow') {
+  if (outcome.decision === "allow") {
     await repo.insertOrder({
       id: `o_${randomUUID()}`,
       merchant_id: ctx.merchant_id,
@@ -58,12 +67,12 @@ async function persistOrderIfNeeded(
       session_id: ctx.session_id,
       items: [...items],
       amount_paise: outcome.amount_paise,
-      status: 'created',
+      status: "created",
       razorpay_order_id: null,
     });
     return;
   }
-  if (outcome.decision === 'escalate') {
+  if (outcome.decision === "escalate") {
     await repo.insertOrder({
       id: outcome.error.order_id,
       merchant_id: ctx.merchant_id,
@@ -71,7 +80,7 @@ async function persistOrderIfNeeded(
       session_id: ctx.session_id,
       items: [...items],
       amount_paise: outcome.error.amount_paise,
-      status: 'escalated',
+      status: "escalated",
       razorpay_order_id: null,
     });
   }
@@ -87,7 +96,7 @@ async function persistOrderIfNeeded(
 export async function replayTranscript<T extends Transcript>(
   namespace: string,
   merchantIds: EvalMerchantIds,
-  transcript: T,
+  transcript: T
 ): Promise<ReplayResult<T>> {
   const merchantId = merchantIds[transcript.merchant];
   const agentId = evalAgentId(namespace, transcript.agent_id);
@@ -101,7 +110,10 @@ export async function replayTranscript<T extends Transcript>(
     // `step.session_id` is only unique WITHIN a transcript (e.g. every attack
     // class's first fixture names its session "s-01") — `sessions.id` is a
     // global PK, so it has to be qualified by the transcript id too.
-    const sessionId = evalSessionId(namespace, `${transcript.id}-${step.session_id}`);
+    const sessionId = evalSessionId(
+      namespace,
+      `${transcript.id}-${step.session_id}`
+    );
     const ctx: TenantContext = {
       merchant_id: merchantId,
       agent_id: agentId,
@@ -117,13 +129,17 @@ export async function replayTranscript<T extends Transcript>(
       return event;
     };
 
-    const outcome = await decide(ctx, { items: step.items }, { repo, writeAudit: captureAudit });
+    const outcome = await decide(
+      ctx,
+      { items: step.items },
+      { repo, writeAudit: captureAudit }
+    );
     await persistOrderIfNeeded(repo, ctx, step.items, outcome);
 
     const audit = collected[0];
     if (audit === undefined) {
       throw new Error(
-        `replayTranscript: decide() wrote no AuditEvent for ${transcript.id} step ${i}`,
+        `replayTranscript: decide() wrote no AuditEvent for ${transcript.id} step ${i}`
       );
     }
     steps.push({ stepIndex: i, sessionId, outcome, audit });
@@ -142,7 +158,7 @@ export async function replayTranscript<T extends Transcript>(
 export async function replayBatch<T extends Transcript>(
   namespace: string,
   merchantIds: EvalMerchantIds,
-  transcripts: readonly T[],
+  transcripts: readonly T[]
 ): Promise<readonly ReplayResult<T>[]> {
   const results: ReplayResult<T>[] = [];
   // STRICTLY SEQUENTIAL, and not merely for tidiness. `decide()` is not atomic

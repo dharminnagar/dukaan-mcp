@@ -6,8 +6,8 @@
  * line number because onboarding is a human fixing a spreadsheet, not a
  * program consuming an index.
  */
-import { parse } from 'csv-parse/sync';
-import { Product } from '../shared/contracts';
+import { parse } from "csv-parse/sync";
+import { Product } from "../shared/contracts";
 
 export interface CsvParseError {
   readonly line: number;
@@ -17,7 +17,7 @@ export interface CsvParseError {
 /** Thrown by parseCatalogCsv. Carries the file line number as a real property, not just in the text. */
 function csvError(line: number, message: string): Error & CsvParseError {
   const err = new Error(`line ${line}: ${message}`) as Error & CsvParseError;
-  Object.defineProperty(err, 'line', { value: line, enumerable: true });
+  Object.defineProperty(err, "line", { value: line, enumerable: true });
   return err;
 }
 
@@ -28,28 +28,28 @@ function csvError(line: number, message: string): Error & CsvParseError {
  * combine them as integers.
  */
 export function rupeesToPaise(input: string): number {
-  const withoutSeparators = input.trim().replace(/,/g, '');
+  const withoutSeparators = input.trim().replace(/,/g, "");
   const match = /^(\d+)(?:\.(\d{1,2}))?$/.exec(withoutSeparators);
   if (match === null) {
     throw new Error(
-      `Invalid rupee amount ${JSON.stringify(input)}: expected digits, optional comma separators, and at most 2 decimal places`,
+      `Invalid rupee amount ${JSON.stringify(input)}: expected digits, optional comma separators, and at most 2 decimal places`
     );
   }
   const [, rupeesPart, paisePart] = match;
   // rupeesPart is guaranteed by the regex's mandatory first group.
   const rupees = Number.parseInt(rupeesPart!, 10);
-  const paise = Number.parseInt((paisePart ?? '').padEnd(2, '0'), 10);
+  const paise = Number.parseInt((paisePart ?? "").padEnd(2, "0"), 10);
   return rupees * 100 + paise;
 }
 
-const REQUIRED_COLUMNS = ['sku', 'name', 'price', 'stock', 'category'] as const;
+const REQUIRED_COLUMNS = ["sku", "name", "price", "stock", "category"] as const;
 
 type RawRow = Record<string, string | undefined>;
 
 function requireField(
   row: RawRow,
   column: (typeof REQUIRED_COLUMNS)[number],
-  line: number,
+  line: number
 ): string {
   const value = row[column];
   if (value === undefined || value.trim().length === 0) {
@@ -63,8 +63,8 @@ const CatalogRow = Product.omit({ updated_at: true });
 
 export function parseCatalogCsv(
   csv: string,
-  merchantId: string,
-): { readonly products: Omit<Product, 'updated_at'>[] } {
+  merchantId: string
+): { readonly products: Omit<Product, "updated_at">[] } {
   const rows: RawRow[] = parse(csv, {
     columns: true,
     trim: true,
@@ -72,10 +72,10 @@ export function parseCatalogCsv(
   });
 
   if (rows.length === 0) {
-    throw csvError(1, 'CSV has no data rows');
+    throw csvError(1, "CSV has no data rows");
   }
 
-  const products: Omit<Product, 'updated_at'>[] = [];
+  const products: Omit<Product, "updated_at">[] = [];
   const seenSkus = new Set<string>();
 
   rows.forEach((row, index) => {
@@ -85,11 +85,11 @@ export function parseCatalogCsv(
       requireField(row, column, line);
     }
 
-    const sku = requireField(row, 'sku', line);
-    const name = requireField(row, 'name', line);
-    const priceRupees = requireField(row, 'price', line);
-    const stockRaw = requireField(row, 'stock', line);
-    const category = requireField(row, 'category', line);
+    const sku = requireField(row, "sku", line);
+    const name = requireField(row, "name", line);
+    const priceRupees = requireField(row, "price", line);
+    const stockRaw = requireField(row, "stock", line);
+    const category = requireField(row, "category", line);
 
     if (seenSkus.has(sku)) {
       throw csvError(line, `duplicate sku "${sku}"`);
@@ -100,11 +100,17 @@ export function parseCatalogCsv(
     try {
       pricePaise = rupeesToPaise(priceRupees);
     } catch (err) {
-      throw csvError(line, `invalid price "${priceRupees}": ${(err as Error).message}`);
+      throw csvError(
+        line,
+        `invalid price "${priceRupees}": ${(err as Error).message}`
+      );
     }
 
     if (!/^\d+$/.test(stockRaw)) {
-      throw csvError(line, `invalid stock "${stockRaw}": must be a non-negative integer`);
+      throw csvError(
+        line,
+        `invalid stock "${stockRaw}": must be a non-negative integer`
+      );
     }
     const stock = Number.parseInt(stockRaw, 10);
 
@@ -117,7 +123,9 @@ export function parseCatalogCsv(
       category,
     });
     if (!result.success) {
-      const messages = result.error.issues.map((issue) => issue.message).join('; ');
+      const messages = result.error.issues
+        .map((issue) => issue.message)
+        .join("; ");
       throw csvError(line, `invalid row: ${messages}`);
     }
 
