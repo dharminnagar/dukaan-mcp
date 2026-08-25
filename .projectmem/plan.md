@@ -27,7 +27,7 @@ days and there is no video.
 - [ ] **D7 (29 Aug)** — DUK-17 buyer agent · **HARD GATE 21:00**
       *Exit: blocked, re-planned, substituted, succeeded — three linked AuditEvents*
       *Not working by 21:00? Switch to scripted transcripts tomorrow. Do NOT debug on D8.*
-- [~] **D8 (30 Aug)** — DUK-18 eval pt1: deterministic half DONE 25 Aug (200 transcripts, stratified frozen split, replay runner). LLM adversarial generator BLOCKED on ANTHROPIC_API_KEY (#0017).
+- [x] **D8 (30 Aug, done early 26 Aug)** — DUK-18 COMPLETE. 241 transcripts: 200 hand + 41 from stealth/ox-alpha via OpenRouter, prompt committed and verified gate-free. Gate caught all 9 independent attacks in train. Split stratifies on (origin, class).
 - [x] **D9 (31 Aug, done early on 25 Aug)** — DUK-19 metrics reporter. Escapes-first, integers not percentages, recovery honestly NOT MEASURABLE. Surfaced #0021.
       *Exit: real metrics table with a non-empty escapes list. **Risk retired: the differentiator***
 - [ ] **D10 (1 Sept)** — DUK-20 held-out run (ONCE) + onboarding form + audit CLI printer · DUK-27 CSV column mapping + merchant confirm (DROPPABLE, starts only if D5-D9 landed on time)
