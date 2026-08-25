@@ -24,3 +24,6 @@ out/
 .projectmem/watch.pid
 .projectmem/watch.log
 .projectmem/structure.json
+
+# eslint --cache artifact
+.eslintcache

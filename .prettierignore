@@ -9,3 +9,15 @@ web/.next
 # Generated, byte-identical-by-contract eval dataset. Reformatting it would
 # change the file the determinism test compares against.
 fixtures/eval
+
+# Hand-authored standalone HTML checklist with inline CSS and JS. Prettier
+# rewrote 2121 lines of it for no gain and every line was review noise.
+setup
+
+# CLAUDE.md carries a projectmem bridge block that `pjm export` regenerates.
+# Formatting machine-managed content just guarantees churn on the next export.
+CLAUDE.md
+
+# eslint --cache artifact
+.eslintcache
+
