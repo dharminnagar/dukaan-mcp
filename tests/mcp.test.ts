@@ -20,6 +20,10 @@ const MERCHANT_B = 'm_mcp_test_b';
 // have to reason about how much A or B have already spent from earlier
 // tests in this file.
 const MERCHANT_C = 'm_mcp_test_c';
+// DUK-29's regression: its own merchant so the concurrent-checkout race
+// isn't sharing a spend cap with any other test in this file. Namespaced to
+// this ticket rather than the file's mcp_test_* convention.
+const MERCHANT_D = 'm_mcp29_concurrent';
 
 const CSV_A = `sku,name,price,stock,category
 sku-a1,Widget A,199.00,10,widgets
@@ -32,6 +36,10 @@ sku-b1,Widget B,299.00,20,widgets
 
 const CSV_C = `sku,name,price,stock,category
 sku-c1,Costly Item,200.00,10,widgets
+`;
+
+const CSV_D = `sku,name,price,stock,category
+sku-d1,Concurrency Widget,600.00,1000,widgets
 `;
 
 const POLICY = {
@@ -48,6 +56,19 @@ const POLICY_C = {
   window: '24h',
 };
 
+// approval_threshold == spend_cap (the max the Policy schema's refine
+// allows) so that a single 400.00-rupee line item never crosses the
+// approval threshold and escalates — every checkout below must resolve to
+// allow or SPEND_CAP_EXCEEDED, nothing else, or the arithmetic in the
+// concurrency test stops being exact.
+const POLICY_D = {
+  spend_cap_rupees: '1000.00',
+  approval_threshold_rupees: '1000.00',
+  category_allowlist: ['widgets'],
+  window: '24h',
+};
+const POLICY_D_CAP_PAISE = 100_000;
+
 async function cleanupMerchant(merchantId: string): Promise<void> {
   // audit_events has no FK to merchants on purpose (append-only ledger that
   // must survive a merchant deletion), so it needs an explicit delete here;
@@ -61,12 +82,15 @@ let baseUrl: string;
 let tokenA: string;
 let tokenB: string;
 let tokenC: string;
+let tokenD: string;
+let agentIdD: string;
 let fake: FakeRazorpayAdapter;
 
 beforeAll(async () => {
   await cleanupMerchant(MERCHANT_A);
   await cleanupMerchant(MERCHANT_B);
   await cleanupMerchant(MERCHANT_C);
+  await cleanupMerchant(MERCHANT_D);
 
   const a = await createMerchant({
     merchantId: MERCHANT_A,
@@ -89,9 +113,18 @@ beforeAll(async () => {
     policyJson: POLICY_C,
     agentLabel: 'mcp-test-agent-c',
   });
+  const d = await createMerchant({
+    merchantId: MERCHANT_D,
+    name: 'MCP Test Kirana D',
+    csv: CSV_D,
+    policyJson: POLICY_D,
+    agentLabel: 'mcp29-concurrent-agent',
+  });
   tokenA = a.token;
   tokenB = b.token;
   tokenC = c.token;
+  tokenD = d.token;
+  agentIdD = d.agent.id;
 
   // Every checkout test in this file must hit the fake, never the real
   // Razorpay API. Installed once, before any client connects, via the
@@ -108,6 +141,7 @@ afterAll(async () => {
   await cleanupMerchant(MERCHANT_A);
   await cleanupMerchant(MERCHANT_B);
   await cleanupMerchant(MERCHANT_C);
+  await cleanupMerchant(MERCHANT_D);
   // src/db/pool.ts exports ONE process-wide Pool singleton shared by every
   // test file in the same `bun test` process. Closing it here would break
   // whichever file runs next (see projectmem issue #0013), so it is
@@ -466,6 +500,78 @@ describe('checkout', () => {
     expect(razorpayFailureRows).toHaveLength(1);
     expect(razorpayFailureRows[0]?.rule).toBe('ALLOW');
     expect(razorpayFailureRows[0]?.order_id).toBe(orders[0]?.id);
+  });
+});
+
+describe('checkout under concurrency (DUK-29)', () => {
+  test('N parallel checkouts that each fit under the cap cannot collectively beat it', async () => {
+    // sku-d1 is 60000 paise/unit against merchant D's 100000 paise cap, so
+    // floor(100000 / 60000) = EXACTLY ONE of these can ever be legitimately
+    // allowed. That is the point of picking an amount just over half the
+    // cap: a floor of 2 (e.g. 40000-paise line items) lets an UNPROTECTED
+    // pair of racers land on exactly the "correct" allowed count by sheer
+    // luck, which is precisely how an earlier draft of this test passed
+    // with the lock removed — a race that happens to serialize looks
+    // identical to one that was actually serialized. With floor == 1, ANY
+    // two requests that read the spend total concurrently and both get
+    // allowed is already a cap violation, so this test cannot pass by
+    // accident.
+    //
+    // Fired as one agent (one token) across N independent client
+    // connections via Promise.all, reproducing the bug report verbatim:
+    // "three checkouts fired concurrently by ONE agent" against a cap none
+    // of them individually exceeds. Without the src/db/pool.ts advisory
+    // lock, decide()'s spend-cap read and the order-row write race, and more
+    // than one request can observe the same pre-write (zero) total and get
+    // allowed — see the DUK-29 report for the red run with the lock removed.
+    const AMOUNT_PAISE = 60000;
+    const N = 8;
+    const EXPECTED_ALLOWED = 1;
+    const EXPECTED_BLOCKED = N - EXPECTED_ALLOWED;
+
+    // A dedicated fake, swapped in for just this test, so a worst-case
+    // unlocked run (where all N requests reach the allow branch and all N
+    // call Razorpay) never starves the file's shared `fake` queue of
+    // responses another test later in this file depends on.
+    const concurrencyFake = new FakeRazorpayAdapter();
+    for (let i = 0; i < N; i++) {
+      concurrencyFake.enqueue({ ok: true, razorpay_order_id: `order_mcp29_${i}` });
+    }
+    setRazorpayAdapter(concurrencyFake);
+
+    try {
+      const clients = await Promise.all(Array.from({ length: N }, () => connect(tokenD)));
+      const results = await Promise.all(
+        clients.map((client) =>
+          client.callTool({
+            name: 'checkout',
+            arguments: { items: [{ item_id: 'sku-d1', quantity: 1, asserted_price_paise: AMOUNT_PAISE }] },
+          }),
+        ),
+      );
+      await Promise.all(clients.map((client) => client.close()));
+
+      const blocked = results.filter((r) => r.isError === true);
+      const allowed = results.filter((r) => r.isError !== true);
+      expect(blocked).toHaveLength(EXPECTED_BLOCKED);
+      expect(allowed).toHaveLength(EXPECTED_ALLOWED);
+      for (const result of blocked) {
+        const error = JSON.parse(textOf(result)) as { reason_code: string };
+        expect(error.reason_code).toBe('SPEND_CAP_EXCEEDED');
+      }
+
+      const [row] = await query<{ spent_paise: number }>(
+        `SELECT COALESCE(SUM(amount_paise), 0)::BIGINT AS spent_paise
+           FROM orders
+          WHERE merchant_id = $1 AND agent_id = $2 AND status IN ('created', 'authorized')`,
+        [MERCHANT_D, agentIdD],
+      );
+      expect(row?.spent_paise).toBeLessThanOrEqual(POLICY_D_CAP_PAISE);
+      expect(row?.spent_paise).toBe(EXPECTED_ALLOWED * AMOUNT_PAISE);
+    } finally {
+      // Restore the shared fake for every test after this one in the file.
+      setRazorpayAdapter(fake);
+    }
   });
 });
 

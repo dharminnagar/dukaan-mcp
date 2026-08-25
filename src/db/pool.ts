@@ -60,6 +60,37 @@ export async function withTransaction<T>(fn: (c: PoolClient) => Promise<T>): Pro
   }
 }
 
+/**
+ * Serialises `fn` across every caller using the same `key`, via a Postgres
+ * advisory lock scoped to a transaction (`pg_advisory_xact_lock`, DUK-29).
+ * Transaction-scoped rather than session-scoped (`pg_advisory_lock`) on
+ * purpose: a session lock needs an explicit `pg_advisory_unlock` and leaks
+ * for the rest of that connection's life if the process dies mid-`fn()`,
+ * whereas Postgres releases an xact lock the moment the transaction ends —
+ * COMMIT, ROLLBACK, or the connection dropping — with nothing for us to
+ * remember to clean up.
+ *
+ * The lock is held on this dedicated client while `fn()` does its work
+ * through the shared pool, not through this client. That's intentional:
+ * mutual exclusion comes from every caller contending on `hashtext(key)`,
+ * not from `fn()`'s queries running inside this transaction.
+ */
+export async function withAdvisoryLock<T>(key: string, fn: () => Promise<T>): Promise<T> {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [key]);
+    const out = await fn();
+    await client.query('COMMIT');
+    return out;
+  } catch (err) {
+    await client.query('ROLLBACK').catch(() => { /* connection already dead */ });
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
 export async function closePool(): Promise<void> {
   await pool.end();
 }

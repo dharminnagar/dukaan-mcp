@@ -6,6 +6,7 @@ import { resolveTenant } from '../auth/resolve';
 import { writeAuditEvent } from '../audit/write';
 import { requireRazorpay } from '../config';
 import { TenantRepo } from '../db/repo';
+import { withAdvisoryLock } from '../db/pool';
 import { decide } from '../gate/index';
 import { RazorpayHttpAdapter } from '../razorpay/index';
 import type { RazorpayAdapter } from '../razorpay/index';
@@ -205,97 +206,125 @@ export const mcpHandler = createMcpHandler(
       async ({ items }) => {
         const start = performance.now();
         const orderId = `o_${randomUUID()}`;
-        const outcome = await decide(ctx, { items }, { repo, writeAudit: writeAuditEvent });
 
-        if (outcome.decision === 'block') {
-          // The gate already wrote this decision's AuditEvent. No order row:
-          // `orders` is written on allow and escalate only, never on block.
-          return errorResult(outcome.error);
-        }
+        // DUK-29: `decide()`'s spend-cap check and the insertOrder that
+        // persists its outcome must be atomic with respect to this SAME
+        // agent's other in-flight checkouts, or N parallel checkouts each
+        // read the same pre-write spend total and all get allowed past a
+        // cap none of them individually exceeds. The lock has to enclose
+        // decide() itself — its outcome is what tells us which insertOrder
+        // (if any) follows, so we cannot decide what to lock until after
+        // we've already needed the lock. Scoped per (merchant_id, agent_id):
+        // unrelated agents and merchants never contend.
+        //
+        // The Razorpay call on the allow path stays inside the lock too,
+        // even though it is slow network I/O. Carving it out — release the
+        // lock after decide(), re-acquire for insertOrder — would let a
+        // second racing checkout's decide() run in that gap and read the
+        // exact same stale spend total this lock exists to prevent; the cap
+        // would still be beatable, just with a smaller window. The cost is
+        // that one agent's own checkouts serialise behind Razorpay's
+        // latency; other agents and merchants are untouched, since each
+        // contends on its own key.
+        return withAdvisoryLock(`${ctx.merchant_id}:${ctx.agent_id}`, async () => {
+          const outcome = await decide(ctx, { items }, { repo, writeAudit: writeAuditEvent });
 
-        if (outcome.decision === 'escalate') {
-          // The gate minted this id (there is no order yet for it to attach
-          // to) and already wrote its own AuditEvent under it. Reuse that
-          // exact id so the audit row and the order row agree, and stop here
-          // — zero Razorpay calls on this path.
-          await repo.insertOrder({
-            id: outcome.error.order_id,
+          if (outcome.decision === 'block') {
+            // The gate already wrote this decision's AuditEvent. No order row:
+            // `orders` is written on allow and escalate only, never on block.
+            return errorResult(outcome.error);
+          }
+
+          if (outcome.decision === 'escalate') {
+            // Escalated orders never count toward the spend cap —
+            // SPEND_CAP_SQL filters status IN ('created','authorized') — so
+            // this insert doesn't need the lock for cap correctness. It runs
+            // under it anyway because decide() already had to; splitting the
+            // lock scope by outcome would only add complexity for no gain.
+            //
+            // The gate minted this id (there is no order yet for it to
+            // attach to) and already wrote its own AuditEvent under it.
+            // Reuse that exact id so the audit row and the order row agree,
+            // and stop here — zero Razorpay calls on this path.
+            await repo.insertOrder({
+              id: outcome.error.order_id,
+              merchant_id: ctx.merchant_id,
+              agent_id: ctx.agent_id,
+              session_id: ctx.session_id,
+              items,
+              amount_paise: outcome.error.amount_paise,
+              status: 'escalated',
+              razorpay_order_id: null,
+            });
+            return errorResult(outcome.error);
+          }
+
+          // decision === 'allow'. The gate already wrote the ALLOW/ALLOWED
+          // AuditEvent; only a Razorpay-side failure below needs a second one.
+          const receipt = orderId;
+          const razorpayResult = await getRazorpayAdapter().createOrder({
+            amount_paise: outcome.amount_paise,
             merchant_id: ctx.merchant_id,
-            agent_id: ctx.agent_id,
             session_id: ctx.session_id,
-            items,
-            amount_paise: outcome.error.amount_paise,
-            status: 'escalated',
-            razorpay_order_id: null,
+            receipt,
           });
-          return errorResult(outcome.error);
-        }
 
-        // decision === 'allow'. The gate already wrote the ALLOW/ALLOWED
-        // AuditEvent; only a Razorpay-side failure below needs a second one.
-        const receipt = orderId;
-        const razorpayResult = await getRazorpayAdapter().createOrder({
-          amount_paise: outcome.amount_paise,
-          merchant_id: ctx.merchant_id,
-          session_id: ctx.session_id,
-          receipt,
-        });
+          if (!razorpayResult.ok) {
+            await repo.insertOrder({
+              id: orderId,
+              merchant_id: ctx.merchant_id,
+              agent_id: ctx.agent_id,
+              session_id: ctx.session_id,
+              items,
+              amount_paise: outcome.amount_paise,
+              status: 'failed',
+              razorpay_order_id: null,
+            });
+            // audit_events.rule has no RAZORPAY member, and the
+            // audit_allow_implies_allowed CHECK forces decision != 'allow'
+            // whenever reason_code isn't ALLOWED — so rule: 'ALLOW' paired
+            // with decision: 'block' is the only shape that fits the existing
+            // schema without a migration. This mirrors the precedent the gate
+            // already set for INVALID_REQUEST under AUTHORITATIVE_REREAD (see
+            // src/gate/index.ts): audit a branch under the rule enum that was
+            // closest to true, not the one purpose-built for it. It matters
+            // here because a Razorpay failure is a money-path event, and the
+            // project's claim that every money action is reconstructible from
+            // the audit log alone would otherwise have a hole.
+            await writeAuditEvent({
+              merchant_id: ctx.merchant_id,
+              session_id: ctx.session_id,
+              agent_id: ctx.agent_id,
+              order_id: orderId,
+              action: 'checkout',
+              amount_paise: outcome.amount_paise,
+              rule: 'ALLOW',
+              decision: 'block',
+              reason_code: 'RAZORPAY_ERROR',
+              detail: {
+                http_status: razorpayResult.error.http_status,
+                razorpay_code: razorpayResult.error.razorpay_code,
+                retryable: razorpayResult.error.retryable,
+              },
+              latency_ms: Math.round(performance.now() - start),
+            });
+            return errorResult(razorpayResult.error);
+          }
 
-        if (!razorpayResult.ok) {
-          await repo.insertOrder({
+          const order = await repo.insertOrder({
             id: orderId,
             merchant_id: ctx.merchant_id,
             agent_id: ctx.agent_id,
             session_id: ctx.session_id,
             items,
             amount_paise: outcome.amount_paise,
-            status: 'failed',
-            razorpay_order_id: null,
+            status: 'created',
+            razorpay_order_id: razorpayResult.razorpay_order_id,
           });
-          // audit_events.rule has no RAZORPAY member, and the
-          // audit_allow_implies_allowed CHECK forces decision != 'allow'
-          // whenever reason_code isn't ALLOWED — so rule: 'ALLOW' paired
-          // with decision: 'block' is the only shape that fits the existing
-          // schema without a migration. This mirrors the precedent the gate
-          // already set for INVALID_REQUEST under AUTHORITATIVE_REREAD (see
-          // src/gate/index.ts): audit a branch under the rule enum that was
-          // closest to true, not the one purpose-built for it. It matters
-          // here because a Razorpay failure is a money-path event, and the
-          // project's claim that every money action is reconstructible from
-          // the audit log alone would otherwise have a hole.
-          await writeAuditEvent({
-            merchant_id: ctx.merchant_id,
-            session_id: ctx.session_id,
-            agent_id: ctx.agent_id,
-            order_id: orderId,
-            action: 'checkout',
-            amount_paise: outcome.amount_paise,
-            rule: 'ALLOW',
-            decision: 'block',
-            reason_code: 'RAZORPAY_ERROR',
-            detail: {
-              http_status: razorpayResult.error.http_status,
-              razorpay_code: razorpayResult.error.razorpay_code,
-              retryable: razorpayResult.error.retryable,
-            },
-            latency_ms: Math.round(performance.now() - start),
-          });
-          return errorResult(razorpayResult.error);
-        }
-
-        const order = await repo.insertOrder({
-          id: orderId,
-          merchant_id: ctx.merchant_id,
-          agent_id: ctx.agent_id,
-          session_id: ctx.session_id,
-          items,
-          amount_paise: outcome.amount_paise,
-          status: 'created',
-          razorpay_order_id: razorpayResult.razorpay_order_id,
+          return {
+            content: [{ type: 'text' as const, text: JSON.stringify({ order }) }],
+          };
         });
-        return {
-          content: [{ type: 'text' as const, text: JSON.stringify({ order }) }],
-        };
       },
     );
 

@@ -134,6 +134,13 @@ export async function replayBatch<T extends Transcript>(
   transcripts: readonly T[],
 ): Promise<readonly ReplayResult<T>[]> {
   const results: ReplayResult<T>[] = [];
+  // STRICTLY SEQUENTIAL, and not merely for tidiness. `decide()` is not atomic
+  // with the order write that follows an allow (see the atomicity note in
+  // src/gate/index.ts). The MCP checkout handler serialises that with an
+  // advisory lock; this runner serialises it by replaying one transcript at a
+  // time. Switching to Promise.all here for speed would let concurrent replays
+  // read the same pre-write spend total, breaking the cap silently and
+  // corrupting the very metrics this file exists to produce.
   for (const transcript of transcripts) {
     results.push(await replayTranscript(namespace, merchantIds, transcript));
   }

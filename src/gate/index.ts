@@ -18,6 +18,23 @@
  *   4. Approval threshold   - escalates; does not fall through to allow.
  *   5. Allow.
  *
+ * ATOMICITY IS THE CALLER'S JOB, NOT THIS FUNCTION'S. `decide()` reads the
+ * spend total; whoever acts on an `allow` writes the order. Those are two
+ * statements, so two concurrent callers both read the same pre-write total and
+ * both pass a cap they jointly breach. Verified: three concurrent
+ * decide()+insertOrder pairs put 150000 paise behind a 100000 cap.
+ *
+ * The MCP checkout handler closes that window with a per-(merchant, agent)
+ * advisory lock (`withAdvisoryLock`, src/db/pool.ts) wrapping decide() and the
+ * insert together — see DUK-29. It deliberately lives there and not here, so
+ * this function stays pure and src/eval/ keeps running with no lock, no
+ * transaction and no server.
+ *
+ * So: ANY OTHER CALLER THAT ACTS ON `allow` MUST SERIALISE ITSELF. src/eval/
+ * satisfies this by replaying transcripts strictly sequentially. Parallelising
+ * that runner for speed would break the spend cap silently and corrupt the
+ * metrics rather than failing loudly.
+ *
  * CAP SCOPE: `repo.spentInWindowPaise` is scoped to (merchant_id, agent_id,
  * window) by TenantRepo / idx_orders_spend_cap - NEVER session_id. Scoping
  * to session_id would let an agent reset its budget just by opening a new
