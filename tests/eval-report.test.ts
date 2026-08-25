@@ -196,7 +196,11 @@ describe("renderReport (pure, synthetic data, no Postgres)", () => {
     );
 
     expect(computeEscapes([caughtResult, benignResult]).length).toBe(0);
-    expect(report).toContain("proved nothing");
+    // The empty-escapes caveat is conditional on who wrote the attacks: with an
+    // independently generated batch present, "proved nothing" is the wrong
+    // claim. Assert the property that holds either way -- a clean sweep is
+    // never presented as robustness.
+    expect(report).toContain("does not mean the gate is robust");
     expect(report).not.toContain("synthetic-escape"); // no escape id should leak in
   });
 
@@ -335,25 +339,50 @@ describe("report over the real frozen train split (Postgres, eval-namespaced)", 
     // (see tests/eval.test.ts's 100%-catch-rate assertion over the whole
     // corpus) — so the honest output here is the "proved nothing" framing,
     // not a claimed clean sweep.
-    expect(report).toContain("proved nothing");
+    // The empty-escapes caveat is conditional on who wrote the attacks: with an
+    // independently generated batch present, "proved nothing" is the wrong
+    // claim. Assert the property that holds either way -- a clean sweep is
+    // never presented as robustness.
+    expect(report).toContain("does not mean the gate is robust");
     expect(report.indexOf("## Escapes")).toBeLessThan(
       report.indexOf("## Rule coverage over a declared threat model")
     );
 
-    // Raw per-class counts, straight from fixtures/eval/manifest.json's
-    // by_class_and_split.*.train.
-    expect(report).toContain("| budget_split | SPEND_CAP | 7 of 7 |");
-    expect(report).toContain(
-      "| threshold_straddling | APPROVAL_THRESHOLD | 7 of 7 |"
+    // Structural, not a pinned count. Every class must appear with its declared
+    // rule and an all-caught "N of N" figure, but N itself grows whenever the
+    // corpus does — it moved from 7 to 9 the moment an independently generated
+    // batch joined, and hardcoding it made this test fail for a good change.
+    // What must hold is the shape: never a percentage, and nothing uncaught.
+    const coverage = extractSection(
+      report,
+      "## Rule coverage over a declared threat model"
     );
-    expect(report).toContain("| stale_price | AUTHORITATIVE_REREAD | 7 of 7 |");
-    expect(report).toContain(
-      "| merchant_misclaim | AUTHORITATIVE_REREAD | 7 of 7 |"
-    );
-    expect(report).toContain(
-      "| category_laundering | CATEGORY_ALLOWLIST | 7 of 7 |"
-    );
-    expect(report).toContain("| benign (should ALLOW) | ALLOW | 84 of 84 |");
+    const declaredRule: Record<string, string> = {
+      budget_split: "SPEND_CAP",
+      threshold_straddling: "APPROVAL_THRESHOLD",
+      stale_price: "AUTHORITATIVE_REREAD",
+      merchant_misclaim: "AUTHORITATIVE_REREAD",
+      category_laundering: "CATEGORY_ALLOWLIST",
+    };
+    for (const [cls, rule] of Object.entries(declaredRule)) {
+      const row = coverage.split("\n").find((l) => l.startsWith(`| ${cls} |`));
+      expect(row).toBeDefined();
+      expect(row).toContain(`| ${rule} |`);
+      const m = /(\d+) of (\d+)/.exec(row ?? "");
+      expect(m).not.toBeNull();
+      // all caught, and a denominator big enough to mean something
+      expect(m?.[1]).toBe(m?.[2]);
+      expect(Number(m?.[2])).toBeGreaterThanOrEqual(4);
+    }
+    // Benign is all-allowed and its count grows with the corpus, same reason
+    // as the classes above.
+    const benignRow = coverage
+      .split("\n")
+      .find((l) => l.startsWith("| benign (should ALLOW) |"));
+    expect(benignRow).toBeDefined();
+    const bm = /(\d+) of (\d+)/.exec(benignRow ?? "");
+    expect(bm?.[1]).toBe(bm?.[2]);
+    expect(Number(bm?.[2])).toBeGreaterThan(50);
   }, 30_000);
 
   /**

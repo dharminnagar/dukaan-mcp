@@ -55,7 +55,13 @@ export const handScriptedSource: TranscriptSource = {
  * about the rule and reads as carelessness next to a report that makes a
  * point of refusing percentages on small denominators.
  *
- * So each class is shuffled and split on its own, giving every class the same
+ * Stratified on (origin, class) rather than class alone: an independently
+ * generated batch contributes uneven per-class counts, and splitting each
+ * source's contribution separately keeps both origins represented in both
+ * halves. Normalising those counts instead would mean discarding or
+ * duplicating what the independent author actually produced.
+ *
+ * So each stratum is shuffled and split on its own, giving every one the same
  * ~40% holdout share and roughly 5 holdout instances each — which is the
  * per-class denominator the reporting plan was written around.
  *
@@ -69,7 +75,7 @@ function assignSplit(
 ): readonly SplitTranscript[] {
   const strata = new Map<string, Transcript[]>();
   for (const t of transcripts) {
-    const key = t.attack_class ?? "benign";
+    const key = `${t.origin}:${t.attack_class ?? "benign"}`;
     const bucket = strata.get(key);
     if (bucket === undefined) strata.set(key, [t]);
     else bucket.push(t);

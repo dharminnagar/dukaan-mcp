@@ -55,11 +55,49 @@ export function evalAgentId(namespace: string, logicalAgentId: string): string {
   return id;
 }
 
+/**
+ * Small stable hash, so a long logical id can be shortened without two
+ * different ids ever colliding into one session.
+ */
+function shortHash(s: string): string {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0).toString(36);
+}
+
+/**
+ * Composes a session id that ALWAYS satisfies the sessions.id CHECK, whatever
+ * the transcript called its sessions.
+ *
+ * The earlier version simply concatenated and threw if the result was too
+ * long, which was fine while every transcript was hand-written to fit. It
+ * stopped being fine the moment a model started naming its own sessions:
+ * `s_report_llm_category_laundering_0003_s_llm_category_laundering_0003_step1`
+ * is 73 characters and crashed the whole replay batch. A transcript source is
+ * untrusted input, so this function guarantees a valid id rather than asking
+ * every future source to be careful.
+ *
+ * A truncated logical id keeps a readable prefix and appends a hash of the
+ * FULL id, so two long ids sharing a prefix still get distinct sessions —
+ * silently merging them would corrupt the audit grouping the report depends on.
+ */
 export function evalSessionId(
   namespace: string,
   logicalSessionId: string
 ): string {
-  const id = `s_${slug(namespace)}_${slug(logicalSessionId)}`;
+  const prefix = `s_${slug(namespace)}_`;
+  const logical = slug(logicalSessionId);
+  const budget = 66 - prefix.length;
+
+  const tail =
+    logical.length <= budget
+      ? logical
+      : `${logical.slice(0, Math.max(1, budget - 9))}_${shortHash(logical)}`;
+
+  const id = `${prefix}${tail}`;
   if (id.length > 66 || !/^s_[a-zA-Z0-9_-]{1,64}$/.test(id)) {
     throw new Error(
       `evalSessionId: "${id}" does not fit the sessions.id CHECK constraint`

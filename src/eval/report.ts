@@ -333,17 +333,33 @@ function skuRowForMerchant(
 
 /* -------------------------------------------------------------------- render */
 
+/**
+ * What an empty escapes list is worth depends entirely on WHO wrote the
+ * attacks, so the wording is conditional rather than fixed. A clean sweep over
+ * attacks written by the same person who wrote the rules proves only that the
+ * two agree. A clean sweep that also covers attacks from a source that never
+ * saw the gate is a weaker claim than robustness but a real one, and the count
+ * of independently-authored attacks is the number that carries it.
+ */
 function renderEscapesSection(
   escapes: readonly Escape[],
-  split: Split
+  split: Split,
+  adversarialByOrigin: ReadonlyMap<Origin, number>
 ): string {
+  const independent = adversarialByOrigin.get("llm") ?? 0;
+  const selfAuthored = adversarialByOrigin.get("hand") ?? 0;
+
   if (escapes.length === 0) {
+    const caveat =
+      independent === 0
+        ? "**This does not mean the gate is robust.** It means this exercise proved nothing beyond internal agreement between the rules and a fixture corpus written by the same person, in the same sitting. A clean sweep against a threat model you wrote yourself is not evidence against a threat model you have not tried."
+        : `**This does not mean the gate is robust**, but it is not merely self-agreement either. ${selfAuthored} of these attacks were written by whoever wrote the rules, and a clean sweep over those proves only that the two agree. ${independent} came from a source whose context held the tool contracts, the published policy and the catalog, and never the gate implementation — so those ${independent} are a real result. It remains a declared threat model: an attack neither author imagined is still unmeasured.`;
     return [
       "## Escapes",
       "",
       `No adversarial transcript escaped detection in the ${split} split of this run.`,
       "",
-      "**This does not mean the gate is robust. It means this exercise proved nothing beyond internal agreement between the rules and a fixture corpus written by the same person, in the same sitting** — see Origin below. A clean sweep against a threat model you wrote yourself is not evidence against a threat model you have not tried.",
+      caveat,
     ].join("\n");
   }
 
@@ -553,7 +569,13 @@ function renderPriceDistributionSection(
   ].join("\n");
 }
 
-function renderScopeSection(split: Split, transcriptCount: number): string {
+function renderScopeSection(
+  split: Split,
+  transcriptCount: number,
+  adversarialByOrigin: ReadonlyMap<Origin, number>
+): string {
+  const independent = adversarialByOrigin.get("llm") ?? 0;
+  const selfAuthored = adversarialByOrigin.get("hand") ?? 0;
   return [
     "## Scope",
     "",
@@ -561,7 +583,9 @@ function renderScopeSection(split: Split, transcriptCount: number): string {
     "",
     `This report scored the **${split}** split (${transcriptCount} transcripts) of the frozen dataset. The held-out split is scored exactly once, at DUK-20 (Day 10) — see \`FREEZE_NOTE\` in \`src/eval/dataset.ts\`.`,
     "",
-    "Every adversarial transcript replayed above was hand-authored by whoever wrote the gate's rules (see Origin, under Rule coverage). That is a circularity limitation on everything in this report, not just the escapes section.",
+    independent === 0
+      ? "Every adversarial transcript replayed above was hand-authored by whoever wrote the gate's rules (see Origin, under Rule coverage). That is a circularity limitation on everything in this report, not just the escapes section."
+      : `Of the adversarial transcripts replayed above, ${selfAuthored} were hand-authored by whoever wrote the gate's rules and ${independent} came from an independent source that never saw the gate implementation (see Origin, under Rule coverage). The circularity limitation applies in full to the first group and not to the second. Note it applies to the BENIGN transcripts on the same terms: a hand-written definition of what counts as legitimate shopping is as self-authored as a hand-written attack.`,
   ].join("\n");
 }
 
@@ -580,6 +604,16 @@ export function renderReport(
   );
   const outcomes = computeOutcomeCounts(results);
 
+  // How many adversarial transcripts came from each author. The escapes
+  // section's caveat depends on this: a clean sweep means something different
+  // when some of the attacks came from a source that never saw the gate.
+  const adversarialByOrigin = new Map<Origin, number>();
+  for (const r of results) {
+    if (r.transcript.attack_class === null) continue;
+    const o = r.transcript.origin;
+    adversarialByOrigin.set(o, (adversarialByOrigin.get(o) ?? 0) + 1);
+  }
+
   const sections: string[] = [];
   if (split === "holdout") {
     sections.push(
@@ -587,14 +621,16 @@ export function renderReport(
     );
   }
   sections.push(`# Dukaan gate eval report — ${split} split`);
-  sections.push(renderEscapesSection(escapes, split));
+  sections.push(renderEscapesSection(escapes, split, adversarialByOrigin));
   sections.push(renderCoverageSection(transcripts, results, split));
   sections.push(renderEscalationSection(outcomes));
   sections.push(renderCostSection(falsePositives, recovery, netPaise, results));
   sections.push(
     renderPriceDistributionSection(transcripts, skuPriceDistribution)
   );
-  sections.push(renderScopeSection(split, transcripts.length));
+  sections.push(
+    renderScopeSection(split, transcripts.length, adversarialByOrigin)
+  );
 
   return sections.join("\n\n");
 }

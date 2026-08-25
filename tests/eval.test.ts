@@ -8,7 +8,7 @@ import { resetEvalMerchants } from "../src/eval/provision";
 import { replayBatch, replayTranscript } from "../src/eval/runner";
 import type { ReplayStepResult } from "../src/eval/runner";
 import { scoreReplay, summarizeBySplit } from "../src/eval/metrics";
-import { ATTACK_CLASSES } from "../src/eval/transcript";
+import { ATTACK_CLASSES, ORIGINS } from "../src/eval/transcript";
 import type { SplitTranscript } from "../src/eval/transcript";
 
 /**
@@ -50,20 +50,31 @@ describe("dataset generation (pure, offline, no Postgres)", () => {
     expect(first).toBe(second);
   });
 
-  test('every transcript is labelled origin "hand"', () => {
+  test("every transcript carries a valid origin, and both authors are present", () => {
     const dataset = buildFrozenDataset();
     expect(dataset.length).toBeGreaterThan(0);
-    expect(dataset.every((t) => t.origin === "hand")).toBe(true);
+    expect(dataset.every((t) => ORIGINS.includes(t.origin))).toBe(true);
+    // Both halves must exist. A corpus that silently lost the independently
+    // generated batch would still pass every other assertion here while
+    // quietly reverting the report's strongest claim to self-agreement.
+    expect(dataset.some((t) => t.origin === "hand")).toBe(true);
+    expect(dataset.some((t) => t.origin === "llm")).toBe(true);
   });
 
   test("~200 sessions, 70/30 benign to adversarial, 60/40 train to held-out", () => {
     const dataset = buildFrozenDataset();
-    expect(dataset.length).toBe(200);
+    // Exact totals moved once an independently generated batch joined the
+    // corpus, and they will move again if it is regenerated. The invariant is
+    // the benign-to-adversarial ratio, not a magic number: the hand batch is
+    // 140/60 by construction and the generated batch is asked for the same
+    // shape, so the pooled ratio must stay near 70/30.
+    expect(dataset.length).toBeGreaterThanOrEqual(200);
 
     const benign = dataset.filter((t) => t.attack_class === null).length;
     const adversarial = dataset.length - benign;
-    expect(benign).toBe(140);
-    expect(adversarial).toBe(60);
+    expect(benign + adversarial).toBe(dataset.length);
+    expect(benign / dataset.length).toBeGreaterThan(0.6);
+    expect(benign / dataset.length).toBeLessThan(0.8);
 
     const train = dataset.filter((t) => t.split === "train").length;
     const holdout = dataset.filter((t) => t.split === "holdout").length;
@@ -90,12 +101,26 @@ describe("dataset generation (pure, offline, no Postgres)", () => {
         dataset.filter((t) => t.attack_class === c && t.split === "holdout")
           .length
     );
-    // Every class within one of every other class — no class may be starved.
-    expect(
-      Math.max(...holdoutCounts) - Math.min(...holdoutCounts)
-    ).toBeLessThanOrEqual(1);
-    // And each must be large enough to report at all.
+    // Uniformity ACROSS classes no longer holds, and must not be enforced: the
+    // generated batch chose its own class mix, and normalising that would mean
+    // discarding or duplicating what an independent author actually produced.
+    // What still has to hold is that no class is starved below the point where
+    // a raw "N of M" line means anything.
     for (const n of holdoutCounts) expect(n).toBeGreaterThanOrEqual(4);
+
+    // Within the HAND batch, which is uniform by construction at 12 per class,
+    // uniformity is still the right assertion — it catches a regression to the
+    // pooled shuffle that this test was originally written for.
+    const handHoldout = ATTACK_CLASSES.map(
+      (c) =>
+        dataset.filter(
+          (t) =>
+            t.attack_class === c && t.origin === "hand" && t.split === "holdout"
+        ).length
+    );
+    expect(
+      Math.max(...handHoldout) - Math.min(...handHoldout)
+    ).toBeLessThanOrEqual(1);
   });
 
   test("each of the five adversarial classes has sessions in BOTH splits", () => {
@@ -140,10 +165,12 @@ describe("near-boundary benign fixtures (pure, offline, no Postgres)", () => {
     expect(nearBoundary.every((t) => t.origin === "hand")).toBe(true);
   });
 
-  test("near-boundary sessions are a meaningful share (15-30%) of the 140-strong benign population", () => {
+  test("near-boundary sessions are a meaningful share (10-30%) of the benign population", () => {
     const dataset = buildFrozenDataset();
     const benignCount = dataset.filter((t) => t.attack_class === null).length;
-    expect(benignCount).toBe(140);
+    // Was a hardcoded 140; the benign population grew when the generated
+    // batch added its own benign sessions.
+    expect(benignCount).toBeGreaterThanOrEqual(140);
     const share = nearBoundary.length / benignCount;
     expect(share).toBeGreaterThan(0.15);
     expect(share).toBeLessThan(0.3);
