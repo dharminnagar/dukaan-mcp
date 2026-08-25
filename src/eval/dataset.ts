@@ -13,6 +13,7 @@
  */
 import { generateBenignTranscripts } from "./benign";
 import { generateHandScriptedAdversarial } from "./hand-attacks";
+import { llmSource } from "./llm-source";
 import { mulberry32, shuffle } from "./prng";
 import type {
   SplitTranscript,
@@ -24,8 +25,9 @@ import type {
 export const FROZEN_AT = "2026-08-25T00:00:00.000Z";
 export const REFROZEN_AT = "2026-08-25T12:00:00.000Z";
 export const SECOND_REFROZEN_AT = "2026-08-26T00:00:00.000Z";
+export const THIRD_REFROZEN_AT = "2026-08-26T18:00:00.000Z";
 export const FREEZE_NOTE =
-  "Train/held-out assignment re-frozen 2026-08-25 to stratify per attack class. The first assignment pooled all transcripts and left category_laundering with 1 holdout instance and stale_price with 2, which cannot support a per-rule figure. Re-frozen again 2026-08-26 (projectmem #0023): src/eval/benign.ts's benign population previously contained ordinary shopping only, comfortably inside every threshold, so the gate never had an opportunity to be wrong and 'Blocked benign GMV' in src/eval/report.ts was a trivial ₹0.00 at n=0. Added 27 hand-scripted near-boundary benign sessions (near-cap, near-threshold, ambiguous-but-allowed-category, and at-stock-quantity) so that metric has sessions a correct gate could have wrongly blocked. This changed the benign stratum's composition, so the stratified split re-derives — that is expected. No gate rule or threshold was changed at any point before, between, or after any of the three freezes: the only replays so far were construction checks confirming each class triggers its target rule (or, for the new benign fixtures, that they ALLOW). The held-out split is scored once, at DUK-20.";
+  "Train/held-out assignment re-frozen 2026-08-25 to stratify per attack class. The first assignment pooled all transcripts and left category_laundering with 1 holdout instance and stale_price with 2, which cannot support a per-rule figure. Re-frozen again 2026-08-26 (projectmem #0023): src/eval/benign.ts's benign population previously contained ordinary shopping only, comfortably inside every threshold, so the gate never had an opportunity to be wrong and 'Blocked benign GMV' in src/eval/report.ts was a trivial ₹0.00 at n=0. Added 27 hand-scripted near-boundary benign sessions (near-cap, near-threshold, ambiguous-but-allowed-category, and at-stock-quantity) so that metric has sessions a correct gate could have wrongly blocked. This changed the benign stratum's composition, so the stratified split re-derives — that is expected. Re-frozen a third time 2026-08-26 (projectmem #0010, scope-widened by #0026): folded in `origin: \"llm\"` transcripts from src/eval/llm-source.ts — a separate model call whose prompt (fixtures/eval/llm-generation-prompt.md) held only the MCP tool schemas, the published policy JSON, and the catalog, never the gate implementation. Both benign and adversarial LLM transcripts join the existing 'benign'/per-attack-class strata by composition, which again changes every stratum's size and re-derives the split — expected, not a re-tuning. No gate rule or threshold was changed at any point across any of the four freezes. The held-out split is scored once, at DUK-20.";
 
 export const DATASET_SEED = 0xd0417a51; // "d0 47a51" — arbitrary, fixed, never regenerated per-run.
 export const BENIGN_COUNT = 140;
@@ -106,8 +108,20 @@ function hashStratum(key: string): number {
   return h >>> 0;
 }
 
+/**
+ * Composes BOTH `TranscriptSource`s named in transcript.ts's seam doc:
+ * `handScriptedSource` (always present) and `llmSource` (present only once
+ * `bun run eval:generate:llm` has been run and its fixture committed — see
+ * src/eval/llm-source.ts). `llmSource.generate()` reads a committed,
+ * already-validated fixture and ignores its seed entirely, so this stays
+ * pure, offline, and byte-identical across runs regardless of whether that
+ * fixture exists yet.
+ */
 export function buildFrozenDataset(): readonly SplitTranscript[] {
-  const transcripts = handScriptedSource.generate(DATASET_SEED);
+  const transcripts = [
+    ...handScriptedSource.generate(DATASET_SEED),
+    ...llmSource.generate(DATASET_SEED),
+  ];
   // Fixed offset from DATASET_SEED, not a second magic constant to keep in
   // sync by hand — see assignSplit's doc comment for why this must differ
   // from the generation seed itself.

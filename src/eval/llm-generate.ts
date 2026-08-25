@@ -1,0 +1,206 @@
+/**
+ * `bun run eval:generate:llm` — the ONLY place in this project that calls
+ * an LLM API for the eval suite. Run deliberately, by a human, with
+ * `OPENROUTER_API_KEY` set; writes three files:
+ *
+ *   - fixtures/eval/llm-generation-prompt.md — the exact prompt sent,
+ *     verbatim (see llm-prompt.ts's module doc for the independence rule
+ *     it exists to make checkable).
+ *   - fixtures/eval/llm-transcripts.json — the validated `Transcript[]`
+ *     that survived `validateModelResponse` (llm-source.ts), forced to
+ *     `origin: "llm"`.
+ *   - fixtures/eval/llm-manifest.json — requested/returned/validated
+ *     counts and every rejection with its reason, so the rejection rate is
+ *     reported rather than hidden.
+ *
+ * THE DETERMINISM SPLIT: this script is the ONLY thing that is allowed to
+ * be non-deterministic and to touch the network. Everything downstream —
+ * `bun run eval:generate` / `buildFrozenDataset()` in dataset.ts, and every
+ * `bun test` — reads the committed fixture this script writes and is pure,
+ * offline, and byte-identical across runs. Nobody cloning this repo needs
+ * an API key to reproduce the eval's numbers; only whoever chooses to
+ * regenerate the LLM half needs one, and that regeneration is a deliberate,
+ * reviewable commit, not something CI or a test can trigger by accident.
+ *
+ * Mirrors src/razorpay/index.ts's register: the API key is read once,
+ * never logged, and an API-level failure (bad response, HTTP error) is
+ * returned as data (`{ ok: false, ... }`), never thrown — only a
+ * programmer error (missing key at call time) throws.
+ */
+import { writeFileSync } from "node:fs";
+import {
+  buildLlmGenerationPrompt,
+  LLM_ADVERSARIAL_TARGET,
+  LLM_BENIGN_TARGET,
+} from "./llm-prompt";
+import { validateModelResponse } from "./llm-source";
+import type { LlmGenerationSummary } from "./llm-source";
+
+const FIXTURES_DIR = `${import.meta.dir}/../../fixtures/eval`;
+const PROMPT_PATH = `${FIXTURES_DIR}/llm-generation-prompt.md`;
+const TRANSCRIPTS_PATH = `${FIXTURES_DIR}/llm-transcripts.json`;
+const MANIFEST_PATH = `${FIXTURES_DIR}/llm-manifest.json`;
+
+/**
+ * `stealth/ox-alpha` is a temporary OpenRouter preview slug, verified as of
+ * 2026-08 to support `tools`, a 1,048,576-token context, and a
+ * 131,072-token max completion. Preview slugs get renamed or withdrawn
+ * without notice, so this is ONLY the fallback — override with
+ * OPENROUTER_MODEL, no code change needed, which matters with the ~5
+ * September deadline this project is working against.
+ */
+const DEFAULT_MODEL = "stealth/ox-alpha";
+const DEFAULT_BASE_URL = "https://openrouter.ai/api/v1";
+
+function optionalEnv(name: string, fallback: string): string {
+  const v = process.env[name];
+  return v === undefined || v.trim() === "" ? fallback : v;
+}
+
+function requiredEnv(name: string): string {
+  const v = process.env[name];
+  if (v === undefined || v.trim() === "") {
+    throw new Error(
+      `Missing required environment variable ${name}. Copy .env.example to .env and fill it in — see OPENROUTER_API_KEY.`
+    );
+  }
+  return v;
+}
+
+export interface OpenRouterChatDeps {
+  /** Defaults to the global `fetch`. Tests inject a stub — never hit the live API from `bun test`. */
+  readonly fetch?: typeof fetch;
+  readonly apiKey: string;
+  readonly baseUrl: string;
+  readonly model: string;
+}
+
+export type OpenRouterChatResult =
+  | { readonly ok: true; readonly text: string }
+  | { readonly ok: false; readonly error: string };
+
+interface OpenRouterResponseBody {
+  choices?: readonly { message?: { content?: unknown } }[];
+}
+
+/**
+ * One call, one user message containing the whole prompt. Never throws for
+ * an API-level failure — see the module doc.
+ */
+export async function callOpenRouterChat(
+  prompt: string,
+  deps: OpenRouterChatDeps
+): Promise<OpenRouterChatResult> {
+  const fetchFn = deps.fetch ?? fetch;
+
+  let response: Response;
+  try {
+    response = await fetchFn(`${deps.baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${deps.apiKey}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model: deps.model,
+        messages: [{ role: "user", content: prompt }],
+        temperature: 1,
+      }),
+    });
+  } catch (err) {
+    return {
+      ok: false,
+      error: `network error calling OpenRouter: ${(err as Error).message}`,
+    };
+  }
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    return {
+      ok: false,
+      error: `OpenRouter returned HTTP ${response.status}${text ? `: ${text}` : ""}`,
+    };
+  }
+
+  let body: OpenRouterResponseBody;
+  try {
+    body = (await response.json()) as OpenRouterResponseBody;
+  } catch (err) {
+    return {
+      ok: false,
+      error: `OpenRouter response was not valid JSON: ${(err as Error).message}`,
+    };
+  }
+
+  const content = body.choices?.[0]?.message?.content;
+  if (typeof content !== "string" || content.length === 0) {
+    return { ok: false, error: "OpenRouter response had no message content" };
+  }
+  return { ok: true, text: content };
+}
+
+function buildManifest(
+  summary: LlmGenerationSummary,
+  requestedAt: string,
+  model: string
+) {
+  const totalReturned = summary.returned.benign + summary.returned.adversarial;
+  const totalValidated =
+    summary.validated.benign + summary.validated.adversarial;
+  const rejectionRate =
+    totalReturned === 0 ? null : 1 - totalValidated / totalReturned;
+
+  return {
+    requested_at: requestedAt,
+    model,
+    note: "Generated by `bun run eval:generate:llm` against a live model call — the ONE deliberate, human-run, non-deterministic step in this eval suite. Committed here so `buildFrozenDataset()` and `bun test` can stay offline and byte-identical (see src/eval/llm-generate.ts's module doc).",
+    requested: summary.requested,
+    returned: summary.returned,
+    validated: summary.validated,
+    rejection_rate: rejectionRate,
+    attack_class_counts: summary.attackClassCounts,
+    rejections: summary.rejections,
+  };
+}
+
+async function main(): Promise<void> {
+  const apiKey = requiredEnv("OPENROUTER_API_KEY");
+  const model = optionalEnv("OPENROUTER_MODEL", DEFAULT_MODEL);
+  const baseUrl = optionalEnv("OPENROUTER_BASE_URL", DEFAULT_BASE_URL);
+
+  const prompt = buildLlmGenerationPrompt(
+    LLM_BENIGN_TARGET,
+    LLM_ADVERSARIAL_TARGET
+  );
+  writeFileSync(PROMPT_PATH, `${prompt}\n`);
+  console.log(`wrote prompt to ${PROMPT_PATH} (${prompt.length} chars)`);
+
+  console.log(`calling OpenRouter (model=${model})...`);
+  const result = await callOpenRouterChat(prompt, { apiKey, baseUrl, model });
+  if (!result.ok) {
+    throw new Error(`eval:generate:llm: API call failed: ${result.error}`);
+  }
+
+  const { transcripts, summary } = validateModelResponse(result.text, {
+    benign: LLM_BENIGN_TARGET,
+    adversarial: LLM_ADVERSARIAL_TARGET,
+  });
+
+  writeFileSync(TRANSCRIPTS_PATH, `${JSON.stringify(transcripts, null, 2)}\n`);
+  console.log(
+    `wrote ${transcripts.length} validated transcripts to ${TRANSCRIPTS_PATH}`
+  );
+
+  // The only place in this project's eval suite where `new Date()` is
+  // legitimate: this manifest records when a deliberate, one-off, non-
+  // deterministic API call happened, exactly like a commit timestamp. It
+  // is never read by buildFrozenDataset() or anything under `bun test`.
+  const manifest = buildManifest(summary, new Date().toISOString(), model);
+  writeFileSync(MANIFEST_PATH, `${JSON.stringify(manifest, null, 2)}\n`);
+  console.log(`wrote manifest to ${MANIFEST_PATH}`);
+  console.log(JSON.stringify(manifest, null, 2));
+}
+
+if (import.meta.main) {
+  await main();
+}
