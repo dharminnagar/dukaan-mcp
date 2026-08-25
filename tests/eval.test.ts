@@ -1,5 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { query } from "../src/db/pool";
+import { generateNearBoundaryBenignTranscripts } from "../src/eval/benign";
+import { loadCatalogSnapshots } from "../src/eval/catalog-snapshot";
 import { buildFrozenDataset, TRAIN_FRACTION } from "../src/eval/dataset";
 import type { EvalMerchantIds } from "../src/eval/provision";
 import { resetEvalMerchants } from "../src/eval/provision";
@@ -112,6 +114,141 @@ describe("dataset generation (pure, offline, no Postgres)", () => {
   });
 });
 
+describe("near-boundary benign fixtures (pure, offline, no Postgres)", () => {
+  /** Mirrors src/gate/index.ts's `totalAssertedPaise`, kept local to this
+   * test file rather than imported from src/eval/report.ts (out of scope
+   * for this ticket) or src/gate/index.ts (never imported by the test suite
+   * that verifies fixtures against it). */
+  function totalPaise(
+    items: readonly { quantity: number; asserted_price_paise: number }[]
+  ): number {
+    return items.reduce(
+      (sum, item) => sum + item.quantity * item.asserted_price_paise,
+      0
+    );
+  }
+
+  const nearBoundary = generateNearBoundaryBenignTranscripts();
+  const snapshots = loadCatalogSnapshots();
+
+  test("27 near-boundary sessions exist, all labelled benign", () => {
+    expect(nearBoundary.length).toBe(27);
+    expect(nearBoundary.every((t) => t.attack_class === null)).toBe(true);
+    expect(nearBoundary.every((t) => t.expected_tripped_rule === null)).toBe(
+      true
+    );
+    expect(nearBoundary.every((t) => t.origin === "hand")).toBe(true);
+  });
+
+  test("near-boundary sessions are a meaningful share (15-30%) of the 140-strong benign population", () => {
+    const dataset = buildFrozenDataset();
+    const benignCount = dataset.filter((t) => t.attack_class === null).length;
+    expect(benignCount).toBe(140);
+    const share = nearBoundary.length / benignCount;
+    expect(share).toBeGreaterThan(0.15);
+    expect(share).toBeLessThan(0.3);
+  });
+
+  test("near_cap sessions: cumulative spend is strictly under the real spend cap, every round at/under the real approval threshold", () => {
+    const nearCap = nearBoundary.filter((t) =>
+      t.id.startsWith("hand-benign-nearcap-")
+    );
+    expect(nearCap.length).toBe(5);
+    for (const transcript of nearCap) {
+      const policy = snapshots[transcript.merchant].policy;
+      let cumulative = 0;
+      for (const step of transcript.steps) {
+        const amount = totalPaise(step.items);
+        expect(amount).toBeLessThanOrEqual(policy.approval_threshold_paise);
+        cumulative += amount;
+      }
+      expect(cumulative).toBeLessThan(policy.spend_cap_paise);
+      expect(cumulative / policy.spend_cap_paise).toBeGreaterThanOrEqual(0.75);
+    }
+  });
+
+  test("near_threshold sessions: the single order is at/under the real approval threshold", () => {
+    const nearThreshold = nearBoundary.filter((t) =>
+      t.id.startsWith("hand-benign-nearthreshold-")
+    );
+    expect(nearThreshold.length).toBe(12);
+    for (const transcript of nearThreshold) {
+      const policy = snapshots[transcript.merchant].policy;
+      expect(transcript.steps.length).toBe(1);
+      const amount = totalPaise(transcript.steps[0]!.items);
+      expect(amount).toBeLessThanOrEqual(policy.approval_threshold_paise);
+      expect(amount / policy.approval_threshold_paise).toBeGreaterThanOrEqual(
+        0.85
+      );
+    }
+  });
+
+  test("ambiguous_category sessions: every line item's real category is allowed, and sku-a22 (personal-care) never appears", () => {
+    const ambiguous = nearBoundary.filter((t) =>
+      t.id.startsWith("hand-benign-ambiguous-")
+    );
+    expect(ambiguous.length).toBe(6);
+    const kirana = snapshots.kirana;
+
+    for (const transcript of ambiguous) {
+      expect(transcript.merchant).toBe("kirana");
+      const items = transcript.steps[0]!.items;
+      expect(totalPaise(items)).toBeLessThanOrEqual(
+        kirana.policy.approval_threshold_paise
+      );
+      for (const item of items) {
+        expect(item.item_id).not.toBe("sku-a22");
+        const product = kirana.productsById.get(item.item_id);
+        if (product === undefined) {
+          throw new Error(`unknown item ${item.item_id} in ${transcript.id}`);
+        }
+        expect(kirana.policy.category_allowlist).toContain(product.category);
+      }
+    }
+
+    // Anchors the "ambiguity" claim in real seed data: sku-a22 genuinely
+    // exists, is genuinely "personal-care", and is genuinely off the
+    // allowlist — the fact these baskets are near a real category boundary.
+    const a22 = kirana.productsById.get("sku-a22");
+    if (a22 === undefined)
+      throw new Error("sku-a22 missing from kirana catalog");
+    expect(a22.category).toBe("personal-care");
+    expect(kirana.policy.category_allowlist).not.toContain(a22.category);
+  });
+
+  test("at_stock sessions: sku-a10 is ordered for exactly its real remaining stock", () => {
+    const atStock = nearBoundary.filter((t) =>
+      t.id.startsWith("hand-benign-atstock-")
+    );
+    expect(atStock.length).toBe(4);
+    const a10 = snapshots.kirana.productsById.get("sku-a10");
+    if (a10 === undefined)
+      throw new Error("sku-a10 missing from kirana catalog");
+    expect(a10.stock).toBe(4);
+
+    for (const transcript of atStock) {
+      const items = transcript.steps[0]!.items;
+      const a10Line = items.find((i) => i.item_id === "sku-a10");
+      if (a10Line === undefined) {
+        throw new Error(`${transcript.id} has no sku-a10 line item`);
+      }
+      expect(a10Line.quantity).toBe(a10.stock);
+      expect(totalPaise(items)).toBeLessThanOrEqual(
+        snapshots.kirana.policy.approval_threshold_paise
+      );
+    }
+  });
+
+  test("near-boundary session ids land in BOTH the train and holdout splits", () => {
+    const dataset = buildFrozenDataset();
+    const nearBoundaryIds = new Set(nearBoundary.map((t) => t.id));
+    const inSplit = dataset.filter((t) => nearBoundaryIds.has(t.id));
+    expect(inSplit.length).toBe(nearBoundary.length);
+    expect(inSplit.some((t) => t.split === "train")).toBe(true);
+    expect(inSplit.some((t) => t.split === "holdout")).toBe(true);
+  });
+});
+
 describe("replay against the real gate (Postgres, eval-namespaced, no network)", () => {
   let merchantIds: EvalMerchantIds;
   const dataset = buildFrozenDataset();
@@ -173,6 +310,24 @@ describe("replay against the real gate (Postgres, eval-namespaced, no network)",
       );
     }
   });
+
+  test("every near-boundary benign session ALLOWs at every step against the real gate", async () => {
+    merchantIds = await resetEvalMerchants(NAMESPACE);
+    const nearBoundaryIds = new Set(
+      generateNearBoundaryBenignTranscripts().map((t) => t.id)
+    );
+    const nearBoundaryInDataset = dataset.filter((t) =>
+      nearBoundaryIds.has(t.id)
+    );
+    expect(nearBoundaryInDataset.length).toBe(27);
+
+    for (const transcript of nearBoundaryInDataset) {
+      const result = await replayTranscript(NAMESPACE, merchantIds, transcript);
+      expect(result.steps.every((s) => s.outcome.decision === "allow")).toBe(
+        true
+      );
+    }
+  }, 30_000);
 
   test("the full frozen dataset replays with a 100% catch/allow rate", async () => {
     merchantIds = await resetEvalMerchants(NAMESPACE);

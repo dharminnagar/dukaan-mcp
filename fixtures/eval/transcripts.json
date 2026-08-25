@@ -1,5 +1,1947 @@
 [
   {
+    "id": "hand-benign-nearcap-01",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-nearcap-01",
+    "steps": [
+      {
+        "session_id": "s-01",
+        "items": [
+          {
+            "item_id": "sku-a02",
+            "quantity": 2,
+            "asserted_price_paise": 49950
+          }
+        ],
+        "note": "round 1: 99900 paise, cumulative 99900 of 500000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-01",
+        "items": [
+          {
+            "item_id": "sku-a02",
+            "quantity": 2,
+            "asserted_price_paise": 49950
+          }
+        ],
+        "note": "round 2: 99900 paise, cumulative 199800 of 500000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-01",
+        "items": [
+          {
+            "item_id": "sku-a02",
+            "quantity": 2,
+            "asserted_price_paise": 49950
+          }
+        ],
+        "note": "round 3: 99900 paise, cumulative 299700 of 500000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-01",
+        "items": [
+          {
+            "item_id": "sku-a02",
+            "quantity": 2,
+            "asserted_price_paise": 49950
+          }
+        ],
+        "note": "round 4: 99900 paise, cumulative 399600 of 500000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-01",
+        "items": [
+          {
+            "item_id": "sku-a02",
+            "quantity": 2,
+            "asserted_price_paise": 49950
+          }
+        ],
+        "note": "round 5: 99900 paise, cumulative 499500 of 500000 paise cap — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-nearcap-02",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-nearcap-02",
+    "steps": [
+      {
+        "session_id": "s-02",
+        "items": [
+          {
+            "item_id": "sku-a01",
+            "quantity": 6,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "round 1: 87000 paise, cumulative 87000 of 500000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-02",
+        "items": [
+          {
+            "item_id": "sku-a01",
+            "quantity": 6,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "round 2: 87000 paise, cumulative 174000 of 500000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-02",
+        "items": [
+          {
+            "item_id": "sku-a01",
+            "quantity": 6,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "round 3: 87000 paise, cumulative 261000 of 500000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-02",
+        "items": [
+          {
+            "item_id": "sku-a01",
+            "quantity": 6,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "round 4: 87000 paise, cumulative 348000 of 500000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-02",
+        "items": [
+          {
+            "item_id": "sku-a01",
+            "quantity": 6,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "round 5: 87000 paise, cumulative 435000 of 500000 paise cap — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-nearcap-03",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-nearcap-03",
+    "steps": [
+      {
+        "session_id": "s-03",
+        "items": [
+          {
+            "item_id": "sku-a04",
+            "quantity": 9,
+            "asserted_price_paise": 16500
+          }
+        ],
+        "note": "round 1: 148500 paise, cumulative 148500 of 500000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-03",
+        "items": [
+          {
+            "item_id": "sku-a04",
+            "quantity": 9,
+            "asserted_price_paise": 16500
+          }
+        ],
+        "note": "round 2: 148500 paise, cumulative 297000 of 500000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-03",
+        "items": [
+          {
+            "item_id": "sku-a04",
+            "quantity": 9,
+            "asserted_price_paise": 16500
+          }
+        ],
+        "note": "round 3: 148500 paise, cumulative 445500 of 500000 paise cap — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-nearcap-04",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-nearcap-04",
+    "steps": [
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 1: 99900 paise, cumulative 99900 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 2: 99900 paise, cumulative 199800 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 3: 99900 paise, cumulative 299700 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 4: 99900 paise, cumulative 399600 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 5: 99900 paise, cumulative 499500 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 6: 99900 paise, cumulative 599400 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 7: 99900 paise, cumulative 699300 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 8: 99900 paise, cumulative 799200 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 9: 99900 paise, cumulative 899100 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 10: 99900 paise, cumulative 999000 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 11: 99900 paise, cumulative 1098900 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 12: 99900 paise, cumulative 1198800 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 13: 99900 paise, cumulative 1298700 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 14: 99900 paise, cumulative 1398600 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 15: 99900 paise, cumulative 1498500 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 16: 99900 paise, cumulative 1598400 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 17: 99900 paise, cumulative 1698300 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 18: 99900 paise, cumulative 1798200 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 19: 99900 paise, cumulative 1898100 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 20: 99900 paise, cumulative 1998000 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 21: 99900 paise, cumulative 2097900 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 22: 99900 paise, cumulative 2197800 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 23: 99900 paise, cumulative 2297700 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 24: 99900 paise, cumulative 2397600 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 25: 99900 paise, cumulative 2497500 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 26: 99900 paise, cumulative 2597400 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 27: 99900 paise, cumulative 2697300 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 28: 99900 paise, cumulative 2797200 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 29: 99900 paise, cumulative 2897100 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 30: 99900 paise, cumulative 2997000 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 31: 99900 paise, cumulative 3096900 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 32: 99900 paise, cumulative 3196800 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 33: 99900 paise, cumulative 3296700 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 34: 99900 paise, cumulative 3396600 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 35: 99900 paise, cumulative 3496500 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 36: 99900 paise, cumulative 3596400 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 37: 99900 paise, cumulative 3696300 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 38: 99900 paise, cumulative 3796200 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 39: 99900 paise, cumulative 3896100 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 40: 99900 paise, cumulative 3996000 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 41: 99900 paise, cumulative 4095900 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 42: 99900 paise, cumulative 4195800 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 43: 99900 paise, cumulative 4295700 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 44: 99900 paise, cumulative 4395600 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 45: 99900 paise, cumulative 4495500 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 46: 99900 paise, cumulative 4595400 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 47: 99900 paise, cumulative 4695300 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 48: 99900 paise, cumulative 4795200 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 49: 99900 paise, cumulative 4895100 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 50: 99900 paise, cumulative 4995000 of 6000000 paise cap — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-nearcap-05",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-nearcap-05",
+    "steps": [
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 1: 99900 paise, cumulative 99900 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 2: 99900 paise, cumulative 199800 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 3: 99900 paise, cumulative 299700 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 4: 99900 paise, cumulative 399600 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 5: 99900 paise, cumulative 499500 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 6: 99900 paise, cumulative 599400 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 7: 99900 paise, cumulative 699300 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 8: 99900 paise, cumulative 799200 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 9: 99900 paise, cumulative 899100 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 10: 99900 paise, cumulative 999000 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 11: 99900 paise, cumulative 1098900 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 12: 99900 paise, cumulative 1198800 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 13: 99900 paise, cumulative 1298700 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 14: 99900 paise, cumulative 1398600 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 15: 99900 paise, cumulative 1498500 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 16: 99900 paise, cumulative 1598400 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 17: 99900 paise, cumulative 1698300 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 18: 99900 paise, cumulative 1798200 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 19: 99900 paise, cumulative 1898100 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 20: 99900 paise, cumulative 1998000 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 21: 99900 paise, cumulative 2097900 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 22: 99900 paise, cumulative 2197800 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 23: 99900 paise, cumulative 2297700 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 24: 99900 paise, cumulative 2397600 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 25: 99900 paise, cumulative 2497500 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 26: 99900 paise, cumulative 2597400 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 27: 99900 paise, cumulative 2697300 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 28: 99900 paise, cumulative 2797200 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 29: 99900 paise, cumulative 2897100 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 30: 99900 paise, cumulative 2997000 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 31: 99900 paise, cumulative 3096900 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 32: 99900 paise, cumulative 3196800 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 33: 99900 paise, cumulative 3296700 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 34: 99900 paise, cumulative 3396600 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 35: 99900 paise, cumulative 3496500 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 36: 99900 paise, cumulative 3596400 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 37: 99900 paise, cumulative 3696300 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 38: 99900 paise, cumulative 3796200 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 39: 99900 paise, cumulative 3896100 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 40: 99900 paise, cumulative 3996000 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 41: 99900 paise, cumulative 4095900 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 42: 99900 paise, cumulative 4195800 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 43: 99900 paise, cumulative 4295700 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 44: 99900 paise, cumulative 4395600 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 45: 99900 paise, cumulative 4495500 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 46: 99900 paise, cumulative 4595400 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 47: 99900 paise, cumulative 4695300 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 48: 99900 paise, cumulative 4795200 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 49: 99900 paise, cumulative 4895100 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "round 50: 99900 paise, cumulative 4995000 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 2,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "round 51: 99800 paise, cumulative 5094800 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 2,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "round 52: 99800 paise, cumulative 5194600 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 2,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "round 53: 99800 paise, cumulative 5294400 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 2,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "round 54: 99800 paise, cumulative 5394200 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 2,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "round 55: 99800 paise, cumulative 5494000 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 2,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "round 56: 99800 paise, cumulative 5593800 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 2,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "round 57: 99800 paise, cumulative 5693600 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 2,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "round 58: 99800 paise, cumulative 5793400 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 2,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "round 59: 99800 paise, cumulative 5893200 of 6000000 paise cap — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 2,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "round 60: 99800 paise, cumulative 5993000 of 6000000 paise cap — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-nearthreshold-01",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-nearthreshold-01",
+    "steps": [
+      {
+        "session_id": "s-01",
+        "items": [
+          {
+            "item_id": "sku-a02",
+            "quantity": 3,
+            "asserted_price_paise": 49950
+          }
+        ],
+        "note": "single order of 149850 paise, 99.9% of the 150000 paise approval threshold — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-nearthreshold-02",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-nearthreshold-02",
+    "steps": [
+      {
+        "session_id": "s-02",
+        "items": [
+          {
+            "item_id": "sku-a09",
+            "quantity": 22,
+            "asserted_price_paise": 6600
+          }
+        ],
+        "note": "single order of 145200 paise, 96.8% of the 150000 paise approval threshold — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-nearthreshold-03",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-nearthreshold-03",
+    "steps": [
+      {
+        "session_id": "s-03",
+        "items": [
+          {
+            "item_id": "sku-a14",
+            "quantity": 50,
+            "asserted_price_paise": 3000
+          }
+        ],
+        "note": "single order of 150000 paise, 100.0% of the 150000 paise approval threshold — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-nearthreshold-04",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-nearthreshold-04",
+    "steps": [
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-a18",
+            "quantity": 60,
+            "asserted_price_paise": 2500
+          }
+        ],
+        "note": "single order of 150000 paise, 100.0% of the 150000 paise approval threshold — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-nearthreshold-05",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-nearthreshold-05",
+    "steps": [
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-a19",
+            "quantity": 15,
+            "asserted_price_paise": 9900
+          }
+        ],
+        "note": "single order of 148500 paise, 99.0% of the 150000 paise approval threshold — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-nearthreshold-06",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-nearthreshold-06",
+    "steps": [
+      {
+        "session_id": "s-06",
+        "items": [
+          {
+            "item_id": "sku-a05",
+            "quantity": 31,
+            "asserted_price_paise": 4800
+          }
+        ],
+        "note": "single order of 148800 paise, 99.2% of the 150000 paise approval threshold — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-nearthreshold-07",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-nearthreshold-07",
+    "steps": [
+      {
+        "session_id": "s-07",
+        "items": [
+          {
+            "item_id": "sku-b01",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "single order of 89900 paise, 89.9% of the 100000 paise approval threshold — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-nearthreshold-08",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-nearthreshold-08",
+    "steps": [
+      {
+        "session_id": "s-08",
+        "items": [
+          {
+            "item_id": "sku-b11",
+            "quantity": 2,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "single order of 99800 paise, 99.8% of the 100000 paise approval threshold — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-nearthreshold-09",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-nearthreshold-09",
+    "steps": [
+      {
+        "session_id": "s-09",
+        "items": [
+          {
+            "item_id": "sku-b12",
+            "quantity": 3,
+            "asserted_price_paise": 29900
+          }
+        ],
+        "note": "single order of 89700 paise, 89.7% of the 100000 paise approval threshold — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-nearthreshold-10",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-nearthreshold-10",
+    "steps": [
+      {
+        "session_id": "s-10",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "single order of 99900 paise, 99.9% of the 100000 paise approval threshold — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-nearthreshold-11",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-nearthreshold-11",
+    "steps": [
+      {
+        "session_id": "s-11",
+        "items": [
+          {
+            "item_id": "sku-b17",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "single order of 89900 paise, 89.9% of the 100000 paise approval threshold — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-nearthreshold-12",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-nearthreshold-12",
+    "steps": [
+      {
+        "session_id": "s-12",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 2,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "single order of 99800 paise, 99.8% of the 100000 paise approval threshold — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-ambiguous-01",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-ambiguous-01",
+    "steps": [
+      {
+        "session_id": "s-01",
+        "items": [
+          {
+            "item_id": "sku-a18",
+            "quantity": 5,
+            "asserted_price_paise": 2500
+          },
+          {
+            "item_id": "sku-a19",
+            "quantity": 3,
+            "asserted_price_paise": 9900
+          }
+        ],
+        "note": "basket of allowed-category (household) items whose names read like the disallowed sibling category (personal-care) the merchant excluded — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-ambiguous-02",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-ambiguous-02",
+    "steps": [
+      {
+        "session_id": "s-02",
+        "items": [
+          {
+            "item_id": "sku-a19",
+            "quantity": 5,
+            "asserted_price_paise": 9900
+          },
+          {
+            "item_id": "sku-a20",
+            "quantity": 2,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "basket of allowed-category (household) items whose names read like the disallowed sibling category (personal-care) the merchant excluded — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-ambiguous-03",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-ambiguous-03",
+    "steps": [
+      {
+        "session_id": "s-03",
+        "items": [
+          {
+            "item_id": "sku-a20",
+            "quantity": 4,
+            "asserted_price_paise": 14500
+          },
+          {
+            "item_id": "sku-a21",
+            "quantity": 3,
+            "asserted_price_paise": 6000
+          }
+        ],
+        "note": "basket of allowed-category (household) items whose names read like the disallowed sibling category (personal-care) the merchant excluded — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-ambiguous-04",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-ambiguous-04",
+    "steps": [
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-a18",
+            "quantity": 10,
+            "asserted_price_paise": 2500
+          },
+          {
+            "item_id": "sku-a21",
+            "quantity": 5,
+            "asserted_price_paise": 6000
+          }
+        ],
+        "note": "basket of allowed-category (household) items whose names read like the disallowed sibling category (personal-care) the merchant excluded — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-ambiguous-05",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-ambiguous-05",
+    "steps": [
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-a19",
+            "quantity": 2,
+            "asserted_price_paise": 9900
+          },
+          {
+            "item_id": "sku-a18",
+            "quantity": 8,
+            "asserted_price_paise": 2500
+          },
+          {
+            "item_id": "sku-a21",
+            "quantity": 2,
+            "asserted_price_paise": 6000
+          }
+        ],
+        "note": "basket of allowed-category (household) items whose names read like the disallowed sibling category (personal-care) the merchant excluded — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-ambiguous-06",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-ambiguous-06",
+    "steps": [
+      {
+        "session_id": "s-06",
+        "items": [
+          {
+            "item_id": "sku-a20",
+            "quantity": 6,
+            "asserted_price_paise": 14500
+          },
+          {
+            "item_id": "sku-a18",
+            "quantity": 4,
+            "asserted_price_paise": 2500
+          }
+        ],
+        "note": "basket of allowed-category (household) items whose names read like the disallowed sibling category (personal-care) the merchant excluded — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-atstock-01",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-atstock-01",
+    "steps": [
+      {
+        "session_id": "s-01",
+        "items": [
+          {
+            "item_id": "sku-a10",
+            "quantity": 4,
+            "asserted_price_paise": 9000
+          }
+        ],
+        "note": "orders exactly the remaining stock (4 units) of sku-a10 plus other in-policy items — expected ALLOW, not STALE_CATALOG(stock)"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-atstock-02",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-atstock-02",
+    "steps": [
+      {
+        "session_id": "s-02",
+        "items": [
+          {
+            "item_id": "sku-a10",
+            "quantity": 4,
+            "asserted_price_paise": 9000
+          },
+          {
+            "item_id": "sku-a01",
+            "quantity": 2,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "orders exactly the remaining stock (4 units) of sku-a10 plus other in-policy items — expected ALLOW, not STALE_CATALOG(stock)"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-atstock-03",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-atstock-03",
+    "steps": [
+      {
+        "session_id": "s-03",
+        "items": [
+          {
+            "item_id": "sku-a10",
+            "quantity": 4,
+            "asserted_price_paise": 9000
+          },
+          {
+            "item_id": "sku-a06",
+            "quantity": 3,
+            "asserted_price_paise": 10000
+          }
+        ],
+        "note": "orders exactly the remaining stock (4 units) of sku-a10 plus other in-policy items — expected ALLOW, not STALE_CATALOG(stock)"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-atstock-04",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-atstock-04",
+    "steps": [
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-a10",
+            "quantity": 4,
+            "asserted_price_paise": 9000
+          },
+          {
+            "item_id": "sku-a18",
+            "quantity": 5,
+            "asserted_price_paise": 2500
+          }
+        ],
+        "note": "orders exactly the remaining stock (4 units) of sku-a10 plus other in-policy items — expected ALLOW, not STALE_CATALOG(stock)"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
     "id": "hand-benign-0001",
     "origin": "hand",
     "attack_class": null,
@@ -68,7 +2010,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0004",
@@ -117,7 +2059,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0006",
@@ -139,7 +2081,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0007",
@@ -166,7 +2108,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0008",
@@ -193,7 +2135,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0009",
@@ -355,7 +2297,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0015",
@@ -382,7 +2324,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0016",
@@ -404,7 +2346,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0017",
@@ -426,7 +2368,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0018",
@@ -453,7 +2395,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0019",
@@ -497,7 +2439,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0021",
@@ -568,7 +2510,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0024",
@@ -590,7 +2532,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0025",
@@ -612,7 +2554,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0026",
@@ -776,7 +2718,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0033",
@@ -820,7 +2762,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0035",
@@ -901,7 +2843,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0038",
@@ -923,7 +2865,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0039",
@@ -945,7 +2887,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0040",
@@ -972,7 +2914,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0041",
@@ -1004,7 +2946,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0042",
@@ -1031,7 +2973,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0043",
@@ -1063,7 +3005,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0044",
@@ -1112,7 +3054,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0046",
@@ -1237,7 +3179,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0051",
@@ -1323,7 +3265,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0054",
@@ -1350,7 +3292,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0055",
@@ -1404,7 +3346,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0057",
@@ -1568,7 +3510,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0064",
@@ -1600,7 +3542,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0065",
@@ -1708,7 +3650,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0069",
@@ -1757,7 +3699,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0071",
@@ -1789,7 +3731,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0072",
@@ -1860,7 +3802,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0075",
@@ -1914,7 +3856,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0077",
@@ -1941,7 +3883,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0078",
@@ -1995,7 +3937,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0080",
@@ -2061,7 +4003,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0083",
@@ -2127,7 +4069,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0086",
@@ -2203,7 +4145,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0089",
@@ -2247,7 +4189,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0091",
@@ -2269,7 +4211,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0092",
@@ -2323,7 +4265,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0094",
@@ -2399,7 +4341,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0097",
@@ -2519,7 +4461,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0102",
@@ -2546,7 +4488,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0103",
@@ -2573,7 +4515,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0104",
@@ -2595,7 +4537,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0105",
@@ -2698,7 +4640,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0109",
@@ -2747,7 +4689,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0111",
@@ -2791,7 +4733,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0113",
@@ -2820,675 +4762,6 @@
           }
         ],
         "note": "ordinary shopping: 3 line item(s) totalling 86100 paise, well under the 150000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "train"
-  },
-  {
-    "id": "hand-benign-0114",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "electronics",
-    "agent_id": "a-benign-0114",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0114",
-        "items": [
-          {
-            "item_id": "sku-b12",
-            "quantity": 2,
-            "asserted_price_paise": 29900
-          }
-        ],
-        "note": "ordinary shopping: 1 line item(s) totalling 59800 paise, well under the 100000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "train"
-  },
-  {
-    "id": "hand-benign-0115",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "electronics",
-    "agent_id": "a-benign-0115",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0115",
-        "items": [
-          {
-            "item_id": "sku-b17",
-            "quantity": 1,
-            "asserted_price_paise": 89900
-          }
-        ],
-        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "train"
-  },
-  {
-    "id": "hand-benign-0116",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "kirana",
-    "agent_id": "a-benign-0116",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0116",
-        "items": [
-          {
-            "item_id": "sku-a07",
-            "quantity": 3,
-            "asserted_price_paise": 2200
-          },
-          {
-            "item_id": "sku-a04",
-            "quantity": 1,
-            "asserted_price_paise": 16500
-          },
-          {
-            "item_id": "sku-a01",
-            "quantity": 3,
-            "asserted_price_paise": 14500
-          }
-        ],
-        "note": "ordinary shopping: 3 line item(s) totalling 66600 paise, well under the 150000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "train"
-  },
-  {
-    "id": "hand-benign-0117",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "electronics",
-    "agent_id": "a-benign-0117",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0117",
-        "items": [
-          {
-            "item_id": "sku-b11",
-            "quantity": 1,
-            "asserted_price_paise": 49900
-          },
-          {
-            "item_id": "sku-b12",
-            "quantity": 1,
-            "asserted_price_paise": 29900
-          }
-        ],
-        "note": "ordinary shopping: 2 line item(s) totalling 79800 paise, well under the 100000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "holdout"
-  },
-  {
-    "id": "hand-benign-0118",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "electronics",
-    "agent_id": "a-benign-0118",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0118",
-        "items": [
-          {
-            "item_id": "sku-b11",
-            "quantity": 1,
-            "asserted_price_paise": 49900
-          },
-          {
-            "item_id": "sku-b12",
-            "quantity": 1,
-            "asserted_price_paise": 29900
-          }
-        ],
-        "note": "ordinary shopping: 2 line item(s) totalling 79800 paise, well under the 100000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "holdout"
-  },
-  {
-    "id": "hand-benign-0119",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "kirana",
-    "agent_id": "a-benign-0119",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0119",
-        "items": [
-          {
-            "item_id": "sku-a17",
-            "quantity": 3,
-            "asserted_price_paise": 9000
-          },
-          {
-            "item_id": "sku-a15",
-            "quantity": 1,
-            "asserted_price_paise": 8500
-          },
-          {
-            "item_id": "sku-a01",
-            "quantity": 1,
-            "asserted_price_paise": 14500
-          }
-        ],
-        "note": "ordinary shopping: 3 line item(s) totalling 50000 paise, well under the 150000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "holdout"
-  },
-  {
-    "id": "hand-benign-0120",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "electronics",
-    "agent_id": "a-benign-0120",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0120",
-        "items": [
-          {
-            "item_id": "sku-b12",
-            "quantity": 2,
-            "asserted_price_paise": 29900
-          }
-        ],
-        "note": "ordinary shopping: 1 line item(s) totalling 59800 paise, well under the 100000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "holdout"
-  },
-  {
-    "id": "hand-benign-0121",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "kirana",
-    "agent_id": "a-benign-0121",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0121",
-        "items": [
-          {
-            "item_id": "sku-a13",
-            "quantity": 1,
-            "asserted_price_paise": 4550
-          }
-        ],
-        "note": "ordinary shopping: 1 line item(s) totalling 4550 paise, well under the 150000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "train"
-  },
-  {
-    "id": "hand-benign-0122",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "electronics",
-    "agent_id": "a-benign-0122",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0122",
-        "items": [
-          {
-            "item_id": "sku-b17",
-            "quantity": 1,
-            "asserted_price_paise": 89900
-          }
-        ],
-        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "holdout"
-  },
-  {
-    "id": "hand-benign-0123",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "electronics",
-    "agent_id": "a-benign-0123",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0123",
-        "items": [
-          {
-            "item_id": "sku-b17",
-            "quantity": 1,
-            "asserted_price_paise": 89900
-          }
-        ],
-        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "holdout"
-  },
-  {
-    "id": "hand-benign-0124",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "kirana",
-    "agent_id": "a-benign-0124",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0124",
-        "items": [
-          {
-            "item_id": "sku-a02",
-            "quantity": 1,
-            "asserted_price_paise": 49950
-          }
-        ],
-        "note": "ordinary shopping: 1 line item(s) totalling 49950 paise, well under the 150000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "holdout"
-  },
-  {
-    "id": "hand-benign-0125",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "electronics",
-    "agent_id": "a-benign-0125",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0125",
-        "items": [
-          {
-            "item_id": "sku-b01",
-            "quantity": 1,
-            "asserted_price_paise": 89900
-          }
-        ],
-        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "train"
-  },
-  {
-    "id": "hand-benign-0126",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "kirana",
-    "agent_id": "a-benign-0126",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0126",
-        "items": [
-          {
-            "item_id": "sku-a13",
-            "quantity": 3,
-            "asserted_price_paise": 4550
-          },
-          {
-            "item_id": "sku-a04",
-            "quantity": 3,
-            "asserted_price_paise": 16500
-          }
-        ],
-        "note": "ordinary shopping: 2 line item(s) totalling 63150 paise, well under the 150000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "train"
-  },
-  {
-    "id": "hand-benign-0127",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "kirana",
-    "agent_id": "a-benign-0127",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0127",
-        "items": [
-          {
-            "item_id": "sku-a06",
-            "quantity": 3,
-            "asserted_price_paise": 10000
-          },
-          {
-            "item_id": "sku-a07",
-            "quantity": 2,
-            "asserted_price_paise": 2200
-          },
-          {
-            "item_id": "sku-a05",
-            "quantity": 3,
-            "asserted_price_paise": 4800
-          }
-        ],
-        "note": "ordinary shopping: 3 line item(s) totalling 48800 paise, well under the 150000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "train"
-  },
-  {
-    "id": "hand-benign-0128",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "electronics",
-    "agent_id": "a-benign-0128",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0128",
-        "items": [
-          {
-            "item_id": "sku-b11",
-            "quantity": 1,
-            "asserted_price_paise": 49900
-          }
-        ],
-        "note": "ordinary shopping: 1 line item(s) totalling 49900 paise, well under the 100000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "holdout"
-  },
-  {
-    "id": "hand-benign-0129",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "electronics",
-    "agent_id": "a-benign-0129",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0129",
-        "items": [
-          {
-            "item_id": "sku-b12",
-            "quantity": 3,
-            "asserted_price_paise": 29900
-          }
-        ],
-        "note": "ordinary shopping: 1 line item(s) totalling 89700 paise, well under the 100000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "holdout"
-  },
-  {
-    "id": "hand-benign-0130",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "kirana",
-    "agent_id": "a-benign-0130",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0130",
-        "items": [
-          {
-            "item_id": "sku-a14",
-            "quantity": 1,
-            "asserted_price_paise": 3000
-          },
-          {
-            "item_id": "sku-a13",
-            "quantity": 1,
-            "asserted_price_paise": 4550
-          }
-        ],
-        "note": "ordinary shopping: 2 line item(s) totalling 7550 paise, well under the 150000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "train"
-  },
-  {
-    "id": "hand-benign-0131",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "kirana",
-    "agent_id": "a-benign-0131",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0131",
-        "items": [
-          {
-            "item_id": "sku-a02",
-            "quantity": 2,
-            "asserted_price_paise": 49950
-          }
-        ],
-        "note": "ordinary shopping: 1 line item(s) totalling 99900 paise, well under the 150000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "holdout"
-  },
-  {
-    "id": "hand-benign-0132",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "electronics",
-    "agent_id": "a-benign-0132",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0132",
-        "items": [
-          {
-            "item_id": "sku-b16",
-            "quantity": 1,
-            "asserted_price_paise": 34900
-          }
-        ],
-        "note": "ordinary shopping: 1 line item(s) totalling 34900 paise, well under the 100000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "train"
-  },
-  {
-    "id": "hand-benign-0133",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "electronics",
-    "agent_id": "a-benign-0133",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0133",
-        "items": [
-          {
-            "item_id": "sku-b12",
-            "quantity": 2,
-            "asserted_price_paise": 29900
-          }
-        ],
-        "note": "ordinary shopping: 1 line item(s) totalling 59800 paise, well under the 100000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "holdout"
-  },
-  {
-    "id": "hand-benign-0134",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "electronics",
-    "agent_id": "a-benign-0134",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0134",
-        "items": [
-          {
-            "item_id": "sku-b11",
-            "quantity": 1,
-            "asserted_price_paise": 49900
-          }
-        ],
-        "note": "ordinary shopping: 1 line item(s) totalling 49900 paise, well under the 100000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "holdout"
-  },
-  {
-    "id": "hand-benign-0135",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "electronics",
-    "agent_id": "a-benign-0135",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0135",
-        "items": [
-          {
-            "item_id": "sku-b18",
-            "quantity": 1,
-            "asserted_price_paise": 49900
-          },
-          {
-            "item_id": "sku-b12",
-            "quantity": 1,
-            "asserted_price_paise": 29900
-          }
-        ],
-        "note": "ordinary shopping: 2 line item(s) totalling 79800 paise, well under the 100000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "holdout"
-  },
-  {
-    "id": "hand-benign-0136",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "electronics",
-    "agent_id": "a-benign-0136",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0136",
-        "items": [
-          {
-            "item_id": "sku-b16",
-            "quantity": 1,
-            "asserted_price_paise": 34900
-          }
-        ],
-        "note": "ordinary shopping: 1 line item(s) totalling 34900 paise, well under the 100000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "holdout"
-  },
-  {
-    "id": "hand-benign-0137",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "electronics",
-    "agent_id": "a-benign-0137",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0137",
-        "items": [
-          {
-            "item_id": "sku-b01",
-            "quantity": 1,
-            "asserted_price_paise": 89900
-          }
-        ],
-        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "train"
-  },
-  {
-    "id": "hand-benign-0138",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "electronics",
-    "agent_id": "a-benign-0138",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0138",
-        "items": [
-          {
-            "item_id": "sku-b18",
-            "quantity": 1,
-            "asserted_price_paise": 49900
-          }
-        ],
-        "note": "ordinary shopping: 1 line item(s) totalling 49900 paise, well under the 100000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "train"
-  },
-  {
-    "id": "hand-benign-0139",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "kirana",
-    "agent_id": "a-benign-0139",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0139",
-        "items": [
-          {
-            "item_id": "sku-a14",
-            "quantity": 1,
-            "asserted_price_paise": 3000
-          },
-          {
-            "item_id": "sku-a13",
-            "quantity": 3,
-            "asserted_price_paise": 4550
-          },
-          {
-            "item_id": "sku-a15",
-            "quantity": 2,
-            "asserted_price_paise": 8500
-          }
-        ],
-        "note": "ordinary shopping: 3 line item(s) totalling 33650 paise, well under the 150000 paise threshold"
-      }
-    ],
-    "expected_tripped_rule": null,
-    "split": "train"
-  },
-  {
-    "id": "hand-benign-0140",
-    "origin": "hand",
-    "attack_class": null,
-    "merchant": "kirana",
-    "agent_id": "a-benign-0140",
-    "steps": [
-      {
-        "session_id": "s-hand-benign-0140",
-        "items": [
-          {
-            "item_id": "sku-a05",
-            "quantity": 3,
-            "asserted_price_paise": 4800
-          },
-          {
-            "item_id": "sku-a15",
-            "quantity": 2,
-            "asserted_price_paise": 8500
-          },
-          {
-            "item_id": "sku-a20",
-            "quantity": 2,
-            "asserted_price_paise": 14500
-          }
-        ],
-        "note": "ordinary shopping: 3 line item(s) totalling 60400 paise, well under the 150000 paise threshold"
       }
     ],
     "expected_tripped_rule": null,
