@@ -1,15 +1,63 @@
+import { randomUUID } from 'node:crypto';
 import { createMcpHandler, McpServer } from '@modelcontextprotocol/server';
+import type { CallToolResult } from '@modelcontextprotocol/server';
 import { z } from 'zod';
 import { resolveTenant } from '../auth/resolve';
 import { writeAuditEvent } from '../audit/write';
+import { requireRazorpay } from '../config';
 import { TenantRepo } from '../db/repo';
-import type { UnauthenticatedError } from '../shared/contracts';
+import { decide } from '../gate/index';
+import { RazorpayHttpAdapter } from '../razorpay/index';
+import type { RazorpayAdapter } from '../razorpay/index';
+import { LineItem, toolError } from '../shared/contracts';
+import type { ToolError, UnauthenticatedError } from '../shared/contracts';
 
 const PORT = Number.parseInt(process.env.PORT ?? '8787', 10);
 
 /**
- * DUK-12: the real multi-tenant MCP server. Streamable HTTP, per-request
- * bearer auth, two catalog read tools.
+ * `toolError()` (src/shared/contracts.ts) returns a `ToolErrorResult` whose
+ * fields are `readonly` — deliberately, since that shape is also consumed by
+ * src/eval/'s offline harness and has no business being mutable there. The
+ * SDK's `CallToolResult` is the same runtime shape without those modifiers,
+ * and TypeScript will not widen `readonly T[]` to `T[]`.
+ *
+ * Copying rather than casting is the point: `[...result.content]` produces a
+ * genuinely mutable array, so the SDK's type is satisfied by construction
+ * instead of by assertion. A cast here would silence the compiler on every
+ * future change to either shape, which is exactly when you would want to hear
+ * from it.
+ */
+function errorResult(err: ToolError): CallToolResult {
+  const result = toolError(err);
+  return { ...result, content: [...result.content] };
+}
+
+/**
+ * Constructed lazily on first checkout, not at module load: importing this
+ * module (which every test file does transitively via fetchMcp) must not
+ * throw just because RAZORPAY_KEY_ID/SECRET are unset, matching the
+ * `requireRazorpay()` contract in src/config.ts. `setRazorpayAdapter` is the
+ * whole seam — tests call it with a `FakeRazorpayAdapter` before making any
+ * checkout call; there is no framework/DI container here on purpose.
+ */
+let razorpayAdapter: RazorpayAdapter | null = null;
+
+function getRazorpayAdapter(): RazorpayAdapter {
+  if (razorpayAdapter === null) {
+    const { keyId, keySecret } = requireRazorpay();
+    razorpayAdapter = new RazorpayHttpAdapter(keyId, keySecret);
+  }
+  return razorpayAdapter;
+}
+
+export function setRazorpayAdapter(adapter: RazorpayAdapter): void {
+  razorpayAdapter = adapter;
+}
+
+/**
+ * DUK-12/DUK-13: the real multi-tenant MCP server. Streamable HTTP,
+ * per-request bearer auth, two catalog read tools (list_products,
+ * get_product), and the two order tools (checkout, get_order_status).
  *
  * The factory runs ONCE PER REQUEST with { era, authInfo, requestInfo }.
  *
@@ -124,6 +172,168 @@ export const mcpHandler = createMcpHandler(
         });
         return {
           content: [{ type: 'text' as const, text: JSON.stringify({ product }) }],
+        };
+      },
+    );
+
+    server.registerTool(
+      'checkout',
+      {
+        title: 'Checkout',
+        description:
+          "Place an order for one or more line items, asserting the item_id, quantity, and " +
+          "price_paise you believe is current for each — get these from list_products or " +
+          "get_product IMMEDIATELY beforehand, not from earlier in the conversation. Your " +
+          "asserted price is NOT trusted: checkout re-reads the live catalog and rejects a " +
+          "stale price with a STALE_CATALOG error (isError: true) instead of charging you. " +
+          "A spend-cap or category-allowlist violation also returns a structured block error " +
+          "with isError: true and never reaches Razorpay. An order above the merchant's " +
+          "approval threshold is recorded as an 'escalated' order and returned as a " +
+          "PENDING_APPROVAL error — also isError: true, also never reaching Razorpay — so a " +
+          "PENDING_APPROVAL response means the order needs merchant sign-off, not that it " +
+          "failed. On success this actually creates a Razorpay order and returns the order " +
+          "row (id, status: 'created', razorpay_order_id, amount_paise). Every outcome, " +
+          "including a Razorpay-side failure, is written to the audit log.",
+        inputSchema: z.object({
+          items: z.array(LineItem).min(1).describe(
+            "The line items to buy. Each item's price_paise MUST be the CURRENT catalog " +
+            "price for that item_id, not one you saw earlier — checkout re-checks it and " +
+            "returns STALE_CATALOG if it has changed.",
+          ),
+        }),
+      },
+      async ({ items }) => {
+        const start = performance.now();
+        const orderId = `o_${randomUUID()}`;
+        const outcome = await decide(ctx, { items }, { repo, writeAudit: writeAuditEvent });
+
+        if (outcome.decision === 'block') {
+          // The gate already wrote this decision's AuditEvent. No order row:
+          // `orders` is written on allow and escalate only, never on block.
+          return errorResult(outcome.error);
+        }
+
+        if (outcome.decision === 'escalate') {
+          // The gate minted this id (there is no order yet for it to attach
+          // to) and already wrote its own AuditEvent under it. Reuse that
+          // exact id so the audit row and the order row agree, and stop here
+          // — zero Razorpay calls on this path.
+          await repo.insertOrder({
+            id: outcome.error.order_id,
+            merchant_id: ctx.merchant_id,
+            agent_id: ctx.agent_id,
+            session_id: ctx.session_id,
+            items,
+            amount_paise: outcome.error.amount_paise,
+            status: 'escalated',
+            razorpay_order_id: null,
+          });
+          return errorResult(outcome.error);
+        }
+
+        // decision === 'allow'. The gate already wrote the ALLOW/ALLOWED
+        // AuditEvent; only a Razorpay-side failure below needs a second one.
+        const receipt = orderId;
+        const razorpayResult = await getRazorpayAdapter().createOrder({
+          amount_paise: outcome.amount_paise,
+          merchant_id: ctx.merchant_id,
+          session_id: ctx.session_id,
+          receipt,
+        });
+
+        if (!razorpayResult.ok) {
+          await repo.insertOrder({
+            id: orderId,
+            merchant_id: ctx.merchant_id,
+            agent_id: ctx.agent_id,
+            session_id: ctx.session_id,
+            items,
+            amount_paise: outcome.amount_paise,
+            status: 'failed',
+            razorpay_order_id: null,
+          });
+          // audit_events.rule has no RAZORPAY member, and the
+          // audit_allow_implies_allowed CHECK forces decision != 'allow'
+          // whenever reason_code isn't ALLOWED — so rule: 'ALLOW' paired
+          // with decision: 'block' is the only shape that fits the existing
+          // schema without a migration. This mirrors the precedent the gate
+          // already set for INVALID_REQUEST under AUTHORITATIVE_REREAD (see
+          // src/gate/index.ts): audit a branch under the rule enum that was
+          // closest to true, not the one purpose-built for it. It matters
+          // here because a Razorpay failure is a money-path event, and the
+          // project's claim that every money action is reconstructible from
+          // the audit log alone would otherwise have a hole.
+          await writeAuditEvent({
+            merchant_id: ctx.merchant_id,
+            session_id: ctx.session_id,
+            agent_id: ctx.agent_id,
+            order_id: orderId,
+            action: 'checkout',
+            amount_paise: outcome.amount_paise,
+            rule: 'ALLOW',
+            decision: 'block',
+            reason_code: 'RAZORPAY_ERROR',
+            detail: {
+              http_status: razorpayResult.error.http_status,
+              razorpay_code: razorpayResult.error.razorpay_code,
+              retryable: razorpayResult.error.retryable,
+            },
+            latency_ms: Math.round(performance.now() - start),
+          });
+          return errorResult(razorpayResult.error);
+        }
+
+        const order = await repo.insertOrder({
+          id: orderId,
+          merchant_id: ctx.merchant_id,
+          agent_id: ctx.agent_id,
+          session_id: ctx.session_id,
+          items,
+          amount_paise: outcome.amount_paise,
+          status: 'created',
+          razorpay_order_id: razorpayResult.razorpay_order_id,
+        });
+        return {
+          content: [{ type: 'text' as const, text: JSON.stringify({ order }) }],
+        };
+      },
+    );
+
+    server.registerTool(
+      'get_order_status',
+      {
+        title: 'Get Order Status',
+        description:
+          "Fetch one of your own orders by id, with its current status (created, authorized, " +
+          "escalated, or failed) and razorpay_order_id when one exists. Returns { order: null } " +
+          "if the id is not one of your orders. That includes an id that belongs to a different " +
+          "merchant: this tool never reveals whether such an order exists elsewhere, it just " +
+          "isn't yours.",
+        inputSchema: z.object({
+          order_id: z.string().min(1).describe(
+            'The order id, exactly as returned by checkout (in its success result or in a ' +
+            'PENDING_APPROVAL error).',
+          ),
+        }),
+      },
+      async ({ order_id }) => {
+        const start = performance.now();
+        const order = await repo.getOrder(order_id);
+        await writeAuditEvent({
+          merchant_id: ctx.merchant_id,
+          session_id: ctx.session_id,
+          agent_id: ctx.agent_id,
+          order_id: order !== null ? order.id : null,
+          action: 'get_order_status',
+          amount_paise: null,
+          rule: 'ALLOW',
+          decision: 'allow',
+          reason_code: 'ALLOWED',
+          detail: { order_id, found: order !== null },
+          latency_ms: Math.round(performance.now() - start),
+        });
+        return {
+          content: [{ type: 'text' as const, text: JSON.stringify({ order }) }],
         };
       },
     );
