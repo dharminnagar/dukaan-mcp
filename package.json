@@ -28,9 +28,8 @@
     "audit": "bun run scripts/audit-print.ts",
     "prepare": "husky",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "format": "prettier --write \"**/*.{ts,json,md}\"",
-    "format:check": "prettier --check \"**/*.{ts,json,md}\""
+    "lint:fix": "eslint . --fix && prettier --write .",
+    "eval:report": "bun run src/eval/report.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/client": "2.0.0",
@@ -48,7 +47,7 @@
     "@types/bun": "1.4.0",
     "@types/pg": "8.23.1",
     "eslint": "^10.9.1",
-    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.11.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.3.0",
     "prettier": "^3.9.6",
@@ -56,12 +55,9 @@
     "typescript-eslint": "^8.68.0"
   },
   "lint-staged": {
-    "*.ts": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md}": [
-      "prettier --write"
-    ]
+    "*.{ts,js}": "eslint --cache --fix",
+    "*.{ts,js,css,md}": "prettier --write",
+    "*.js": "eslint --cache --fix",
+    "*.{js,css,md}": "prettier --write"
   }
 }
