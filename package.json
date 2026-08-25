@@ -22,6 +22,7 @@
     "seed:merchant": "bun run scripts/seed-merchant.ts",
     "seed:demo": "bun run scripts/seed-demo.ts",
     "eval": "bun run src/eval/run.ts",
+    "eval:generate": "bun run src/eval/generate.ts",
     "audit": "bun run scripts/audit-print.ts"
   },
   "dependencies": {

@@ -1,0 +1,47 @@
+{
+  "frozen_at": "2026-08-25T00:00:00.000Z",
+  "note": "Train/held-out assignment re-frozen 2026-08-25 to stratify per attack class. The first assignment pooled all transcripts and left category_laundering with 1 holdout instance and stale_price with 2, which cannot support a per-rule figure. No gate rule or threshold was changed at any point before or after either freeze: the only replays so far were construction checks confirming each class triggers its target rule. The held-out split is scored once, at DUK-20.",
+  "seed": 3493952081,
+  "total": 200,
+  "by_origin": {
+    "hand": 200
+  },
+  "by_split": {
+    "train": 119,
+    "holdout": 81
+  },
+  "by_class": {
+    "benign": 140,
+    "budget_split": 12,
+    "threshold_straddling": 12,
+    "stale_price": 12,
+    "merchant_misclaim": 12,
+    "category_laundering": 12
+  },
+  "by_class_and_split": {
+    "benign": {
+      "train": 84,
+      "holdout": 56
+    },
+    "budget_split": {
+      "train": 7,
+      "holdout": 5
+    },
+    "threshold_straddling": {
+      "train": 7,
+      "holdout": 5
+    },
+    "stale_price": {
+      "train": 7,
+      "holdout": 5
+    },
+    "merchant_misclaim": {
+      "train": 7,
+      "holdout": 5
+    },
+    "category_laundering": {
+      "train": 7,
+      "holdout": 5
+    }
+  }
+}

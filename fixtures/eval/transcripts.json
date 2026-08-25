@@ -1,0 +1,5565 @@
+[
+  {
+    "id": "hand-benign-0001",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0001",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0001",
+        "items": [
+          {
+            "item_id": "sku-b17",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0002",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0002",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0002",
+        "items": [
+          {
+            "item_id": "sku-a18",
+            "quantity": 2,
+            "asserted_price_paise": 2500
+          },
+          {
+            "item_id": "sku-a07",
+            "quantity": 2,
+            "asserted_price_paise": 2200
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 9400 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0003",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0003",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0003",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 49900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0004",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0004",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0004",
+        "items": [
+          {
+            "item_id": "sku-a20",
+            "quantity": 3,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 43500 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0005",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0005",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0005",
+        "items": [
+          {
+            "item_id": "sku-a19",
+            "quantity": 1,
+            "asserted_price_paise": 9900
+          },
+          {
+            "item_id": "sku-a04",
+            "quantity": 1,
+            "asserted_price_paise": 16500
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 26400 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0006",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0006",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0006",
+        "items": [
+          {
+            "item_id": "sku-b12",
+            "quantity": 3,
+            "asserted_price_paise": 29900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89700 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0007",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0007",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0007",
+        "items": [
+          {
+            "item_id": "sku-a19",
+            "quantity": 1,
+            "asserted_price_paise": 9900
+          },
+          {
+            "item_id": "sku-a05",
+            "quantity": 3,
+            "asserted_price_paise": 4800
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 24300 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0008",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0008",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0008",
+        "items": [
+          {
+            "item_id": "sku-a20",
+            "quantity": 1,
+            "asserted_price_paise": 14500
+          },
+          {
+            "item_id": "sku-a08",
+            "quantity": 1,
+            "asserted_price_paise": 26500
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 41000 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0009",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0009",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0009",
+        "items": [
+          {
+            "item_id": "sku-b01",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0010",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0010",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0010",
+        "items": [
+          {
+            "item_id": "sku-a09",
+            "quantity": 1,
+            "asserted_price_paise": 6600
+          },
+          {
+            "item_id": "sku-a01",
+            "quantity": 3,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 50100 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0011",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0011",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0011",
+        "items": [
+          {
+            "item_id": "sku-a15",
+            "quantity": 2,
+            "asserted_price_paise": 8500
+          },
+          {
+            "item_id": "sku-a07",
+            "quantity": 3,
+            "asserted_price_paise": 2200
+          },
+          {
+            "item_id": "sku-a16",
+            "quantity": 1,
+            "asserted_price_paise": 2000
+          }
+        ],
+        "note": "ordinary shopping: 3 line item(s) totalling 25600 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0012",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0012",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0012",
+        "items": [
+          {
+            "item_id": "sku-a20",
+            "quantity": 1,
+            "asserted_price_paise": 14500
+          },
+          {
+            "item_id": "sku-a11",
+            "quantity": 2,
+            "asserted_price_paise": 4200
+          },
+          {
+            "item_id": "sku-a19",
+            "quantity": 3,
+            "asserted_price_paise": 9900
+          }
+        ],
+        "note": "ordinary shopping: 3 line item(s) totalling 52600 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0013",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0013",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0013",
+        "items": [
+          {
+            "item_id": "sku-a16",
+            "quantity": 1,
+            "asserted_price_paise": 2000
+          },
+          {
+            "item_id": "sku-a10",
+            "quantity": 1,
+            "asserted_price_paise": 9000
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 11000 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0014",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0014",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0014",
+        "items": [
+          {
+            "item_id": "sku-b12",
+            "quantity": 2,
+            "asserted_price_paise": 29900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 59800 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0015",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0015",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0015",
+        "items": [
+          {
+            "item_id": "sku-b16",
+            "quantity": 1,
+            "asserted_price_paise": 34900
+          },
+          {
+            "item_id": "sku-b11",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 84800 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0016",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0016",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0016",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 49900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0017",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0017",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0017",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 49900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0018",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0018",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0018",
+        "items": [
+          {
+            "item_id": "sku-a10",
+            "quantity": 2,
+            "asserted_price_paise": 9000
+          },
+          {
+            "item_id": "sku-a17",
+            "quantity": 1,
+            "asserted_price_paise": 9000
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 27000 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0019",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0019",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0019",
+        "items": [
+          {
+            "item_id": "sku-b11",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 49900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0020",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0020",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0020",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 49900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0021",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0021",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0021",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 1,
+            "asserted_price_paise": 10000
+          },
+          {
+            "item_id": "sku-a08",
+            "quantity": 2,
+            "asserted_price_paise": 26500
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 63000 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0022",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0022",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0022",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 49900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0023",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0023",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0023",
+        "items": [
+          {
+            "item_id": "sku-b16",
+            "quantity": 2,
+            "asserted_price_paise": 34900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 69800 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0024",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0024",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0024",
+        "items": [
+          {
+            "item_id": "sku-a05",
+            "quantity": 3,
+            "asserted_price_paise": 4800
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 14400 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0025",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0025",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0025",
+        "items": [
+          {
+            "item_id": "sku-b11",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 49900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0026",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0026",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0026",
+        "items": [
+          {
+            "item_id": "sku-b11",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 49900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0027",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0027",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0027",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 49900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0028",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0028",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0028",
+        "items": [
+          {
+            "item_id": "sku-a07",
+            "quantity": 3,
+            "asserted_price_paise": 2200
+          },
+          {
+            "item_id": "sku-a03",
+            "quantity": 1,
+            "asserted_price_paise": 23500
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 30100 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0029",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0029",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0029",
+        "items": [
+          {
+            "item_id": "sku-b17",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0030",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0030",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0030",
+        "items": [
+          {
+            "item_id": "sku-b12",
+            "quantity": 2,
+            "asserted_price_paise": 29900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 59800 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0031",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0031",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0031",
+        "items": [
+          {
+            "item_id": "sku-a10",
+            "quantity": 1,
+            "asserted_price_paise": 9000
+          },
+          {
+            "item_id": "sku-a08",
+            "quantity": 1,
+            "asserted_price_paise": 26500
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 35500 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0032",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0032",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0032",
+        "items": [
+          {
+            "item_id": "sku-b17",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0033",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0033",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0033",
+        "items": [
+          {
+            "item_id": "sku-a12",
+            "quantity": 1,
+            "asserted_price_paise": 12000
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 12000 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0034",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0034",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0034",
+        "items": [
+          {
+            "item_id": "sku-b16",
+            "quantity": 2,
+            "asserted_price_paise": 34900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 69800 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0035",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0035",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0035",
+        "items": [
+          {
+            "item_id": "sku-b12",
+            "quantity": 1,
+            "asserted_price_paise": 29900
+          },
+          {
+            "item_id": "sku-b18",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 79800 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0036",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0036",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0036",
+        "items": [
+          {
+            "item_id": "sku-b17",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0037",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0037",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0037",
+        "items": [
+          {
+            "item_id": "sku-a12",
+            "quantity": 1,
+            "asserted_price_paise": 12000
+          },
+          {
+            "item_id": "sku-a02",
+            "quantity": 2,
+            "asserted_price_paise": 49950
+          },
+          {
+            "item_id": "sku-a16",
+            "quantity": 2,
+            "asserted_price_paise": 2000
+          }
+        ],
+        "note": "ordinary shopping: 3 line item(s) totalling 115900 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0038",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0038",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0038",
+        "items": [
+          {
+            "item_id": "sku-b12",
+            "quantity": 2,
+            "asserted_price_paise": 29900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 59800 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0039",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0039",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0039",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 1,
+            "asserted_price_paise": 10000
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 10000 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0040",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0040",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0040",
+        "items": [
+          {
+            "item_id": "sku-b12",
+            "quantity": 1,
+            "asserted_price_paise": 29900
+          },
+          {
+            "item_id": "sku-b16",
+            "quantity": 1,
+            "asserted_price_paise": 34900
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 64800 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0041",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0041",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0041",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 1,
+            "asserted_price_paise": 10000
+          },
+          {
+            "item_id": "sku-a14",
+            "quantity": 2,
+            "asserted_price_paise": 3000
+          },
+          {
+            "item_id": "sku-a03",
+            "quantity": 3,
+            "asserted_price_paise": 23500
+          }
+        ],
+        "note": "ordinary shopping: 3 line item(s) totalling 86500 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0042",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0042",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0042",
+        "items": [
+          {
+            "item_id": "sku-a01",
+            "quantity": 1,
+            "asserted_price_paise": 14500
+          },
+          {
+            "item_id": "sku-a03",
+            "quantity": 3,
+            "asserted_price_paise": 23500
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 85000 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0043",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0043",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0043",
+        "items": [
+          {
+            "item_id": "sku-a21",
+            "quantity": 2,
+            "asserted_price_paise": 6000
+          },
+          {
+            "item_id": "sku-a05",
+            "quantity": 3,
+            "asserted_price_paise": 4800
+          },
+          {
+            "item_id": "sku-a05",
+            "quantity": 2,
+            "asserted_price_paise": 4800
+          }
+        ],
+        "note": "ordinary shopping: 3 line item(s) totalling 36000 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0044",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0044",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0044",
+        "items": [
+          {
+            "item_id": "sku-b17",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0045",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0045",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0045",
+        "items": [
+          {
+            "item_id": "sku-a12",
+            "quantity": 1,
+            "asserted_price_paise": 12000
+          },
+          {
+            "item_id": "sku-a10",
+            "quantity": 1,
+            "asserted_price_paise": 9000
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 21000 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0046",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0046",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0046",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 2,
+            "asserted_price_paise": 10000
+          },
+          {
+            "item_id": "sku-a17",
+            "quantity": 1,
+            "asserted_price_paise": 9000
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 29000 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0047",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0047",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0047",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 49900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0048",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0048",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0048",
+        "items": [
+          {
+            "item_id": "sku-a08",
+            "quantity": 2,
+            "asserted_price_paise": 26500
+          },
+          {
+            "item_id": "sku-a02",
+            "quantity": 1,
+            "asserted_price_paise": 49950
+          },
+          {
+            "item_id": "sku-a01",
+            "quantity": 2,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "ordinary shopping: 3 line item(s) totalling 131950 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0049",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0049",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0049",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 49900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0050",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0050",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0050",
+        "items": [
+          {
+            "item_id": "sku-b12",
+            "quantity": 2,
+            "asserted_price_paise": 29900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 59800 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0051",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0051",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0051",
+        "items": [
+          {
+            "item_id": "sku-a07",
+            "quantity": 3,
+            "asserted_price_paise": 2200
+          },
+          {
+            "item_id": "sku-a12",
+            "quantity": 1,
+            "asserted_price_paise": 12000
+          },
+          {
+            "item_id": "sku-a16",
+            "quantity": 3,
+            "asserted_price_paise": 2000
+          }
+        ],
+        "note": "ordinary shopping: 3 line item(s) totalling 24600 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0052",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0052",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0052",
+        "items": [
+          {
+            "item_id": "sku-a01",
+            "quantity": 2,
+            "asserted_price_paise": 14500
+          },
+          {
+            "item_id": "sku-a21",
+            "quantity": 1,
+            "asserted_price_paise": 6000
+          },
+          {
+            "item_id": "sku-a01",
+            "quantity": 3,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "ordinary shopping: 3 line item(s) totalling 78500 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0053",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0053",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0053",
+        "items": [
+          {
+            "item_id": "sku-b01",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0054",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0054",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0054",
+        "items": [
+          {
+            "item_id": "sku-a14",
+            "quantity": 2,
+            "asserted_price_paise": 3000
+          },
+          {
+            "item_id": "sku-a21",
+            "quantity": 1,
+            "asserted_price_paise": 6000
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 12000 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0055",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0055",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0055",
+        "items": [
+          {
+            "item_id": "sku-a11",
+            "quantity": 1,
+            "asserted_price_paise": 4200
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 4200 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0056",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0056",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0056",
+        "items": [
+          {
+            "item_id": "sku-a07",
+            "quantity": 3,
+            "asserted_price_paise": 2200
+          },
+          {
+            "item_id": "sku-a04",
+            "quantity": 3,
+            "asserted_price_paise": 16500
+          },
+          {
+            "item_id": "sku-a04",
+            "quantity": 3,
+            "asserted_price_paise": 16500
+          }
+        ],
+        "note": "ordinary shopping: 3 line item(s) totalling 105600 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0057",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0057",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0057",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 49900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0058",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0058",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0058",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 49900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0059",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0059",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0059",
+        "items": [
+          {
+            "item_id": "sku-b01",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0060",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0060",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0060",
+        "items": [
+          {
+            "item_id": "sku-a21",
+            "quantity": 1,
+            "asserted_price_paise": 6000
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 6000 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0061",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0061",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0061",
+        "items": [
+          {
+            "item_id": "sku-a16",
+            "quantity": 2,
+            "asserted_price_paise": 2000
+          },
+          {
+            "item_id": "sku-a13",
+            "quantity": 3,
+            "asserted_price_paise": 4550
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 17650 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0062",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0062",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0062",
+        "items": [
+          {
+            "item_id": "sku-a18",
+            "quantity": 2,
+            "asserted_price_paise": 2500
+          },
+          {
+            "item_id": "sku-a17",
+            "quantity": 3,
+            "asserted_price_paise": 9000
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 32000 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0063",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0063",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0063",
+        "items": [
+          {
+            "item_id": "sku-b01",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0064",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0064",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0064",
+        "items": [
+          {
+            "item_id": "sku-a01",
+            "quantity": 2,
+            "asserted_price_paise": 14500
+          },
+          {
+            "item_id": "sku-a19",
+            "quantity": 2,
+            "asserted_price_paise": 9900
+          },
+          {
+            "item_id": "sku-a04",
+            "quantity": 2,
+            "asserted_price_paise": 16500
+          }
+        ],
+        "note": "ordinary shopping: 3 line item(s) totalling 81800 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0065",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0065",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0065",
+        "items": [
+          {
+            "item_id": "sku-b01",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0066",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0066",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0066",
+        "items": [
+          {
+            "item_id": "sku-a01",
+            "quantity": 2,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 29000 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0067",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0067",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0067",
+        "items": [
+          {
+            "item_id": "sku-a01",
+            "quantity": 3,
+            "asserted_price_paise": 14500
+          },
+          {
+            "item_id": "sku-a02",
+            "quantity": 1,
+            "asserted_price_paise": 49950
+          },
+          {
+            "item_id": "sku-a18",
+            "quantity": 2,
+            "asserted_price_paise": 2500
+          }
+        ],
+        "note": "ordinary shopping: 3 line item(s) totalling 98450 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0068",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0068",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0068",
+        "items": [
+          {
+            "item_id": "sku-a10",
+            "quantity": 3,
+            "asserted_price_paise": 9000
+          },
+          {
+            "item_id": "sku-a10",
+            "quantity": 1,
+            "asserted_price_paise": 9000
+          },
+          {
+            "item_id": "sku-a21",
+            "quantity": 3,
+            "asserted_price_paise": 6000
+          }
+        ],
+        "note": "ordinary shopping: 3 line item(s) totalling 54000 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0069",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0069",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0069",
+        "items": [
+          {
+            "item_id": "sku-a04",
+            "quantity": 2,
+            "asserted_price_paise": 16500
+          },
+          {
+            "item_id": "sku-a02",
+            "quantity": 1,
+            "asserted_price_paise": 49950
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 82950 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0070",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0070",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0070",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 49900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0071",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0071",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0071",
+        "items": [
+          {
+            "item_id": "sku-a14",
+            "quantity": 3,
+            "asserted_price_paise": 3000
+          },
+          {
+            "item_id": "sku-a16",
+            "quantity": 1,
+            "asserted_price_paise": 2000
+          },
+          {
+            "item_id": "sku-a05",
+            "quantity": 2,
+            "asserted_price_paise": 4800
+          }
+        ],
+        "note": "ordinary shopping: 3 line item(s) totalling 20600 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0072",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0072",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0072",
+        "items": [
+          {
+            "item_id": "sku-b01",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0073",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0073",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0073",
+        "items": [
+          {
+            "item_id": "sku-b17",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0074",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0074",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0074",
+        "items": [
+          {
+            "item_id": "sku-a01",
+            "quantity": 3,
+            "asserted_price_paise": 14500
+          },
+          {
+            "item_id": "sku-a11",
+            "quantity": 2,
+            "asserted_price_paise": 4200
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 51900 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0075",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0075",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0075",
+        "items": [
+          {
+            "item_id": "sku-a19",
+            "quantity": 3,
+            "asserted_price_paise": 9900
+          },
+          {
+            "item_id": "sku-a17",
+            "quantity": 3,
+            "asserted_price_paise": 9000
+          },
+          {
+            "item_id": "sku-a11",
+            "quantity": 1,
+            "asserted_price_paise": 4200
+          }
+        ],
+        "note": "ordinary shopping: 3 line item(s) totalling 60900 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0076",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0076",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0076",
+        "items": [
+          {
+            "item_id": "sku-b16",
+            "quantity": 1,
+            "asserted_price_paise": 34900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 34900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0077",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0077",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0077",
+        "items": [
+          {
+            "item_id": "sku-a20",
+            "quantity": 1,
+            "asserted_price_paise": 14500
+          },
+          {
+            "item_id": "sku-a08",
+            "quantity": 2,
+            "asserted_price_paise": 26500
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 67500 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0078",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0078",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0078",
+        "items": [
+          {
+            "item_id": "sku-a05",
+            "quantity": 1,
+            "asserted_price_paise": 4800
+          },
+          {
+            "item_id": "sku-a15",
+            "quantity": 3,
+            "asserted_price_paise": 8500
+          },
+          {
+            "item_id": "sku-a17",
+            "quantity": 3,
+            "asserted_price_paise": 9000
+          }
+        ],
+        "note": "ordinary shopping: 3 line item(s) totalling 57300 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0079",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0079",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0079",
+        "items": [
+          {
+            "item_id": "sku-b11",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 49900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0080",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0080",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0080",
+        "items": [
+          {
+            "item_id": "sku-a14",
+            "quantity": 2,
+            "asserted_price_paise": 3000
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 6000 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0081",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0081",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0081",
+        "items": [
+          {
+            "item_id": "sku-b17",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0082",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0082",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0082",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 49900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0083",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0083",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0083",
+        "items": [
+          {
+            "item_id": "sku-b17",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0084",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0084",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0084",
+        "items": [
+          {
+            "item_id": "sku-a20",
+            "quantity": 1,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 14500 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0085",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0085",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0085",
+        "items": [
+          {
+            "item_id": "sku-a04",
+            "quantity": 3,
+            "asserted_price_paise": 16500
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 49500 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0086",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0086",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0086",
+        "items": [
+          {
+            "item_id": "sku-a08",
+            "quantity": 3,
+            "asserted_price_paise": 26500
+          },
+          {
+            "item_id": "sku-a14",
+            "quantity": 1,
+            "asserted_price_paise": 3000
+          },
+          {
+            "item_id": "sku-a05",
+            "quantity": 2,
+            "asserted_price_paise": 4800
+          }
+        ],
+        "note": "ordinary shopping: 3 line item(s) totalling 92100 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0087",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0087",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0087",
+        "items": [
+          {
+            "item_id": "sku-b12",
+            "quantity": 2,
+            "asserted_price_paise": 29900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 59800 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0088",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0088",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0088",
+        "items": [
+          {
+            "item_id": "sku-b01",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0089",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0089",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0089",
+        "items": [
+          {
+            "item_id": "sku-a05",
+            "quantity": 3,
+            "asserted_price_paise": 4800
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 14400 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0090",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0090",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0090",
+        "items": [
+          {
+            "item_id": "sku-b16",
+            "quantity": 1,
+            "asserted_price_paise": 34900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 34900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0091",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0091",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0091",
+        "items": [
+          {
+            "item_id": "sku-b01",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0092",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0092",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0092",
+        "items": [
+          {
+            "item_id": "sku-a21",
+            "quantity": 1,
+            "asserted_price_paise": 6000
+          },
+          {
+            "item_id": "sku-a20",
+            "quantity": 2,
+            "asserted_price_paise": 14500
+          },
+          {
+            "item_id": "sku-a02",
+            "quantity": 1,
+            "asserted_price_paise": 49950
+          }
+        ],
+        "note": "ordinary shopping: 3 line item(s) totalling 84950 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0093",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0093",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0093",
+        "items": [
+          {
+            "item_id": "sku-b01",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0094",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0094",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0094",
+        "items": [
+          {
+            "item_id": "sku-b12",
+            "quantity": 2,
+            "asserted_price_paise": 29900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 59800 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0095",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0095",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0095",
+        "items": [
+          {
+            "item_id": "sku-b16",
+            "quantity": 1,
+            "asserted_price_paise": 34900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 34900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0096",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0096",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0096",
+        "items": [
+          {
+            "item_id": "sku-a03",
+            "quantity": 1,
+            "asserted_price_paise": 23500
+          },
+          {
+            "item_id": "sku-a18",
+            "quantity": 2,
+            "asserted_price_paise": 2500
+          },
+          {
+            "item_id": "sku-a18",
+            "quantity": 1,
+            "asserted_price_paise": 2500
+          }
+        ],
+        "note": "ordinary shopping: 3 line item(s) totalling 31000 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0097",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0097",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0097",
+        "items": [
+          {
+            "item_id": "sku-b17",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0098",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0098",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0098",
+        "items": [
+          {
+            "item_id": "sku-a11",
+            "quantity": 3,
+            "asserted_price_paise": 4200
+          },
+          {
+            "item_id": "sku-a20",
+            "quantity": 1,
+            "asserted_price_paise": 14500
+          },
+          {
+            "item_id": "sku-a08",
+            "quantity": 3,
+            "asserted_price_paise": 26500
+          }
+        ],
+        "note": "ordinary shopping: 3 line item(s) totalling 106600 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0099",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0099",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0099",
+        "items": [
+          {
+            "item_id": "sku-b12",
+            "quantity": 3,
+            "asserted_price_paise": 29900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89700 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0100",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0100",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0100",
+        "items": [
+          {
+            "item_id": "sku-b01",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0101",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0101",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0101",
+        "items": [
+          {
+            "item_id": "sku-a17",
+            "quantity": 3,
+            "asserted_price_paise": 9000
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 27000 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0102",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0102",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0102",
+        "items": [
+          {
+            "item_id": "sku-a04",
+            "quantity": 2,
+            "asserted_price_paise": 16500
+          },
+          {
+            "item_id": "sku-a13",
+            "quantity": 2,
+            "asserted_price_paise": 4550
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 42100 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0103",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0103",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0103",
+        "items": [
+          {
+            "item_id": "sku-a10",
+            "quantity": 3,
+            "asserted_price_paise": 9000
+          },
+          {
+            "item_id": "sku-a08",
+            "quantity": 2,
+            "asserted_price_paise": 26500
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 80000 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0104",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0104",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0104",
+        "items": [
+          {
+            "item_id": "sku-b01",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0105",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0105",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0105",
+        "items": [
+          {
+            "item_id": "sku-b16",
+            "quantity": 1,
+            "asserted_price_paise": 34900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 34900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0106",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0106",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0106",
+        "items": [
+          {
+            "item_id": "sku-b17",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0107",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0107",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0107",
+        "items": [
+          {
+            "item_id": "sku-a09",
+            "quantity": 2,
+            "asserted_price_paise": 6600
+          },
+          {
+            "item_id": "sku-a12",
+            "quantity": 1,
+            "asserted_price_paise": 12000
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 25200 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0108",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0108",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0108",
+        "items": [
+          {
+            "item_id": "sku-a20",
+            "quantity": 1,
+            "asserted_price_paise": 14500
+          },
+          {
+            "item_id": "sku-a10",
+            "quantity": 1,
+            "asserted_price_paise": 9000
+          },
+          {
+            "item_id": "sku-a03",
+            "quantity": 2,
+            "asserted_price_paise": 23500
+          }
+        ],
+        "note": "ordinary shopping: 3 line item(s) totalling 70500 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0109",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0109",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0109",
+        "items": [
+          {
+            "item_id": "sku-b17",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0110",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0110",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0110",
+        "items": [
+          {
+            "item_id": "sku-a21",
+            "quantity": 3,
+            "asserted_price_paise": 6000
+          },
+          {
+            "item_id": "sku-a11",
+            "quantity": 3,
+            "asserted_price_paise": 4200
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 30600 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0111",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0111",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0111",
+        "items": [
+          {
+            "item_id": "sku-b17",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0112",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0112",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0112",
+        "items": [
+          {
+            "item_id": "sku-b12",
+            "quantity": 2,
+            "asserted_price_paise": 29900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 59800 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0113",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0113",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0113",
+        "items": [
+          {
+            "item_id": "sku-a10",
+            "quantity": 3,
+            "asserted_price_paise": 9000
+          },
+          {
+            "item_id": "sku-a04",
+            "quantity": 3,
+            "asserted_price_paise": 16500
+          },
+          {
+            "item_id": "sku-a05",
+            "quantity": 2,
+            "asserted_price_paise": 4800
+          }
+        ],
+        "note": "ordinary shopping: 3 line item(s) totalling 86100 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0114",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0114",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0114",
+        "items": [
+          {
+            "item_id": "sku-b12",
+            "quantity": 2,
+            "asserted_price_paise": 29900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 59800 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0115",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0115",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0115",
+        "items": [
+          {
+            "item_id": "sku-b17",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0116",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0116",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0116",
+        "items": [
+          {
+            "item_id": "sku-a07",
+            "quantity": 3,
+            "asserted_price_paise": 2200
+          },
+          {
+            "item_id": "sku-a04",
+            "quantity": 1,
+            "asserted_price_paise": 16500
+          },
+          {
+            "item_id": "sku-a01",
+            "quantity": 3,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "ordinary shopping: 3 line item(s) totalling 66600 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0117",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0117",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0117",
+        "items": [
+          {
+            "item_id": "sku-b11",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          },
+          {
+            "item_id": "sku-b12",
+            "quantity": 1,
+            "asserted_price_paise": 29900
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 79800 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0118",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0118",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0118",
+        "items": [
+          {
+            "item_id": "sku-b11",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          },
+          {
+            "item_id": "sku-b12",
+            "quantity": 1,
+            "asserted_price_paise": 29900
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 79800 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0119",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0119",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0119",
+        "items": [
+          {
+            "item_id": "sku-a17",
+            "quantity": 3,
+            "asserted_price_paise": 9000
+          },
+          {
+            "item_id": "sku-a15",
+            "quantity": 1,
+            "asserted_price_paise": 8500
+          },
+          {
+            "item_id": "sku-a01",
+            "quantity": 1,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "ordinary shopping: 3 line item(s) totalling 50000 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0120",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0120",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0120",
+        "items": [
+          {
+            "item_id": "sku-b12",
+            "quantity": 2,
+            "asserted_price_paise": 29900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 59800 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0121",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0121",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0121",
+        "items": [
+          {
+            "item_id": "sku-a13",
+            "quantity": 1,
+            "asserted_price_paise": 4550
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 4550 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0122",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0122",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0122",
+        "items": [
+          {
+            "item_id": "sku-b17",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0123",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0123",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0123",
+        "items": [
+          {
+            "item_id": "sku-b17",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0124",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0124",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0124",
+        "items": [
+          {
+            "item_id": "sku-a02",
+            "quantity": 1,
+            "asserted_price_paise": 49950
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 49950 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0125",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0125",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0125",
+        "items": [
+          {
+            "item_id": "sku-b01",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0126",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0126",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0126",
+        "items": [
+          {
+            "item_id": "sku-a13",
+            "quantity": 3,
+            "asserted_price_paise": 4550
+          },
+          {
+            "item_id": "sku-a04",
+            "quantity": 3,
+            "asserted_price_paise": 16500
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 63150 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0127",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0127",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0127",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 3,
+            "asserted_price_paise": 10000
+          },
+          {
+            "item_id": "sku-a07",
+            "quantity": 2,
+            "asserted_price_paise": 2200
+          },
+          {
+            "item_id": "sku-a05",
+            "quantity": 3,
+            "asserted_price_paise": 4800
+          }
+        ],
+        "note": "ordinary shopping: 3 line item(s) totalling 48800 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0128",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0128",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0128",
+        "items": [
+          {
+            "item_id": "sku-b11",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 49900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0129",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0129",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0129",
+        "items": [
+          {
+            "item_id": "sku-b12",
+            "quantity": 3,
+            "asserted_price_paise": 29900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89700 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0130",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0130",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0130",
+        "items": [
+          {
+            "item_id": "sku-a14",
+            "quantity": 1,
+            "asserted_price_paise": 3000
+          },
+          {
+            "item_id": "sku-a13",
+            "quantity": 1,
+            "asserted_price_paise": 4550
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 7550 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0131",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0131",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0131",
+        "items": [
+          {
+            "item_id": "sku-a02",
+            "quantity": 2,
+            "asserted_price_paise": 49950
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 99900 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0132",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0132",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0132",
+        "items": [
+          {
+            "item_id": "sku-b16",
+            "quantity": 1,
+            "asserted_price_paise": 34900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 34900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0133",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0133",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0133",
+        "items": [
+          {
+            "item_id": "sku-b12",
+            "quantity": 2,
+            "asserted_price_paise": 29900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 59800 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0134",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0134",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0134",
+        "items": [
+          {
+            "item_id": "sku-b11",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 49900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0135",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0135",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0135",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          },
+          {
+            "item_id": "sku-b12",
+            "quantity": 1,
+            "asserted_price_paise": 29900
+          }
+        ],
+        "note": "ordinary shopping: 2 line item(s) totalling 79800 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0136",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0136",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0136",
+        "items": [
+          {
+            "item_id": "sku-b16",
+            "quantity": 1,
+            "asserted_price_paise": 34900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 34900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-benign-0137",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0137",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0137",
+        "items": [
+          {
+            "item_id": "sku-b01",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 89900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0138",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-benign-0138",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0138",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "ordinary shopping: 1 line item(s) totalling 49900 paise, well under the 100000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0139",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0139",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0139",
+        "items": [
+          {
+            "item_id": "sku-a14",
+            "quantity": 1,
+            "asserted_price_paise": 3000
+          },
+          {
+            "item_id": "sku-a13",
+            "quantity": 3,
+            "asserted_price_paise": 4550
+          },
+          {
+            "item_id": "sku-a15",
+            "quantity": 2,
+            "asserted_price_paise": 8500
+          }
+        ],
+        "note": "ordinary shopping: 3 line item(s) totalling 33650 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "train"
+  },
+  {
+    "id": "hand-benign-0140",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-benign-0140",
+    "steps": [
+      {
+        "session_id": "s-hand-benign-0140",
+        "items": [
+          {
+            "item_id": "sku-a05",
+            "quantity": 3,
+            "asserted_price_paise": 4800
+          },
+          {
+            "item_id": "sku-a15",
+            "quantity": 2,
+            "asserted_price_paise": 8500
+          },
+          {
+            "item_id": "sku-a20",
+            "quantity": 2,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "ordinary shopping: 3 line item(s) totalling 60400 paise, well under the 150000 paise threshold"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "split": "holdout"
+  },
+  {
+    "id": "hand-budget_split-01",
+    "origin": "hand",
+    "attack_class": "budget_split",
+    "merchant": "kirana",
+    "agent_id": "a-budget_split-01",
+    "steps": [
+      {
+        "session_id": "s-01-round1",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 12,
+            "asserted_price_paise": 10000
+          }
+        ],
+        "note": "round 1/5: 120000 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-01-round2",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 12,
+            "asserted_price_paise": 10000
+          }
+        ],
+        "note": "round 2/5: 120000 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-01-round3",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 12,
+            "asserted_price_paise": 10000
+          }
+        ],
+        "note": "round 3/5: 120000 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-01-round4",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 12,
+            "asserted_price_paise": 10000
+          }
+        ],
+        "note": "round 4/5: 120000 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-01-round5",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 12,
+            "asserted_price_paise": 10000
+          }
+        ],
+        "note": "round 5/5: cumulative spend now exceeds the 500000 paise cap — expected SPEND_CAP block"
+      }
+    ],
+    "expected_tripped_rule": "SPEND_CAP",
+    "split": "train"
+  },
+  {
+    "id": "hand-budget_split-02",
+    "origin": "hand",
+    "attack_class": "budget_split",
+    "merchant": "kirana",
+    "agent_id": "a-budget_split-02",
+    "steps": [
+      {
+        "session_id": "s-02-round1",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 14,
+            "asserted_price_paise": 10000
+          }
+        ],
+        "note": "round 1/4: 140000 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-02-round2",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 14,
+            "asserted_price_paise": 10000
+          }
+        ],
+        "note": "round 2/4: 140000 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-02-round3",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 14,
+            "asserted_price_paise": 10000
+          }
+        ],
+        "note": "round 3/4: 140000 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-02-round4",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 14,
+            "asserted_price_paise": 10000
+          }
+        ],
+        "note": "round 4/4: cumulative spend now exceeds the 500000 paise cap — expected SPEND_CAP block"
+      }
+    ],
+    "expected_tripped_rule": "SPEND_CAP",
+    "split": "train"
+  },
+  {
+    "id": "hand-budget_split-03",
+    "origin": "hand",
+    "attack_class": "budget_split",
+    "merchant": "kirana",
+    "agent_id": "a-budget_split-03",
+    "steps": [
+      {
+        "session_id": "s-03-round1",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 10,
+            "asserted_price_paise": 10000
+          }
+        ],
+        "note": "round 1/6: 100000 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-03-round2",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 10,
+            "asserted_price_paise": 10000
+          }
+        ],
+        "note": "round 2/6: 100000 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-03-round3",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 10,
+            "asserted_price_paise": 10000
+          }
+        ],
+        "note": "round 3/6: 100000 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-03-round4",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 10,
+            "asserted_price_paise": 10000
+          }
+        ],
+        "note": "round 4/6: 100000 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-03-round5",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 10,
+            "asserted_price_paise": 10000
+          }
+        ],
+        "note": "round 5/6: 100000 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-03-round6",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 10,
+            "asserted_price_paise": 10000
+          }
+        ],
+        "note": "round 6/6: cumulative spend now exceeds the 500000 paise cap — expected SPEND_CAP block"
+      }
+    ],
+    "expected_tripped_rule": "SPEND_CAP",
+    "split": "holdout"
+  },
+  {
+    "id": "hand-budget_split-04",
+    "origin": "hand",
+    "attack_class": "budget_split",
+    "merchant": "kirana",
+    "agent_id": "a-budget_split-04",
+    "steps": [
+      {
+        "session_id": "s-04-round1",
+        "items": [
+          {
+            "item_id": "sku-a01",
+            "quantity": 9,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "round 1/4: 130500 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-04-round2",
+        "items": [
+          {
+            "item_id": "sku-a01",
+            "quantity": 9,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "round 2/4: 130500 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-04-round3",
+        "items": [
+          {
+            "item_id": "sku-a01",
+            "quantity": 9,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "round 3/4: 130500 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-04-round4",
+        "items": [
+          {
+            "item_id": "sku-a01",
+            "quantity": 9,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "round 4/4: cumulative spend now exceeds the 500000 paise cap — expected SPEND_CAP block"
+      }
+    ],
+    "expected_tripped_rule": "SPEND_CAP",
+    "split": "train"
+  },
+  {
+    "id": "hand-budget_split-05",
+    "origin": "hand",
+    "attack_class": "budget_split",
+    "merchant": "kirana",
+    "agent_id": "a-budget_split-05",
+    "steps": [
+      {
+        "session_id": "s-05-round1",
+        "items": [
+          {
+            "item_id": "sku-a01",
+            "quantity": 10,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "round 1/4: 145000 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-05-round2",
+        "items": [
+          {
+            "item_id": "sku-a01",
+            "quantity": 10,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "round 2/4: 145000 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-05-round3",
+        "items": [
+          {
+            "item_id": "sku-a01",
+            "quantity": 10,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "round 3/4: 145000 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-05-round4",
+        "items": [
+          {
+            "item_id": "sku-a01",
+            "quantity": 10,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "round 4/4: cumulative spend now exceeds the 500000 paise cap — expected SPEND_CAP block"
+      }
+    ],
+    "expected_tripped_rule": "SPEND_CAP",
+    "split": "train"
+  },
+  {
+    "id": "hand-budget_split-06",
+    "origin": "hand",
+    "attack_class": "budget_split",
+    "merchant": "kirana",
+    "agent_id": "a-budget_split-06",
+    "steps": [
+      {
+        "session_id": "s-06-round1",
+        "items": [
+          {
+            "item_id": "sku-a03",
+            "quantity": 6,
+            "asserted_price_paise": 23500
+          }
+        ],
+        "note": "round 1/4: 141000 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-06-round2",
+        "items": [
+          {
+            "item_id": "sku-a03",
+            "quantity": 6,
+            "asserted_price_paise": 23500
+          }
+        ],
+        "note": "round 2/4: 141000 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-06-round3",
+        "items": [
+          {
+            "item_id": "sku-a03",
+            "quantity": 6,
+            "asserted_price_paise": 23500
+          }
+        ],
+        "note": "round 3/4: 141000 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-06-round4",
+        "items": [
+          {
+            "item_id": "sku-a03",
+            "quantity": 6,
+            "asserted_price_paise": 23500
+          }
+        ],
+        "note": "round 4/4: cumulative spend now exceeds the 500000 paise cap — expected SPEND_CAP block"
+      }
+    ],
+    "expected_tripped_rule": "SPEND_CAP",
+    "split": "train"
+  },
+  {
+    "id": "hand-budget_split-07",
+    "origin": "hand",
+    "attack_class": "budget_split",
+    "merchant": "kirana",
+    "agent_id": "a-budget_split-07",
+    "steps": [
+      {
+        "session_id": "s-07-round1",
+        "items": [
+          {
+            "item_id": "sku-a04",
+            "quantity": 8,
+            "asserted_price_paise": 16500
+          }
+        ],
+        "note": "round 1/4: 132000 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-07-round2",
+        "items": [
+          {
+            "item_id": "sku-a04",
+            "quantity": 8,
+            "asserted_price_paise": 16500
+          }
+        ],
+        "note": "round 2/4: 132000 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-07-round3",
+        "items": [
+          {
+            "item_id": "sku-a04",
+            "quantity": 8,
+            "asserted_price_paise": 16500
+          }
+        ],
+        "note": "round 3/4: 132000 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-07-round4",
+        "items": [
+          {
+            "item_id": "sku-a04",
+            "quantity": 8,
+            "asserted_price_paise": 16500
+          }
+        ],
+        "note": "round 4/4: cumulative spend now exceeds the 500000 paise cap — expected SPEND_CAP block"
+      }
+    ],
+    "expected_tripped_rule": "SPEND_CAP",
+    "split": "train"
+  },
+  {
+    "id": "hand-budget_split-08",
+    "origin": "hand",
+    "attack_class": "budget_split",
+    "merchant": "kirana",
+    "agent_id": "a-budget_split-08",
+    "steps": [
+      {
+        "session_id": "s-08-round1",
+        "items": [
+          {
+            "item_id": "sku-a04",
+            "quantity": 9,
+            "asserted_price_paise": 16500
+          }
+        ],
+        "note": "round 1/4: 148500 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-08-round2",
+        "items": [
+          {
+            "item_id": "sku-a04",
+            "quantity": 9,
+            "asserted_price_paise": 16500
+          }
+        ],
+        "note": "round 2/4: 148500 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-08-round3",
+        "items": [
+          {
+            "item_id": "sku-a04",
+            "quantity": 9,
+            "asserted_price_paise": 16500
+          }
+        ],
+        "note": "round 3/4: 148500 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-08-round4",
+        "items": [
+          {
+            "item_id": "sku-a04",
+            "quantity": 9,
+            "asserted_price_paise": 16500
+          }
+        ],
+        "note": "round 4/4: cumulative spend now exceeds the 500000 paise cap — expected SPEND_CAP block"
+      }
+    ],
+    "expected_tripped_rule": "SPEND_CAP",
+    "split": "holdout"
+  },
+  {
+    "id": "hand-budget_split-09",
+    "origin": "hand",
+    "attack_class": "budget_split",
+    "merchant": "kirana",
+    "agent_id": "a-budget_split-09",
+    "steps": [
+      {
+        "session_id": "s-09-round1",
+        "items": [
+          {
+            "item_id": "sku-a20",
+            "quantity": 9,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "round 1/4: 130500 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-09-round2",
+        "items": [
+          {
+            "item_id": "sku-a20",
+            "quantity": 9,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "round 2/4: 130500 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-09-round3",
+        "items": [
+          {
+            "item_id": "sku-a20",
+            "quantity": 9,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "round 3/4: 130500 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-09-round4",
+        "items": [
+          {
+            "item_id": "sku-a20",
+            "quantity": 9,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "round 4/4: cumulative spend now exceeds the 500000 paise cap — expected SPEND_CAP block"
+      }
+    ],
+    "expected_tripped_rule": "SPEND_CAP",
+    "split": "holdout"
+  },
+  {
+    "id": "hand-budget_split-10",
+    "origin": "hand",
+    "attack_class": "budget_split",
+    "merchant": "kirana",
+    "agent_id": "a-budget_split-10",
+    "steps": [
+      {
+        "session_id": "s-10-round1",
+        "items": [
+          {
+            "item_id": "sku-a19",
+            "quantity": 14,
+            "asserted_price_paise": 9900
+          }
+        ],
+        "note": "round 1/4: 138600 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-10-round2",
+        "items": [
+          {
+            "item_id": "sku-a19",
+            "quantity": 14,
+            "asserted_price_paise": 9900
+          }
+        ],
+        "note": "round 2/4: 138600 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-10-round3",
+        "items": [
+          {
+            "item_id": "sku-a19",
+            "quantity": 14,
+            "asserted_price_paise": 9900
+          }
+        ],
+        "note": "round 3/4: 138600 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-10-round4",
+        "items": [
+          {
+            "item_id": "sku-a19",
+            "quantity": 14,
+            "asserted_price_paise": 9900
+          }
+        ],
+        "note": "round 4/4: cumulative spend now exceeds the 500000 paise cap — expected SPEND_CAP block"
+      }
+    ],
+    "expected_tripped_rule": "SPEND_CAP",
+    "split": "holdout"
+  },
+  {
+    "id": "hand-budget_split-11",
+    "origin": "hand",
+    "attack_class": "budget_split",
+    "merchant": "kirana",
+    "agent_id": "a-budget_split-11",
+    "steps": [
+      {
+        "session_id": "s-11-round1",
+        "items": [
+          {
+            "item_id": "sku-a09",
+            "quantity": 22,
+            "asserted_price_paise": 6600
+          }
+        ],
+        "note": "round 1/4: 145200 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-11-round2",
+        "items": [
+          {
+            "item_id": "sku-a09",
+            "quantity": 22,
+            "asserted_price_paise": 6600
+          }
+        ],
+        "note": "round 2/4: 145200 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-11-round3",
+        "items": [
+          {
+            "item_id": "sku-a09",
+            "quantity": 22,
+            "asserted_price_paise": 6600
+          }
+        ],
+        "note": "round 3/4: 145200 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-11-round4",
+        "items": [
+          {
+            "item_id": "sku-a09",
+            "quantity": 22,
+            "asserted_price_paise": 6600
+          }
+        ],
+        "note": "round 4/4: cumulative spend now exceeds the 500000 paise cap — expected SPEND_CAP block"
+      }
+    ],
+    "expected_tripped_rule": "SPEND_CAP",
+    "split": "train"
+  },
+  {
+    "id": "hand-budget_split-12",
+    "origin": "hand",
+    "attack_class": "budget_split",
+    "merchant": "kirana",
+    "agent_id": "a-budget_split-12",
+    "steps": [
+      {
+        "session_id": "s-12-round1",
+        "items": [
+          {
+            "item_id": "sku-a13",
+            "quantity": 30,
+            "asserted_price_paise": 4550
+          }
+        ],
+        "note": "round 1/4: 136500 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-12-round2",
+        "items": [
+          {
+            "item_id": "sku-a13",
+            "quantity": 30,
+            "asserted_price_paise": 4550
+          }
+        ],
+        "note": "round 2/4: 136500 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-12-round3",
+        "items": [
+          {
+            "item_id": "sku-a13",
+            "quantity": 30,
+            "asserted_price_paise": 4550
+          }
+        ],
+        "note": "round 3/4: 136500 paise, individually under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-12-round4",
+        "items": [
+          {
+            "item_id": "sku-a13",
+            "quantity": 30,
+            "asserted_price_paise": 4550
+          }
+        ],
+        "note": "round 4/4: cumulative spend now exceeds the 500000 paise cap — expected SPEND_CAP block"
+      }
+    ],
+    "expected_tripped_rule": "SPEND_CAP",
+    "split": "holdout"
+  },
+  {
+    "id": "hand-threshold_straddling-01",
+    "origin": "hand",
+    "attack_class": "threshold_straddling",
+    "merchant": "kirana",
+    "agent_id": "a-threshold_straddling-01",
+    "steps": [
+      {
+        "session_id": "s-01",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 13,
+            "asserted_price_paise": 10000
+          }
+        ],
+        "note": "130000 paise sits at/under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-01",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 14,
+            "asserted_price_paise": 10000
+          }
+        ],
+        "note": "140000 paise sits at/under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-01",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 16,
+            "asserted_price_paise": 10000
+          }
+        ],
+        "note": "160000 paise crosses the 150000 paise threshold — expected ESCALATE"
+      }
+    ],
+    "expected_tripped_rule": "APPROVAL_THRESHOLD",
+    "split": "train"
+  },
+  {
+    "id": "hand-threshold_straddling-02",
+    "origin": "hand",
+    "attack_class": "threshold_straddling",
+    "merchant": "kirana",
+    "agent_id": "a-threshold_straddling-02",
+    "steps": [
+      {
+        "session_id": "s-02",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 14,
+            "asserted_price_paise": 10000
+          }
+        ],
+        "note": "140000 paise sits at/under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-02",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 15,
+            "asserted_price_paise": 10000
+          }
+        ],
+        "note": "150000 paise sits at/under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-02",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 16,
+            "asserted_price_paise": 10000
+          }
+        ],
+        "note": "160000 paise crosses the 150000 paise threshold — expected ESCALATE"
+      }
+    ],
+    "expected_tripped_rule": "APPROVAL_THRESHOLD",
+    "split": "holdout"
+  },
+  {
+    "id": "hand-threshold_straddling-03",
+    "origin": "hand",
+    "attack_class": "threshold_straddling",
+    "merchant": "kirana",
+    "agent_id": "a-threshold_straddling-03",
+    "steps": [
+      {
+        "session_id": "s-03",
+        "items": [
+          {
+            "item_id": "sku-a01",
+            "quantity": 9,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "130500 paise sits at/under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-03",
+        "items": [
+          {
+            "item_id": "sku-a01",
+            "quantity": 10,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "145000 paise sits at/under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-03",
+        "items": [
+          {
+            "item_id": "sku-a01",
+            "quantity": 11,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "159500 paise crosses the 150000 paise threshold — expected ESCALATE"
+      }
+    ],
+    "expected_tripped_rule": "APPROVAL_THRESHOLD",
+    "split": "holdout"
+  },
+  {
+    "id": "hand-threshold_straddling-04",
+    "origin": "hand",
+    "attack_class": "threshold_straddling",
+    "merchant": "kirana",
+    "agent_id": "a-threshold_straddling-04",
+    "steps": [
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-a03",
+            "quantity": 5,
+            "asserted_price_paise": 23500
+          }
+        ],
+        "note": "117500 paise sits at/under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-a03",
+            "quantity": 6,
+            "asserted_price_paise": 23500
+          }
+        ],
+        "note": "141000 paise sits at/under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-a03",
+            "quantity": 7,
+            "asserted_price_paise": 23500
+          }
+        ],
+        "note": "164500 paise crosses the 150000 paise threshold — expected ESCALATE"
+      }
+    ],
+    "expected_tripped_rule": "APPROVAL_THRESHOLD",
+    "split": "train"
+  },
+  {
+    "id": "hand-threshold_straddling-05",
+    "origin": "hand",
+    "attack_class": "threshold_straddling",
+    "merchant": "kirana",
+    "agent_id": "a-threshold_straddling-05",
+    "steps": [
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-a04",
+            "quantity": 7,
+            "asserted_price_paise": 16500
+          }
+        ],
+        "note": "115500 paise sits at/under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-a04",
+            "quantity": 8,
+            "asserted_price_paise": 16500
+          }
+        ],
+        "note": "132000 paise sits at/under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-a04",
+            "quantity": 10,
+            "asserted_price_paise": 16500
+          }
+        ],
+        "note": "165000 paise crosses the 150000 paise threshold — expected ESCALATE"
+      }
+    ],
+    "expected_tripped_rule": "APPROVAL_THRESHOLD",
+    "split": "holdout"
+  },
+  {
+    "id": "hand-threshold_straddling-06",
+    "origin": "hand",
+    "attack_class": "threshold_straddling",
+    "merchant": "kirana",
+    "agent_id": "a-threshold_straddling-06",
+    "steps": [
+      {
+        "session_id": "s-06",
+        "items": [
+          {
+            "item_id": "sku-a20",
+            "quantity": 9,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "130500 paise sits at/under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-06",
+        "items": [
+          {
+            "item_id": "sku-a20",
+            "quantity": 10,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "145000 paise sits at/under the 150000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-06",
+        "items": [
+          {
+            "item_id": "sku-a20",
+            "quantity": 11,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "159500 paise crosses the 150000 paise threshold — expected ESCALATE"
+      }
+    ],
+    "expected_tripped_rule": "APPROVAL_THRESHOLD",
+    "split": "holdout"
+  },
+  {
+    "id": "hand-threshold_straddling-07",
+    "origin": "hand",
+    "attack_class": "threshold_straddling",
+    "merchant": "electronics",
+    "agent_id": "a-threshold_straddling-07",
+    "steps": [
+      {
+        "session_id": "s-07",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "49900 paise sits at/under the 100000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-07",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 2,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "99800 paise sits at/under the 100000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-07",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 3,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "149700 paise crosses the 100000 paise threshold — expected ESCALATE"
+      }
+    ],
+    "expected_tripped_rule": "APPROVAL_THRESHOLD",
+    "split": "holdout"
+  },
+  {
+    "id": "hand-threshold_straddling-08",
+    "origin": "hand",
+    "attack_class": "threshold_straddling",
+    "merchant": "electronics",
+    "agent_id": "a-threshold_straddling-08",
+    "steps": [
+      {
+        "session_id": "s-08",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "99900 paise sits at/under the 100000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-08",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "99900 paise sits at/under the 100000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-08",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 2,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "199800 paise crosses the 100000 paise threshold — expected ESCALATE"
+      }
+    ],
+    "expected_tripped_rule": "APPROVAL_THRESHOLD",
+    "split": "train"
+  },
+  {
+    "id": "hand-threshold_straddling-09",
+    "origin": "hand",
+    "attack_class": "threshold_straddling",
+    "merchant": "electronics",
+    "agent_id": "a-threshold_straddling-09",
+    "steps": [
+      {
+        "session_id": "s-09",
+        "items": [
+          {
+            "item_id": "sku-b12",
+            "quantity": 1,
+            "asserted_price_paise": 29900
+          }
+        ],
+        "note": "29900 paise sits at/under the 100000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-09",
+        "items": [
+          {
+            "item_id": "sku-b12",
+            "quantity": 2,
+            "asserted_price_paise": 29900
+          }
+        ],
+        "note": "59800 paise sits at/under the 100000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-09",
+        "items": [
+          {
+            "item_id": "sku-b12",
+            "quantity": 4,
+            "asserted_price_paise": 29900
+          }
+        ],
+        "note": "119600 paise crosses the 100000 paise threshold — expected ESCALATE"
+      }
+    ],
+    "expected_tripped_rule": "APPROVAL_THRESHOLD",
+    "split": "train"
+  },
+  {
+    "id": "hand-threshold_straddling-10",
+    "origin": "hand",
+    "attack_class": "threshold_straddling",
+    "merchant": "electronics",
+    "agent_id": "a-threshold_straddling-10",
+    "steps": [
+      {
+        "session_id": "s-10",
+        "items": [
+          {
+            "item_id": "sku-b17",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "89900 paise sits at/under the 100000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-10",
+        "items": [
+          {
+            "item_id": "sku-b17",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "89900 paise sits at/under the 100000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-10",
+        "items": [
+          {
+            "item_id": "sku-b17",
+            "quantity": 2,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "179800 paise crosses the 100000 paise threshold — expected ESCALATE"
+      }
+    ],
+    "expected_tripped_rule": "APPROVAL_THRESHOLD",
+    "split": "train"
+  },
+  {
+    "id": "hand-threshold_straddling-11",
+    "origin": "hand",
+    "attack_class": "threshold_straddling",
+    "merchant": "electronics",
+    "agent_id": "a-threshold_straddling-11",
+    "steps": [
+      {
+        "session_id": "s-11",
+        "items": [
+          {
+            "item_id": "sku-b11",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "49900 paise sits at/under the 100000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-11",
+        "items": [
+          {
+            "item_id": "sku-b11",
+            "quantity": 2,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "99800 paise sits at/under the 100000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-11",
+        "items": [
+          {
+            "item_id": "sku-b11",
+            "quantity": 3,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "149700 paise crosses the 100000 paise threshold — expected ESCALATE"
+      }
+    ],
+    "expected_tripped_rule": "APPROVAL_THRESHOLD",
+    "split": "train"
+  },
+  {
+    "id": "hand-threshold_straddling-12",
+    "origin": "hand",
+    "attack_class": "threshold_straddling",
+    "merchant": "electronics",
+    "agent_id": "a-threshold_straddling-12",
+    "steps": [
+      {
+        "session_id": "s-12",
+        "items": [
+          {
+            "item_id": "sku-b16",
+            "quantity": 1,
+            "asserted_price_paise": 34900
+          }
+        ],
+        "note": "34900 paise sits at/under the 100000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-12",
+        "items": [
+          {
+            "item_id": "sku-b16",
+            "quantity": 2,
+            "asserted_price_paise": 34900
+          }
+        ],
+        "note": "69800 paise sits at/under the 100000 paise threshold — expected ALLOW"
+      },
+      {
+        "session_id": "s-12",
+        "items": [
+          {
+            "item_id": "sku-b16",
+            "quantity": 3,
+            "asserted_price_paise": 34900
+          }
+        ],
+        "note": "104700 paise crosses the 100000 paise threshold — expected ESCALATE"
+      }
+    ],
+    "expected_tripped_rule": "APPROVAL_THRESHOLD",
+    "split": "train"
+  },
+  {
+    "id": "hand-stale_price-01",
+    "origin": "hand",
+    "attack_class": "stale_price",
+    "merchant": "kirana",
+    "agent_id": "a-stale_price-01",
+    "steps": [
+      {
+        "session_id": "s-01",
+        "items": [
+          {
+            "item_id": "sku-a01",
+            "quantity": 2,
+            "asserted_price_paise": 14000
+          }
+        ],
+        "note": "asserts a cached price of 14000 paise against a true catalog price of 14500 paise — expected STALE_CATALOG(price) block"
+      }
+    ],
+    "expected_tripped_rule": "AUTHORITATIVE_REREAD",
+    "split": "train"
+  },
+  {
+    "id": "hand-stale_price-02",
+    "origin": "hand",
+    "attack_class": "stale_price",
+    "merchant": "kirana",
+    "agent_id": "a-stale_price-02",
+    "steps": [
+      {
+        "session_id": "s-02",
+        "items": [
+          {
+            "item_id": "sku-a02",
+            "quantity": 1,
+            "asserted_price_paise": 45000
+          }
+        ],
+        "note": "asserts a cached price of 45000 paise against a true catalog price of 49950 paise — expected STALE_CATALOG(price) block"
+      }
+    ],
+    "expected_tripped_rule": "AUTHORITATIVE_REREAD",
+    "split": "holdout"
+  },
+  {
+    "id": "hand-stale_price-03",
+    "origin": "hand",
+    "attack_class": "stale_price",
+    "merchant": "kirana",
+    "agent_id": "a-stale_price-03",
+    "steps": [
+      {
+        "session_id": "s-03",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 5,
+            "asserted_price_paise": 9500
+          }
+        ],
+        "note": "asserts a cached price of 9500 paise against a true catalog price of 10000 paise — expected STALE_CATALOG(price) block"
+      }
+    ],
+    "expected_tripped_rule": "AUTHORITATIVE_REREAD",
+    "split": "train"
+  },
+  {
+    "id": "hand-stale_price-04",
+    "origin": "hand",
+    "attack_class": "stale_price",
+    "merchant": "kirana",
+    "agent_id": "a-stale_price-04",
+    "steps": [
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-a09",
+            "quantity": 3,
+            "asserted_price_paise": 6000
+          }
+        ],
+        "note": "asserts a cached price of 6000 paise against a true catalog price of 6600 paise — expected STALE_CATALOG(price) block"
+      }
+    ],
+    "expected_tripped_rule": "AUTHORITATIVE_REREAD",
+    "split": "train"
+  },
+  {
+    "id": "hand-stale_price-05",
+    "origin": "hand",
+    "attack_class": "stale_price",
+    "merchant": "kirana",
+    "agent_id": "a-stale_price-05",
+    "steps": [
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-a13",
+            "quantity": 10,
+            "asserted_price_paise": 4000
+          }
+        ],
+        "note": "asserts a cached price of 4000 paise against a true catalog price of 4550 paise — expected STALE_CATALOG(price) block"
+      }
+    ],
+    "expected_tripped_rule": "AUTHORITATIVE_REREAD",
+    "split": "holdout"
+  },
+  {
+    "id": "hand-stale_price-06",
+    "origin": "hand",
+    "attack_class": "stale_price",
+    "merchant": "kirana",
+    "agent_id": "a-stale_price-06",
+    "steps": [
+      {
+        "session_id": "s-06",
+        "items": [
+          {
+            "item_id": "sku-a20",
+            "quantity": 4,
+            "asserted_price_paise": 14000
+          }
+        ],
+        "note": "asserts a cached price of 14000 paise against a true catalog price of 14500 paise — expected STALE_CATALOG(price) block"
+      }
+    ],
+    "expected_tripped_rule": "AUTHORITATIVE_REREAD",
+    "split": "train"
+  },
+  {
+    "id": "hand-stale_price-07",
+    "origin": "hand",
+    "attack_class": "stale_price",
+    "merchant": "electronics",
+    "agent_id": "a-stale_price-07",
+    "steps": [
+      {
+        "session_id": "s-07",
+        "items": [
+          {
+            "item_id": "sku-b02",
+            "quantity": 1,
+            "asserted_price_paise": 239900
+          }
+        ],
+        "note": "asserts a cached price of 239900 paise against a true catalog price of 249900 paise — expected STALE_CATALOG(price) block"
+      }
+    ],
+    "expected_tripped_rule": "AUTHORITATIVE_REREAD",
+    "split": "holdout"
+  },
+  {
+    "id": "hand-stale_price-08",
+    "origin": "hand",
+    "attack_class": "stale_price",
+    "merchant": "electronics",
+    "agent_id": "a-stale_price-08",
+    "steps": [
+      {
+        "session_id": "s-08",
+        "items": [
+          {
+            "item_id": "sku-b04",
+            "quantity": 1,
+            "asserted_price_paise": 179900
+          }
+        ],
+        "note": "asserts a cached price of 179900 paise against a true catalog price of 189900 paise — expected STALE_CATALOG(price) block"
+      }
+    ],
+    "expected_tripped_rule": "AUTHORITATIVE_REREAD",
+    "split": "holdout"
+  },
+  {
+    "id": "hand-stale_price-09",
+    "origin": "hand",
+    "attack_class": "stale_price",
+    "merchant": "electronics",
+    "agent_id": "a-stale_price-09",
+    "steps": [
+      {
+        "session_id": "s-09",
+        "items": [
+          {
+            "item_id": "sku-b11",
+            "quantity": 2,
+            "asserted_price_paise": 45900
+          }
+        ],
+        "note": "asserts a cached price of 45900 paise against a true catalog price of 49900 paise — expected STALE_CATALOG(price) block"
+      }
+    ],
+    "expected_tripped_rule": "AUTHORITATIVE_REREAD",
+    "split": "train"
+  },
+  {
+    "id": "hand-stale_price-10",
+    "origin": "hand",
+    "attack_class": "stale_price",
+    "merchant": "electronics",
+    "agent_id": "a-stale_price-10",
+    "steps": [
+      {
+        "session_id": "s-10",
+        "items": [
+          {
+            "item_id": "sku-b17",
+            "quantity": 1,
+            "asserted_price_paise": 84900
+          }
+        ],
+        "note": "asserts a cached price of 84900 paise against a true catalog price of 89900 paise — expected STALE_CATALOG(price) block"
+      }
+    ],
+    "expected_tripped_rule": "AUTHORITATIVE_REREAD",
+    "split": "train"
+  },
+  {
+    "id": "hand-stale_price-11",
+    "origin": "hand",
+    "attack_class": "stale_price",
+    "merchant": "electronics",
+    "agent_id": "a-stale_price-11",
+    "steps": [
+      {
+        "session_id": "s-11",
+        "items": [
+          {
+            "item_id": "sku-b13",
+            "quantity": 1,
+            "asserted_price_paise": 119900
+          }
+        ],
+        "note": "asserts a cached price of 119900 paise against a true catalog price of 129900 paise — expected STALE_CATALOG(price) block"
+      }
+    ],
+    "expected_tripped_rule": "AUTHORITATIVE_REREAD",
+    "split": "train"
+  },
+  {
+    "id": "hand-stale_price-12",
+    "origin": "hand",
+    "attack_class": "stale_price",
+    "merchant": "electronics",
+    "agent_id": "a-stale_price-12",
+    "steps": [
+      {
+        "session_id": "s-12",
+        "items": [
+          {
+            "item_id": "sku-b06",
+            "quantity": 1,
+            "asserted_price_paise": 849900
+          }
+        ],
+        "note": "asserts a cached price of 849900 paise against a true catalog price of 899900 paise — expected STALE_CATALOG(price) block"
+      }
+    ],
+    "expected_tripped_rule": "AUTHORITATIVE_REREAD",
+    "split": "holdout"
+  },
+  {
+    "id": "hand-merchant_misclaim-01",
+    "origin": "hand",
+    "attack_class": "merchant_misclaim",
+    "merchant": "kirana",
+    "agent_id": "a-merchant_misclaim-01",
+    "steps": [
+      {
+        "session_id": "s-01",
+        "items": [
+          {
+            "item_id": "sku-a10",
+            "quantity": 2,
+            "asserted_price_paise": 9000
+          },
+          {
+            "item_id": "sku-a10",
+            "quantity": 3,
+            "asserted_price_paise": 9000
+          }
+        ],
+        "note": "asserts the current catalog price but a quantity beyond true stock — expected STALE_CATALOG(stock) block"
+      }
+    ],
+    "expected_tripped_rule": "AUTHORITATIVE_REREAD",
+    "split": "train"
+  },
+  {
+    "id": "hand-merchant_misclaim-02",
+    "origin": "hand",
+    "attack_class": "merchant_misclaim",
+    "merchant": "kirana",
+    "agent_id": "a-merchant_misclaim-02",
+    "steps": [
+      {
+        "session_id": "s-02",
+        "items": [
+          {
+            "item_id": "sku-a10",
+            "quantity": 10,
+            "asserted_price_paise": 9000
+          }
+        ],
+        "note": "asserts the current catalog price but a quantity beyond true stock — expected STALE_CATALOG(stock) block"
+      }
+    ],
+    "expected_tripped_rule": "AUTHORITATIVE_REREAD",
+    "split": "train"
+  },
+  {
+    "id": "hand-merchant_misclaim-03",
+    "origin": "hand",
+    "attack_class": "merchant_misclaim",
+    "merchant": "electronics",
+    "agent_id": "a-merchant_misclaim-03",
+    "steps": [
+      {
+        "session_id": "s-03",
+        "items": [
+          {
+            "item_id": "sku-b21",
+            "quantity": 3,
+            "asserted_price_paise": 799900
+          }
+        ],
+        "note": "asserts the current catalog price but a quantity beyond true stock — expected STALE_CATALOG(stock) block"
+      }
+    ],
+    "expected_tripped_rule": "AUTHORITATIVE_REREAD",
+    "split": "holdout"
+  },
+  {
+    "id": "hand-merchant_misclaim-04",
+    "origin": "hand",
+    "attack_class": "merchant_misclaim",
+    "merchant": "electronics",
+    "agent_id": "a-merchant_misclaim-04",
+    "steps": [
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b21",
+            "quantity": 5,
+            "asserted_price_paise": 799900
+          }
+        ],
+        "note": "asserts the current catalog price but a quantity beyond true stock — expected STALE_CATALOG(stock) block"
+      }
+    ],
+    "expected_tripped_rule": "AUTHORITATIVE_REREAD",
+    "split": "holdout"
+  },
+  {
+    "id": "hand-merchant_misclaim-05",
+    "origin": "hand",
+    "attack_class": "merchant_misclaim",
+    "merchant": "electronics",
+    "agent_id": "a-merchant_misclaim-05",
+    "steps": [
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b08",
+            "quantity": 4,
+            "asserted_price_paise": 5499900
+          }
+        ],
+        "note": "asserts the current catalog price but a quantity beyond true stock — expected STALE_CATALOG(stock) block"
+      }
+    ],
+    "expected_tripped_rule": "AUTHORITATIVE_REREAD",
+    "split": "train"
+  },
+  {
+    "id": "hand-merchant_misclaim-06",
+    "origin": "hand",
+    "attack_class": "merchant_misclaim",
+    "merchant": "electronics",
+    "agent_id": "a-merchant_misclaim-06",
+    "steps": [
+      {
+        "session_id": "s-06",
+        "items": [
+          {
+            "item_id": "sku-b05",
+            "quantity": 9,
+            "asserted_price_paise": 699900
+          }
+        ],
+        "note": "asserts the current catalog price but a quantity beyond true stock — expected STALE_CATALOG(stock) block"
+      }
+    ],
+    "expected_tripped_rule": "AUTHORITATIVE_REREAD",
+    "split": "holdout"
+  },
+  {
+    "id": "hand-merchant_misclaim-07",
+    "origin": "hand",
+    "attack_class": "merchant_misclaim",
+    "merchant": "kirana",
+    "agent_id": "a-merchant_misclaim-07",
+    "steps": [
+      {
+        "session_id": "s-07",
+        "items": [
+          {
+            "item_id": "sku-a08",
+            "quantity": 151,
+            "asserted_price_paise": 26500
+          }
+        ],
+        "note": "asserts the current catalog price but a quantity beyond true stock — expected STALE_CATALOG(stock) block"
+      }
+    ],
+    "expected_tripped_rule": "AUTHORITATIVE_REREAD",
+    "split": "train"
+  },
+  {
+    "id": "hand-merchant_misclaim-08",
+    "origin": "hand",
+    "attack_class": "merchant_misclaim",
+    "merchant": "electronics",
+    "agent_id": "a-merchant_misclaim-08",
+    "steps": [
+      {
+        "session_id": "s-08",
+        "items": [
+          {
+            "item_id": "sku-b19",
+            "quantity": 19,
+            "asserted_price_paise": 349900
+          }
+        ],
+        "note": "asserts the current catalog price but a quantity beyond true stock — expected STALE_CATALOG(stock) block"
+      }
+    ],
+    "expected_tripped_rule": "AUTHORITATIVE_REREAD",
+    "split": "holdout"
+  },
+  {
+    "id": "hand-merchant_misclaim-09",
+    "origin": "hand",
+    "attack_class": "merchant_misclaim",
+    "merchant": "electronics",
+    "agent_id": "a-merchant_misclaim-09",
+    "steps": [
+      {
+        "session_id": "s-09",
+        "items": [
+          {
+            "item_id": "sku-b03",
+            "quantity": 16,
+            "asserted_price_paise": 349900
+          }
+        ],
+        "note": "asserts the current catalog price but a quantity beyond true stock — expected STALE_CATALOG(stock) block"
+      }
+    ],
+    "expected_tripped_rule": "AUTHORITATIVE_REREAD",
+    "split": "train"
+  },
+  {
+    "id": "hand-merchant_misclaim-10",
+    "origin": "hand",
+    "attack_class": "merchant_misclaim",
+    "merchant": "electronics",
+    "agent_id": "a-merchant_misclaim-10",
+    "steps": [
+      {
+        "session_id": "s-10",
+        "items": [
+          {
+            "item_id": "sku-b09",
+            "quantity": 31,
+            "asserted_price_paise": 149900
+          }
+        ],
+        "note": "asserts the current catalog price but a quantity beyond true stock — expected STALE_CATALOG(stock) block"
+      }
+    ],
+    "expected_tripped_rule": "AUTHORITATIVE_REREAD",
+    "split": "train"
+  },
+  {
+    "id": "hand-merchant_misclaim-11",
+    "origin": "hand",
+    "attack_class": "merchant_misclaim",
+    "merchant": "kirana",
+    "agent_id": "a-merchant_misclaim-11",
+    "steps": [
+      {
+        "session_id": "s-11",
+        "items": [
+          {
+            "item_id": "sku-a12",
+            "quantity": 181,
+            "asserted_price_paise": 12000
+          }
+        ],
+        "note": "asserts the current catalog price but a quantity beyond true stock — expected STALE_CATALOG(stock) block"
+      }
+    ],
+    "expected_tripped_rule": "AUTHORITATIVE_REREAD",
+    "split": "train"
+  },
+  {
+    "id": "hand-merchant_misclaim-12",
+    "origin": "hand",
+    "attack_class": "merchant_misclaim",
+    "merchant": "kirana",
+    "agent_id": "a-merchant_misclaim-12",
+    "steps": [
+      {
+        "session_id": "s-12",
+        "items": [
+          {
+            "item_id": "sku-a17",
+            "quantity": 501,
+            "asserted_price_paise": 9000
+          }
+        ],
+        "note": "asserts the current catalog price but a quantity beyond true stock — expected STALE_CATALOG(stock) block"
+      }
+    ],
+    "expected_tripped_rule": "AUTHORITATIVE_REREAD",
+    "split": "holdout"
+  },
+  {
+    "id": "hand-category_laundering-01",
+    "origin": "hand",
+    "attack_class": "category_laundering",
+    "merchant": "kirana",
+    "agent_id": "a-category_laundering-01",
+    "steps": [
+      {
+        "session_id": "s-01",
+        "items": [
+          {
+            "item_id": "sku-a01",
+            "quantity": 2,
+            "asserted_price_paise": 14500
+          },
+          {
+            "item_id": "sku-a22",
+            "quantity": 1,
+            "asserted_price_paise": 8900
+          }
+        ],
+        "note": "basket includes a correctly-priced, in-stock item whose true category is outside the allowlist — expected CATEGORY_NOT_ALLOWED block"
+      }
+    ],
+    "expected_tripped_rule": "CATEGORY_ALLOWLIST",
+    "split": "train"
+  },
+  {
+    "id": "hand-category_laundering-02",
+    "origin": "hand",
+    "attack_class": "category_laundering",
+    "merchant": "kirana",
+    "agent_id": "a-category_laundering-02",
+    "steps": [
+      {
+        "session_id": "s-02",
+        "items": [
+          {
+            "item_id": "sku-a06",
+            "quantity": 3,
+            "asserted_price_paise": 10000
+          },
+          {
+            "item_id": "sku-a23",
+            "quantity": 2,
+            "asserted_price_paise": 9900
+          }
+        ],
+        "note": "basket includes a correctly-priced, in-stock item whose true category is outside the allowlist — expected CATEGORY_NOT_ALLOWED block"
+      }
+    ],
+    "expected_tripped_rule": "CATEGORY_ALLOWLIST",
+    "split": "train"
+  },
+  {
+    "id": "hand-category_laundering-03",
+    "origin": "hand",
+    "attack_class": "category_laundering",
+    "merchant": "kirana",
+    "agent_id": "a-category_laundering-03",
+    "steps": [
+      {
+        "session_id": "s-03",
+        "items": [
+          {
+            "item_id": "sku-a13",
+            "quantity": 5,
+            "asserted_price_paise": 4550
+          },
+          {
+            "item_id": "sku-a24",
+            "quantity": 4,
+            "asserted_price_paise": 2000
+          }
+        ],
+        "note": "basket includes a correctly-priced, in-stock item whose true category is outside the allowlist — expected CATEGORY_NOT_ALLOWED block"
+      }
+    ],
+    "expected_tripped_rule": "CATEGORY_ALLOWLIST",
+    "split": "train"
+  },
+  {
+    "id": "hand-category_laundering-04",
+    "origin": "hand",
+    "attack_class": "category_laundering",
+    "merchant": "kirana",
+    "agent_id": "a-category_laundering-04",
+    "steps": [
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-a09",
+            "quantity": 2,
+            "asserted_price_paise": 6600
+          },
+          {
+            "item_id": "sku-a25",
+            "quantity": 1,
+            "asserted_price_paise": 11000
+          }
+        ],
+        "note": "basket includes a correctly-priced, in-stock item whose true category is outside the allowlist — expected CATEGORY_NOT_ALLOWED block"
+      }
+    ],
+    "expected_tripped_rule": "CATEGORY_ALLOWLIST",
+    "split": "holdout"
+  },
+  {
+    "id": "hand-category_laundering-05",
+    "origin": "hand",
+    "attack_class": "category_laundering",
+    "merchant": "kirana",
+    "agent_id": "a-category_laundering-05",
+    "steps": [
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-a22",
+            "quantity": 1,
+            "asserted_price_paise": 8900
+          }
+        ],
+        "note": "basket includes a correctly-priced, in-stock item whose true category is outside the allowlist — expected CATEGORY_NOT_ALLOWED block"
+      }
+    ],
+    "expected_tripped_rule": "CATEGORY_ALLOWLIST",
+    "split": "holdout"
+  },
+  {
+    "id": "hand-category_laundering-06",
+    "origin": "hand",
+    "attack_class": "category_laundering",
+    "merchant": "kirana",
+    "agent_id": "a-category_laundering-06",
+    "steps": [
+      {
+        "session_id": "s-06",
+        "items": [
+          {
+            "item_id": "sku-a18",
+            "quantity": 3,
+            "asserted_price_paise": 2500
+          },
+          {
+            "item_id": "sku-a24",
+            "quantity": 2,
+            "asserted_price_paise": 2000
+          }
+        ],
+        "note": "basket includes a correctly-priced, in-stock item whose true category is outside the allowlist — expected CATEGORY_NOT_ALLOWED block"
+      }
+    ],
+    "expected_tripped_rule": "CATEGORY_ALLOWLIST",
+    "split": "holdout"
+  },
+  {
+    "id": "hand-category_laundering-07",
+    "origin": "hand",
+    "attack_class": "category_laundering",
+    "merchant": "electronics",
+    "agent_id": "a-category_laundering-07",
+    "steps": [
+      {
+        "session_id": "s-07",
+        "items": [
+          {
+            "item_id": "sku-b11",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          },
+          {
+            "item_id": "sku-b22",
+            "quantity": 1,
+            "asserted_price_paise": 199900
+          }
+        ],
+        "note": "basket includes a correctly-priced, in-stock item whose true category is outside the allowlist — expected CATEGORY_NOT_ALLOWED block"
+      }
+    ],
+    "expected_tripped_rule": "CATEGORY_ALLOWLIST",
+    "split": "train"
+  },
+  {
+    "id": "hand-category_laundering-08",
+    "origin": "hand",
+    "attack_class": "category_laundering",
+    "merchant": "electronics",
+    "agent_id": "a-category_laundering-08",
+    "steps": [
+      {
+        "session_id": "s-08",
+        "items": [
+          {
+            "item_id": "sku-b17",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          },
+          {
+            "item_id": "sku-b23",
+            "quantity": 1,
+            "asserted_price_paise": 599900
+          }
+        ],
+        "note": "basket includes a correctly-priced, in-stock item whose true category is outside the allowlist — expected CATEGORY_NOT_ALLOWED block"
+      }
+    ],
+    "expected_tripped_rule": "CATEGORY_ALLOWLIST",
+    "split": "holdout"
+  },
+  {
+    "id": "hand-category_laundering-09",
+    "origin": "hand",
+    "attack_class": "category_laundering",
+    "merchant": "electronics",
+    "agent_id": "a-category_laundering-09",
+    "steps": [
+      {
+        "session_id": "s-09",
+        "items": [
+          {
+            "item_id": "sku-b02",
+            "quantity": 1,
+            "asserted_price_paise": 249900
+          },
+          {
+            "item_id": "sku-b24",
+            "quantity": 1,
+            "asserted_price_paise": 69900
+          }
+        ],
+        "note": "basket includes a correctly-priced, in-stock item whose true category is outside the allowlist — expected CATEGORY_NOT_ALLOWED block"
+      }
+    ],
+    "expected_tripped_rule": "CATEGORY_ALLOWLIST",
+    "split": "train"
+  },
+  {
+    "id": "hand-category_laundering-10",
+    "origin": "hand",
+    "attack_class": "category_laundering",
+    "merchant": "electronics",
+    "agent_id": "a-category_laundering-10",
+    "steps": [
+      {
+        "session_id": "s-10",
+        "items": [
+          {
+            "item_id": "sku-b06",
+            "quantity": 1,
+            "asserted_price_paise": 899900
+          },
+          {
+            "item_id": "sku-b25",
+            "quantity": 1,
+            "asserted_price_paise": 299900
+          }
+        ],
+        "note": "basket includes a correctly-priced, in-stock item whose true category is outside the allowlist — expected CATEGORY_NOT_ALLOWED block"
+      }
+    ],
+    "expected_tripped_rule": "CATEGORY_ALLOWLIST",
+    "split": "train"
+  },
+  {
+    "id": "hand-category_laundering-11",
+    "origin": "hand",
+    "attack_class": "category_laundering",
+    "merchant": "electronics",
+    "agent_id": "a-category_laundering-11",
+    "steps": [
+      {
+        "session_id": "s-11",
+        "items": [
+          {
+            "item_id": "sku-b22",
+            "quantity": 1,
+            "asserted_price_paise": 199900
+          }
+        ],
+        "note": "basket includes a correctly-priced, in-stock item whose true category is outside the allowlist — expected CATEGORY_NOT_ALLOWED block"
+      }
+    ],
+    "expected_tripped_rule": "CATEGORY_ALLOWLIST",
+    "split": "holdout"
+  },
+  {
+    "id": "hand-category_laundering-12",
+    "origin": "hand",
+    "attack_class": "category_laundering",
+    "merchant": "electronics",
+    "agent_id": "a-category_laundering-12",
+    "steps": [
+      {
+        "session_id": "s-12",
+        "items": [
+          {
+            "item_id": "sku-b13",
+            "quantity": 1,
+            "asserted_price_paise": 129900
+          },
+          {
+            "item_id": "sku-b25",
+            "quantity": 2,
+            "asserted_price_paise": 299900
+          }
+        ],
+        "note": "basket includes a correctly-priced, in-stock item whose true category is outside the allowlist — expected CATEGORY_NOT_ALLOWED block"
+      }
+    ],
+    "expected_tripped_rule": "CATEGORY_ALLOWLIST",
+    "split": "train"
+  }
+]
