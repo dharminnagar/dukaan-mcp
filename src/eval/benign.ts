@@ -23,7 +23,12 @@ function affordableProducts(snapshot: CatalogSnapshot): readonly Product[] {
   );
 }
 
-function buildBenignTranscript(index: string, merchant: EvalMerchant, snapshot: CatalogSnapshot, rng: Rng): Transcript {
+function buildBenignTranscript(
+  index: string,
+  merchant: EvalMerchant,
+  snapshot: CatalogSnapshot,
+  rng: Rng,
+): Transcript {
   const id = `hand-benign-${index}`;
   const pool = affordableProducts(snapshot);
   const safetyMargin = Math.floor(snapshot.policy.approval_threshold_paise * 0.9);
@@ -45,7 +50,10 @@ function buildBenignTranscript(index: string, merchant: EvalMerchant, snapshot: 
     const remainingStock = product.stock - alreadyRequested;
     if (remainingStock < 1) continue; // this item is spoken for; try the next slot instead
 
-    const maxAffordableQty = Math.max(1, Math.floor((safetyMargin - runningTotal) / product.price_paise));
+    const maxAffordableQty = Math.max(
+      1,
+      Math.floor((safetyMargin - runningTotal) / product.price_paise),
+    );
     if (maxAffordableQty < 1) break; // basket is full; stop rather than risk crossing the threshold
     const quantity = randInt(rng, 1, Math.min(3, maxAffordableQty, remainingStock));
     const amount = product.price_paise * quantity;
@@ -59,7 +67,9 @@ function buildBenignTranscript(index: string, merchant: EvalMerchant, snapshot: 
   // Every product in `pool` individually clears the margin, so the loop
   // above always adds at least one line on its first iteration.
   if (items.length === 0) {
-    throw new Error(`benign generator produced an empty basket for ${id} — affordableProducts() pool is empty`);
+    throw new Error(
+      `benign generator produced an empty basket for ${id} — affordableProducts() pool is empty`,
+    );
   }
 
   return {
@@ -84,6 +94,11 @@ export function generateBenignTranscripts(rng: Rng, count: number): readonly Tra
   const merchants: readonly EvalMerchant[] = ['kirana', 'electronics'];
   return Array.from({ length: count }, (_, i) => {
     const merchant = pick(rng, merchants);
-    return buildBenignTranscript(String(i + 1).padStart(4, '0'), merchant, snapshots[merchant], rng);
+    return buildBenignTranscript(
+      String(i + 1).padStart(4, '0'),
+      merchant,
+      snapshots[merchant],
+      rng,
+    );
   });
 }

@@ -107,10 +107,10 @@ export const mcpHandler = createMcpHandler(
       {
         title: 'List Products',
         description:
-          "List every product in your catalog: id, name, price_paise, stock, and category. " +
-          "Call this first to see what you can buy and at what price. Prices and stock " +
-          "change over time, so re-call this (or get_product) right before checkout rather " +
-          "than reusing a price you saw earlier — checkout rejects a stale asserted price " +
+          'List every product in your catalog: id, name, price_paise, stock, and category. ' +
+          'Call this first to see what you can buy and at what price. Prices and stock ' +
+          'change over time, so re-call this (or get_product) right before checkout rather ' +
+          'than reusing a price you saw earlier — checkout rejects a stale asserted price ' +
           "with a STALE_CATALOG error. Always scoped to your own merchant's catalog; there " +
           "is no way to list another merchant's products.",
         inputSchema: z.object({}),
@@ -142,17 +142,18 @@ export const mcpHandler = createMcpHandler(
       {
         title: 'Get Product',
         description:
-          "Fetch one product by id from your catalog, with its CURRENT price_paise and " +
-          "stock. Always call this (or list_products) immediately before checkout so the " +
-          "price you act on is fresh, not one you cached earlier — checkout rejects a stale " +
-          "asserted price with a STALE_CATALOG error. Returns { product: null } if the id " +
-          "is not in your catalog. That includes an id that belongs to a different " +
-          "merchant: this tool never reveals whether such an id exists elsewhere, it just " +
+          'Fetch one product by id from your catalog, with its CURRENT price_paise and ' +
+          'stock. Always call this (or list_products) immediately before checkout so the ' +
+          'price you act on is fresh, not one you cached earlier — checkout rejects a stale ' +
+          'asserted price with a STALE_CATALOG error. Returns { product: null } if the id ' +
+          'is not in your catalog. That includes an id that belongs to a different ' +
+          'merchant: this tool never reveals whether such an id exists elsewhere, it just ' +
           "isn't yours.",
         inputSchema: z.object({
-          id: z.string().min(1).describe(
-            'The product id (sku), exactly as returned by list_products.',
-          ),
+          id: z
+            .string()
+            .min(1)
+            .describe('The product id (sku), exactly as returned by list_products.'),
         }),
       },
       async ({ id }) => {
@@ -182,25 +183,28 @@ export const mcpHandler = createMcpHandler(
       {
         title: 'Checkout',
         description:
-          "Place an order for one or more line items, asserting the item_id, quantity, and " +
-          "price_paise you believe is current for each — get these from list_products or " +
-          "get_product IMMEDIATELY beforehand, not from earlier in the conversation. Your " +
-          "asserted price is NOT trusted: checkout re-reads the live catalog and rejects a " +
-          "stale price with a STALE_CATALOG error (isError: true) instead of charging you. " +
-          "A spend-cap or category-allowlist violation also returns a structured block error " +
+          'Place an order for one or more line items, asserting the item_id, quantity, and ' +
+          'price_paise you believe is current for each — get these from list_products or ' +
+          'get_product IMMEDIATELY beforehand, not from earlier in the conversation. Your ' +
+          'asserted price is NOT trusted: checkout re-reads the live catalog and rejects a ' +
+          'stale price with a STALE_CATALOG error (isError: true) instead of charging you. ' +
+          'A spend-cap or category-allowlist violation also returns a structured block error ' +
           "with isError: true and never reaches Razorpay. An order above the merchant's " +
           "approval threshold is recorded as an 'escalated' order and returned as a " +
-          "PENDING_APPROVAL error — also isError: true, also never reaching Razorpay — so a " +
-          "PENDING_APPROVAL response means the order needs merchant sign-off, not that it " +
-          "failed. On success this actually creates a Razorpay order and returns the order " +
+          'PENDING_APPROVAL error — also isError: true, also never reaching Razorpay — so a ' +
+          'PENDING_APPROVAL response means the order needs merchant sign-off, not that it ' +
+          'failed. On success this actually creates a Razorpay order and returns the order ' +
           "row (id, status: 'created', razorpay_order_id, amount_paise). Every outcome, " +
-          "including a Razorpay-side failure, is written to the audit log.",
+          'including a Razorpay-side failure, is written to the audit log.',
         inputSchema: z.object({
-          items: z.array(LineItem).min(1).describe(
-            "The line items to buy. Each item's price_paise MUST be the CURRENT catalog " +
-            "price for that item_id, not one you saw earlier — checkout re-checks it and " +
-            "returns STALE_CATALOG if it has changed.",
-          ),
+          items: z
+            .array(LineItem)
+            .min(1)
+            .describe(
+              "The line items to buy. Each item's price_paise MUST be the CURRENT catalog " +
+                'price for that item_id, not one you saw earlier — checkout re-checks it and ' +
+                'returns STALE_CATALOG if it has changed.',
+            ),
         }),
       },
       async ({ items }) => {
@@ -333,16 +337,19 @@ export const mcpHandler = createMcpHandler(
       {
         title: 'Get Order Status',
         description:
-          "Fetch one of your own orders by id, with its current status (created, authorized, " +
-          "escalated, or failed) and razorpay_order_id when one exists. Returns { order: null } " +
-          "if the id is not one of your orders. That includes an id that belongs to a different " +
-          "merchant: this tool never reveals whether such an order exists elsewhere, it just " +
+          'Fetch one of your own orders by id, with its current status (created, authorized, ' +
+          'escalated, or failed) and razorpay_order_id when one exists. Returns { order: null } ' +
+          'if the id is not one of your orders. That includes an id that belongs to a different ' +
+          'merchant: this tool never reveals whether such an order exists elsewhere, it just ' +
           "isn't yours.",
         inputSchema: z.object({
-          order_id: z.string().min(1).describe(
-            'The order id, exactly as returned by checkout (in its success result or in a ' +
-            'PENDING_APPROVAL error).',
-          ),
+          order_id: z
+            .string()
+            .min(1)
+            .describe(
+              'The order id, exactly as returned by checkout (in its success result or in a ' +
+                'PENDING_APPROVAL error).',
+            ),
         }),
       },
       async ({ order_id }) => {

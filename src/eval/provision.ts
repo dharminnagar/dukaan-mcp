@@ -92,7 +92,13 @@ export async function resetEvalMerchants(namespace: string): Promise<EvalMerchan
   return ids;
 }
 
-function csvRow(p: { id: string; name: string; price_paise: number; stock: number; category: string }): string {
+function csvRow(p: {
+  id: string;
+  name: string;
+  price_paise: number;
+  stock: number;
+  category: string;
+}): string {
   const rupees = (p.price_paise / 100).toFixed(2);
   return `${p.id},${p.name},${rupees},${p.stock},${p.category}`;
 }
@@ -118,7 +124,11 @@ function policyToRawJson(policy: {
  * tests/gate.test.ts does, so only a unique digest SHAPE matters here, not
  * a real credential.
  */
-export async function ensureEvalAgent(merchantId: string, agentId: string, label: string): Promise<void> {
+export async function ensureEvalAgent(
+  merchantId: string,
+  agentId: string,
+  label: string,
+): Promise<void> {
   await query(
     `INSERT INTO agents (id, merchant_id, label, token_hash)
      VALUES ($1, $2, $3, $4)

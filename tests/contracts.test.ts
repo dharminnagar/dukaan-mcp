@@ -26,9 +26,7 @@ describe('AuditEvent', () => {
   });
 
   test('zod rejects reason_code: "NOPE"', () => {
-    expect(() =>
-      AuditEventInput.parse({ ...validAuditEventInput, reason_code: 'NOPE' }),
-    ).toThrow();
+    expect(() => AuditEventInput.parse({ ...validAuditEventInput, reason_code: 'NOPE' })).toThrow();
   });
 
   test('decision "allow" + reason_code "SPEND_CAP_EXCEEDED" is rejected by the refine', () => {

@@ -20,7 +20,10 @@ let token2: ReturnType<typeof mintAgentToken>;
 
 beforeAll(async () => {
   await query('DELETE FROM merchants WHERE id = $1', [MERCHANT_ID]);
-  await query('INSERT INTO merchants (id, name) VALUES ($1, $2)', [MERCHANT_ID, 'Auth Test Merchant']);
+  await query('INSERT INTO merchants (id, name) VALUES ($1, $2)', [
+    MERCHANT_ID,
+    'Auth Test Merchant',
+  ]);
 
   token1 = mintAgentToken();
   token2 = mintAgentToken();

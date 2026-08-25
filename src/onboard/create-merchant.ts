@@ -77,7 +77,14 @@ export async function createMerchant(args: {
       await client.query(
         `INSERT INTO products (merchant_id, id, name, price_paise, stock, category)
          VALUES ($1, $2, $3, $4, $5, $6)`,
-        [product.merchant_id, product.id, product.name, product.price_paise, product.stock, product.category],
+        [
+          product.merchant_id,
+          product.id,
+          product.name,
+          product.price_paise,
+          product.stock,
+          product.category,
+        ],
       );
     }
 

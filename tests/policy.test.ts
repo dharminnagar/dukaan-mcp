@@ -31,7 +31,9 @@ describe('parsePolicy', () => {
   });
 
   test('the merchant-a smoke fixture parses cleanly', async () => {
-    const json: unknown = await Bun.file(`${import.meta.dir}/../fixtures/merchant-a.policy.json`).json();
+    const json: unknown = await Bun.file(
+      `${import.meta.dir}/../fixtures/merchant-a.policy.json`,
+    ).json();
     const policy = parsePolicy(json, 'm_smoke');
     expect(policy.merchant_id).toBe('m_smoke');
     expect(policy.approval_threshold_paise).toBeLessThanOrEqual(policy.spend_cap_paise);

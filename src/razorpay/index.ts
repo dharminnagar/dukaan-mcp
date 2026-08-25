@@ -110,7 +110,13 @@ function razorpayError(
   razorpayCode: string | null,
   retryable: boolean,
 ): RazorpayError {
-  return { reason_code: 'RAZORPAY_ERROR', message, http_status: httpStatus, razorpay_code: razorpayCode, retryable };
+  return {
+    reason_code: 'RAZORPAY_ERROR',
+    message,
+    http_status: httpStatus,
+    razorpay_code: razorpayCode,
+    retryable,
+  };
 }
 
 export interface RazorpayHttpAdapterDeps {
@@ -170,7 +176,15 @@ export class RazorpayHttpAdapter implements RazorpayAdapter {
       } catch (err) {
         // Network-level failure (DNS, connection reset, timeout). Not a 429,
         // so it does not get the retry budget — see the module comment.
-        return { ok: false, error: razorpayError(`Network error contacting Razorpay: ${(err as Error).message}`, null, null, true) };
+        return {
+          ok: false,
+          error: razorpayError(
+            `Network error contacting Razorpay: ${(err as Error).message}`,
+            null,
+            null,
+            true,
+          ),
+        };
       }
 
       if (response.ok) {
@@ -210,7 +224,9 @@ export class RazorpayHttpAdapter implements RazorpayAdapter {
 
     // Unreachable: the loop above always returns on its last iteration
     // (attempt === MAX_RETRIES never satisfies canRetry).
-    throw new Error('createOrder: retry loop exited without returning — this is a bug in RazorpayHttpAdapter');
+    throw new Error(
+      'createOrder: retry loop exited without returning — this is a bug in RazorpayHttpAdapter',
+    );
   }
 }
 
@@ -239,7 +255,9 @@ export class FakeRazorpayAdapter implements RazorpayAdapter {
     this.calls.push(input);
     const next = this.queue.shift();
     if (next === undefined) {
-      throw new Error('FakeRazorpayAdapter.createOrder called with an empty response queue — call enqueue() first.');
+      throw new Error(
+        'FakeRazorpayAdapter.createOrder called with an empty response queue — call enqueue() first.',
+      );
     }
     return next;
   }

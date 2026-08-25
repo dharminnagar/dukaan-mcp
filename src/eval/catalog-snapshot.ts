@@ -14,7 +14,10 @@ import type { EvalMerchant } from './transcript';
 
 const FIXTURES_DIR = `${import.meta.dir}/../../fixtures`;
 
-const DEMO_SOURCE: Record<EvalMerchant, { csvPath: string; policyPath: string; sourceMerchantId: string }> = {
+const DEMO_SOURCE: Record<
+  EvalMerchant,
+  { csvPath: string; policyPath: string; sourceMerchantId: string }
+> = {
   kirana: {
     csvPath: `${FIXTURES_DIR}/demo-merchant-a.csv`,
     policyPath: `${FIXTURES_DIR}/demo-merchant-a.policy.json`,
@@ -64,7 +67,9 @@ export function loadCatalogSnapshots(): Record<EvalMerchant, CatalogSnapshot> {
 export function getProduct(snapshot: CatalogSnapshot, itemId: string): Product {
   const product = snapshot.productsById.get(itemId);
   if (product === undefined) {
-    throw new Error(`catalog-snapshot: "${itemId}" is not in the ${snapshot.merchant} demo catalog`);
+    throw new Error(
+      `catalog-snapshot: "${itemId}" is not in the ${snapshot.merchant} demo catalog`,
+    );
   }
   return product;
 }

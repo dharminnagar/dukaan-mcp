@@ -137,7 +137,10 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  server.stop();
+  // stop() returns a promise; not awaiting it leaves the socket open past
+  // teardown, which is how a suite starts failing intermittently on the next
+  // file that binds a port.
+  await server.stop(true);
   await cleanupMerchant(MERCHANT_A);
   await cleanupMerchant(MERCHANT_B);
   await cleanupMerchant(MERCHANT_C);
@@ -231,10 +234,14 @@ describe('list_products / get_product tenancy', () => {
     }
 
     const listProducts = tools.find((t) => t.name === 'list_products');
-    expect(Object.keys((listProducts?.inputSchema as InputSchemaShape).properties ?? {})).toEqual([]);
+    expect(Object.keys((listProducts?.inputSchema as InputSchemaShape).properties ?? {})).toEqual(
+      [],
+    );
 
     const getProduct = tools.find((t) => t.name === 'get_product');
-    expect(Object.keys((getProduct?.inputSchema as InputSchemaShape).properties ?? {})).toEqual(['id']);
+    expect(Object.keys((getProduct?.inputSchema as InputSchemaShape).properties ?? {})).toEqual([
+      'id',
+    ]);
 
     await client.close();
   });
@@ -284,7 +291,10 @@ describe('list_products / get_product tenancy', () => {
 
   test('get_product with an id that exists nowhere also returns not-found', async () => {
     const client = await connect(tokenA);
-    const result = await client.callTool({ name: 'get_product', arguments: { id: 'sku-does-not-exist' } });
+    const result = await client.callTool({
+      name: 'get_product',
+      arguments: { id: 'sku-does-not-exist' },
+    });
     const { product } = JSON.parse(textOf(result)) as { product: unknown };
     expect(product).toBeNull();
     await client.close();
@@ -346,7 +356,11 @@ interface AuditRow {
   detail: Record<string, unknown> | null;
 }
 
-async function auditRows(merchantId: string, action: string, decision: string): Promise<AuditRow[]> {
+async function auditRows(
+  merchantId: string,
+  action: string,
+  decision: string,
+): Promise<AuditRow[]> {
   return query<AuditRow>(
     `SELECT order_id, action, rule, decision, reason_code, amount_paise, detail
        FROM audit_events
@@ -377,7 +391,9 @@ describe('checkout', () => {
     expect(error.item_id).toBe('sku-a1');
     expect(error.true_price_paise).toBe(19900);
 
-    const orders = await query<{ id: string }>('SELECT id FROM orders WHERE merchant_id = $1', [MERCHANT_A]);
+    const orders = await query<{ id: string }>('SELECT id FROM orders WHERE merchant_id = $1', [
+      MERCHANT_A,
+    ]);
     expect(orders).toHaveLength(0);
   });
 
@@ -416,7 +432,10 @@ describe('checkout', () => {
 
     // Another merchant's token must not be able to read A's order.
     const clientB = await connect(tokenB);
-    const crossResult = await clientB.callTool({ name: 'get_order_status', arguments: { order_id: order.id } });
+    const crossResult = await clientB.callTool({
+      name: 'get_order_status',
+      arguments: { order_id: order.id },
+    });
     await clientB.close();
     const { order: crossOrder } = JSON.parse(textOf(crossResult)) as { order: unknown };
     expect(crossOrder).toBeNull();
@@ -435,12 +454,20 @@ describe('checkout', () => {
     await client.close();
 
     expect(result.isError).toBe(true);
-    const error = JSON.parse(textOf(result)) as { reason_code: string; order_id: string; amount_paise: number };
+    const error = JSON.parse(textOf(result)) as {
+      reason_code: string;
+      order_id: string;
+      amount_paise: number;
+    };
     expect(error.reason_code).toBe('PENDING_APPROVAL');
     expect(error.amount_paise).toBe(149700);
     expect(fake.callCount).toBe(callCountBefore);
 
-    const rows = await query<{ status: string; razorpay_order_id: string | null; amount_paise: number }>(
+    const rows = await query<{
+      status: string;
+      razorpay_order_id: string | null;
+      amount_paise: number;
+    }>(
       'SELECT status, razorpay_order_id, amount_paise FROM orders WHERE id = $1 AND merchant_id = $2',
       [error.order_id, MERCHANT_A],
     );
@@ -466,14 +493,22 @@ describe('checkout', () => {
     expect(error.reason_code).toBe('SPEND_CAP_EXCEEDED');
     expect(fake.callCount).toBe(callCountBefore);
 
-    const orders = await query<{ id: string }>('SELECT id FROM orders WHERE merchant_id = $1', [MERCHANT_C]);
+    const orders = await query<{ id: string }>('SELECT id FROM orders WHERE merchant_id = $1', [
+      MERCHANT_C,
+    ]);
     expect(orders).toHaveLength(0);
   });
 
   test('a Razorpay-side failure on the allow path fails the order and audits RAZORPAY_ERROR, without throwing', async () => {
     fake.enqueue({
       ok: false,
-      error: { reason_code: 'RAZORPAY_ERROR', message: 'simulated 500', http_status: 500, razorpay_code: null, retryable: true },
+      error: {
+        reason_code: 'RAZORPAY_ERROR',
+        message: 'simulated 500',
+        http_status: 500,
+        razorpay_code: null,
+        retryable: true,
+      },
     });
 
     const client = await connect(tokenB);
@@ -545,7 +580,9 @@ describe('checkout under concurrency (DUK-29)', () => {
         clients.map((client) =>
           client.callTool({
             name: 'checkout',
-            arguments: { items: [{ item_id: 'sku-d1', quantity: 1, asserted_price_paise: AMOUNT_PAISE }] },
+            arguments: {
+              items: [{ item_id: 'sku-d1', quantity: 1, asserted_price_paise: AMOUNT_PAISE }],
+            },
           }),
         ),
       );
@@ -578,7 +615,10 @@ describe('checkout under concurrency (DUK-29)', () => {
 describe('get_order_status', () => {
   test('a nonexistent order id returns not-found', async () => {
     const client = await connect(tokenA);
-    const result = await client.callTool({ name: 'get_order_status', arguments: { order_id: 'o_does-not-exist' } });
+    const result = await client.callTool({
+      name: 'get_order_status',
+      arguments: { order_id: 'o_does-not-exist' },
+    });
     await client.close();
 
     expect(result.isError).not.toBe(true);
@@ -599,15 +639,21 @@ describe('all four tools are usable over HTTP under either token', () => {
         'list_products',
       ]);
 
-      await expect(client.callTool({ name: 'list_products', arguments: {} })).resolves.toBeDefined();
-      await expect(client.callTool({ name: 'get_product', arguments: { id: 'does-not-exist' } })).resolves.toBeDefined();
+      await expect(
+        client.callTool({ name: 'list_products', arguments: {} }),
+      ).resolves.toBeDefined();
+      await expect(
+        client.callTool({ name: 'get_product', arguments: { id: 'does-not-exist' } }),
+      ).resolves.toBeDefined();
       // A nonexistent item_id is a deliberately side-effect-free way to
       // exercise checkout here: it always blocks with STALE_CATALOG, so this
       // loop never touches the fake adapter or writes an order row.
       await expect(
         client.callTool({
           name: 'checkout',
-          arguments: { items: [{ item_id: 'does-not-exist', quantity: 1, asserted_price_paise: 100 }] },
+          arguments: {
+            items: [{ item_id: 'does-not-exist', quantity: 1, asserted_price_paise: 100 }],
+          },
         }),
       ).resolves.toBeDefined();
       await expect(

@@ -6,7 +6,10 @@ import { pool, closePool } from './pool';
 const MIGRATIONS_DIR = join(import.meta.dir, '..', '..', 'migrations');
 const LOCK_KEY = 6_884_705;
 
-interface MigrationRow { id: string; checksum: string }
+interface MigrationRow {
+  id: string;
+  checksum: string;
+}
 
 async function main(): Promise<void> {
   const client = await pool.connect();
@@ -26,7 +29,9 @@ async function main(): Promise<void> {
     const { rows } = await client.query<MigrationRow>('SELECT id, checksum FROM _migrations');
     const applied = new Map(rows.map((r) => [r.id, r.checksum]));
 
-    const files = readdirSync(MIGRATIONS_DIR).filter((f) => f.endsWith('.sql')).sort();
+    const files = readdirSync(MIGRATIONS_DIR)
+      .filter((f) => f.endsWith('.sql'))
+      .sort();
     if (files.length === 0) throw new Error(`No .sql files found in ${MIGRATIONS_DIR}`);
 
     let pending = 0;
@@ -39,8 +44,8 @@ async function main(): Promise<void> {
         if (prior !== checksum) {
           throw new Error(
             `Migration ${file} was already applied but its contents changed ` +
-            `(${prior.slice(0, 12)}... -> ${checksum.slice(0, 12)}...). ` +
-            `Never edit an applied migration. Write a new one.`,
+              `(${prior.slice(0, 12)}... -> ${checksum.slice(0, 12)}...). ` +
+              `Never edit an applied migration. Write a new one.`,
           );
         }
         console.log(`  = ${file}`);
@@ -52,10 +57,10 @@ async function main(): Promise<void> {
       await client.query('BEGIN');
       try {
         await client.query(sql);
-        await client.query(
-          'INSERT INTO _migrations (id, checksum) VALUES ($1, $2)',
-          [file, checksum],
-        );
+        await client.query('INSERT INTO _migrations (id, checksum) VALUES ($1, $2)', [
+          file,
+          checksum,
+        ]);
         await client.query('COMMIT');
       } catch (err) {
         await client.query('ROLLBACK');

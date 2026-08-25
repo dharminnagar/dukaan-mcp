@@ -1,7 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { query } from '../db/pool';
 import { AuditEvent, AuditEventInput } from '../shared/contracts';
-import type { AuditEvent as AuditEventType, AuditEventInput as AuditEventInputType } from '../shared/contracts';
+import type {
+  AuditEvent as AuditEventType,
+  AuditEventInput as AuditEventInputType,
+} from '../shared/contracts';
 
 /**
  * The ONLY module permitted to `INSERT INTO audit_events`. Every gate branch —

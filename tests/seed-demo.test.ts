@@ -23,8 +23,12 @@ const MERCHANT_B = 'm_demo_electronics';
 
 const CSV_A = await Bun.file(`${REPO_ROOT}/fixtures/demo-merchant-a.csv`).text();
 const CSV_B = await Bun.file(`${REPO_ROOT}/fixtures/demo-merchant-b.csv`).text();
-const POLICY_JSON_A: unknown = await Bun.file(`${REPO_ROOT}/fixtures/demo-merchant-a.policy.json`).json();
-const POLICY_JSON_B: unknown = await Bun.file(`${REPO_ROOT}/fixtures/demo-merchant-b.policy.json`).json();
+const POLICY_JSON_A: unknown = await Bun.file(
+  `${REPO_ROOT}/fixtures/demo-merchant-a.policy.json`,
+).json();
+const POLICY_JSON_B: unknown = await Bun.file(
+  `${REPO_ROOT}/fixtures/demo-merchant-b.policy.json`,
+).json();
 
 const { products: productsA } = parseCatalogCsv(CSV_A, MERCHANT_A);
 const { products: productsB } = parseCatalogCsv(CSV_B, MERCHANT_B);
@@ -82,7 +86,13 @@ interface MerchantSnapshot {
     category_allowlist: string[];
     window_seconds: number;
   } | null;
-  products: Array<{ id: string; name: string; price_paise: number; stock: number; category: string }>;
+  products: Array<{
+    id: string;
+    name: string;
+    price_paise: number;
+    stock: number;
+    category: string;
+  }>;
   agentCount: string | undefined;
 }
 
@@ -100,7 +110,13 @@ async function snapshot(merchantId: string): Promise<MerchantSnapshot> {
     'SELECT spend_cap_paise, approval_threshold_paise, category_allowlist, window_seconds FROM policies WHERE merchant_id = $1',
     [merchantId],
   );
-  const products = await query<{ id: string; name: string; price_paise: number; stock: number; category: string }>(
+  const products = await query<{
+    id: string;
+    name: string;
+    price_paise: number;
+    stock: number;
+    category: string;
+  }>(
     'SELECT id, name, price_paise, stock, category FROM products WHERE merchant_id = $1 ORDER BY id',
     [merchantId],
   );
@@ -137,10 +153,12 @@ describe('DUK-11 demo catalog design (fixtures only, no DB)', () => {
     expect(policyA.spend_cap_paise).not.toBe(policyB.spend_cap_paise);
     expect(policyA.approval_threshold_paise).not.toBe(policyB.approval_threshold_paise);
     expect(policyA.window_seconds).not.toBe(policyB.window_seconds);
-    expect([...policyA.category_allowlist].sort()).not.toEqual([...policyB.category_allowlist].sort());
+    expect([...policyA.category_allowlist].sort()).not.toEqual(
+      [...policyB.category_allowlist].sort(),
+    );
   });
 
-  test('catalogs include categories outside each merchant\'s own allowlist, so CATEGORY_NOT_ALLOWED is reachable', () => {
+  test("catalogs include categories outside each merchant's own allowlist, so CATEGORY_NOT_ALLOWED is reachable", () => {
     const outsideA = productsA.filter((p) => !policyA.category_allowlist.includes(p.category));
     const outsideB = productsB.filter((p) => !policyB.category_allowlist.includes(p.category));
     expect(outsideA.length).toBeGreaterThan(0);
@@ -185,20 +203,22 @@ describe('DUK-11 demo catalog design (fixtures only, no DB)', () => {
       }
     });
 
-    test('4. threshold straddling: an item priced between B\'s and A\'s approval thresholds escalates on B but not on A', () => {
+    test("4. threshold straddling: an item priced between B's and A's approval thresholds escalates on B but not on A", () => {
       const powerBank = findProduct(productsB, 'sku-b14'); // Power Bank 10000mAh, Rs 1200
       const orderValue = powerBank.price_paise;
       expect(orderValue).toBe(120000);
       expect(policyB.approval_threshold_paise).toBeLessThan(orderValue);
       expect(orderValue).toBeLessThanOrEqual(policyA.approval_threshold_paise);
       // Arithmetic against the real policies, not a hypothetical gate call:
-      const escalatesOnB = orderValue > policyB.approval_threshold_paise && orderValue <= policyB.spend_cap_paise;
-      const escalatesOnA = orderValue > policyA.approval_threshold_paise && orderValue <= policyA.spend_cap_paise;
+      const escalatesOnB =
+        orderValue > policyB.approval_threshold_paise && orderValue <= policyB.spend_cap_paise;
+      const escalatesOnA =
+        orderValue > policyA.approval_threshold_paise && orderValue <= policyA.spend_cap_paise;
       expect(escalatesOnB).toBe(true);
       expect(escalatesOnA).toBe(false);
     });
 
-    test('5. merchant-side misclaim: catalog carries authoritative price/stock truth an agent\'s stale assertion can be diffed against', () => {
+    test("5. merchant-side misclaim: catalog carries authoritative price/stock truth an agent's stale assertion can be diffed against", () => {
       // The STALE_CATALOG/misclaim check re-reads this exact row server-side;
       // the seed data just needs a well-formed ground truth to diff against.
       const paneer = findProduct(productsA, 'sku-a10');

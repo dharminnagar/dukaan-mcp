@@ -15,13 +15,55 @@ import type { TenantContext } from '../src/shared/contracts';
  */
 const MERCHANT = 'm_gate_test';
 
-const PRODUCT_BASIC = { id: 'p_gate_basic', name: 'Basic Item', price_paise: 10_000, stock: 5, category: 'groceries' };
-const PRODUCT_DISALLOWED_CATEGORY = { id: 'p_gate_electronics', name: 'Gadget', price_paise: 20_000, stock: 3, category: 'electronics' };
-const PRODUCT_MULTISESSION = { id: 'p_gate_multisession', name: 'Multisession Item', price_paise: 50_000, stock: 10, category: 'groceries' };
-const PRODUCT_APPROVAL = { id: 'p_gate_approval', name: 'Approval Item', price_paise: 60_000, stock: 10, category: 'groceries' };
-const PRODUCT_WINDOW = { id: 'p_gate_window', name: 'Window Item', price_paise: 20_000, stock: 10, category: 'groceries' };
-const PRODUCT_LOW_STOCK = { id: 'p_gate_low_stock', name: 'Low Stock Item', price_paise: 15_000, stock: 2, category: 'groceries' };
-const PRODUCT_CAP_EDGE = { id: 'p_gate_cap_edge', name: 'Cap Edge Item', price_paise: 40_000, stock: 10, category: 'groceries' };
+const PRODUCT_BASIC = {
+  id: 'p_gate_basic',
+  name: 'Basic Item',
+  price_paise: 10_000,
+  stock: 5,
+  category: 'groceries',
+};
+const PRODUCT_DISALLOWED_CATEGORY = {
+  id: 'p_gate_electronics',
+  name: 'Gadget',
+  price_paise: 20_000,
+  stock: 3,
+  category: 'electronics',
+};
+const PRODUCT_MULTISESSION = {
+  id: 'p_gate_multisession',
+  name: 'Multisession Item',
+  price_paise: 50_000,
+  stock: 10,
+  category: 'groceries',
+};
+const PRODUCT_APPROVAL = {
+  id: 'p_gate_approval',
+  name: 'Approval Item',
+  price_paise: 60_000,
+  stock: 10,
+  category: 'groceries',
+};
+const PRODUCT_WINDOW = {
+  id: 'p_gate_window',
+  name: 'Window Item',
+  price_paise: 20_000,
+  stock: 10,
+  category: 'groceries',
+};
+const PRODUCT_LOW_STOCK = {
+  id: 'p_gate_low_stock',
+  name: 'Low Stock Item',
+  price_paise: 15_000,
+  stock: 2,
+  category: 'groceries',
+};
+const PRODUCT_CAP_EDGE = {
+  id: 'p_gate_cap_edge',
+  name: 'Cap Edge Item',
+  price_paise: 40_000,
+  stock: 10,
+  category: 'groceries',
+};
 
 const SPEND_CAP_PAISE = 100_000;
 const APPROVAL_THRESHOLD_PAISE = 50_000;
@@ -29,8 +71,20 @@ const APPROVAL_THRESHOLD_PAISE = 50_000;
 // Priced exactly at, and one paise past, APPROVAL_THRESHOLD_PAISE so the
 // threshold boundary tests don't have to reconstruct the number from
 // multiple line items.
-const PRODUCT_THRESHOLD_AT = { id: 'p_gate_threshold_at', name: 'Threshold At Item', price_paise: APPROVAL_THRESHOLD_PAISE, stock: 10, category: 'groceries' };
-const PRODUCT_THRESHOLD_OVER = { id: 'p_gate_threshold_over', name: 'Threshold Over Item', price_paise: APPROVAL_THRESHOLD_PAISE + 1, stock: 10, category: 'groceries' };
+const PRODUCT_THRESHOLD_AT = {
+  id: 'p_gate_threshold_at',
+  name: 'Threshold At Item',
+  price_paise: APPROVAL_THRESHOLD_PAISE,
+  stock: 10,
+  category: 'groceries',
+};
+const PRODUCT_THRESHOLD_OVER = {
+  id: 'p_gate_threshold_over',
+  name: 'Threshold Over Item',
+  price_paise: APPROVAL_THRESHOLD_PAISE + 1,
+  stock: 10,
+  category: 'groceries',
+};
 
 /**
  * A second, fully independent merchant for the cross-tenant isolation tests.
@@ -41,10 +95,26 @@ const PRODUCT_THRESHOLD_OVER = { id: 'p_gate_threshold_over', name: 'Threshold O
 const MERCHANT_2 = 'm_gate_test_tenant2';
 const TENANT2_SPEND_CAP_PAISE = 3_000;
 const TENANT2_APPROVAL_THRESHOLD_PAISE = 3_000;
-const PRODUCT_TENANT2_PERMISSIVE = { id: 'p_gate_tenant2_permissive', name: 'Tenant2 Permissive Item', price_paise: 1_000, stock: 10, category: 'electronics' };
-const PRODUCT_TENANT2_CAP_EDGE = { id: 'p_gate_tenant2_cap_edge', name: 'Tenant2 Cap Edge Item', price_paise: 3_500, stock: 10, category: 'electronics' };
+const PRODUCT_TENANT2_PERMISSIVE = {
+  id: 'p_gate_tenant2_permissive',
+  name: 'Tenant2 Permissive Item',
+  price_paise: 1_000,
+  stock: 10,
+  category: 'electronics',
+};
+const PRODUCT_TENANT2_CAP_EDGE = {
+  id: 'p_gate_tenant2_cap_edge',
+  name: 'Tenant2 Cap Edge Item',
+  price_paise: 3_500,
+  stock: 10,
+  category: 'electronics',
+};
 
-async function makeAgentCtx(agentSuffix: string, sessionSuffix = agentSuffix, merchantId = MERCHANT): Promise<TenantContext> {
+async function makeAgentCtx(
+  agentSuffix: string,
+  sessionSuffix = agentSuffix,
+  merchantId = MERCHANT,
+): Promise<TenantContext> {
   const agentId = `ag_gate_${agentSuffix}`;
   await query('INSERT INTO agents (id, merchant_id, label, token_hash) VALUES ($1, $2, $3, $4)', [
     agentId,
@@ -108,7 +178,10 @@ beforeAll(async () => {
   // field, not just a coincidentally-matching one.
   await query('DELETE FROM audit_events WHERE merchant_id = $1', [MERCHANT_2]);
   await query('DELETE FROM merchants WHERE id = $1', [MERCHANT_2]);
-  await query('INSERT INTO merchants (id, name) VALUES ($1, $2)', [MERCHANT_2, 'Gate Test Tenant2 Kirana']);
+  await query('INSERT INTO merchants (id, name) VALUES ($1, $2)', [
+    MERCHANT_2,
+    'Gate Test Tenant2 Kirana',
+  ]);
   await query(
     `INSERT INTO policies (merchant_id, spend_cap_paise, approval_threshold_paise, category_allowlist, window_seconds)
      VALUES ($1, $2, $3, $4, $5)`,
@@ -136,7 +209,9 @@ afterAll(async () => {
 describe('check 1: authoritative re-read', () => {
   test('asserted price below catalog price -> STALE_CATALOG with mismatch "price" and the true price', async () => {
     const ctx = await makeAgentCtx('stale_price');
-    const req: CheckoutRequest = { items: [{ item_id: PRODUCT_BASIC.id, quantity: 1, asserted_price_paise: 9_000 }] };
+    const req: CheckoutRequest = {
+      items: [{ item_id: PRODUCT_BASIC.id, quantity: 1, asserted_price_paise: 9_000 }],
+    };
 
     const outcome = await decide(ctx, req, makeDeps(ctx));
 
@@ -153,7 +228,13 @@ describe('check 1: authoritative re-read', () => {
   test('asserted qty above stock -> STALE_CATALOG with mismatch "stock"', async () => {
     const ctx = await makeAgentCtx('stale_stock');
     const req: CheckoutRequest = {
-      items: [{ item_id: PRODUCT_BASIC.id, quantity: PRODUCT_BASIC.stock + 1, asserted_price_paise: PRODUCT_BASIC.price_paise }],
+      items: [
+        {
+          item_id: PRODUCT_BASIC.id,
+          quantity: PRODUCT_BASIC.stock + 1,
+          asserted_price_paise: PRODUCT_BASIC.price_paise,
+        },
+      ],
     };
 
     const outcome = await decide(ctx, req, makeDeps(ctx));
@@ -168,7 +249,9 @@ describe('check 1: authoritative re-read', () => {
 
   test('unknown item id -> STALE_CATALOG with mismatch "missing"', async () => {
     const ctx = await makeAgentCtx('stale_missing');
-    const req: CheckoutRequest = { items: [{ item_id: 'p_gate_does_not_exist', quantity: 1, asserted_price_paise: 5_000 }] };
+    const req: CheckoutRequest = {
+      items: [{ item_id: 'p_gate_does_not_exist', quantity: 1, asserted_price_paise: 5_000 }],
+    };
 
     const outcome = await decide(ctx, req, makeDeps(ctx));
 
@@ -183,7 +266,9 @@ describe('check 1: authoritative re-read', () => {
 
   test('an authoritative-re-read block writes exactly one AuditEvent', async () => {
     const ctx = await makeAgentCtx('stale_audit_count');
-    const req: CheckoutRequest = { items: [{ item_id: PRODUCT_BASIC.id, quantity: 1, asserted_price_paise: 1 }] };
+    const req: CheckoutRequest = {
+      items: [{ item_id: PRODUCT_BASIC.id, quantity: 1, asserted_price_paise: 1 }],
+    };
 
     await decide(ctx, req, makeDeps(ctx));
 
@@ -206,7 +291,11 @@ describe('check 2: spend cap', () => {
       razorpay_order_id: null,
     });
 
-    const req: CheckoutRequest = { items: [{ item_id: PRODUCT_BASIC.id, quantity: 1, asserted_price_paise: PRODUCT_BASIC.price_paise }] };
+    const req: CheckoutRequest = {
+      items: [
+        { item_id: PRODUCT_BASIC.id, quantity: 1, asserted_price_paise: PRODUCT_BASIC.price_paise },
+      ],
+    };
     const outcome = await decide(ctx, req, makeDeps(ctx));
 
     expect(outcome.decision).toBe('block');
@@ -229,8 +318,16 @@ describe('check 2: spend cap', () => {
       hashToken(agentId),
     ]);
 
-    const ctxSession1: TenantContext = { merchant_id: MERCHANT, agent_id: agentId, session_id: 's_gate_multisession_1' };
-    const ctxSession2: TenantContext = { merchant_id: MERCHANT, agent_id: agentId, session_id: 's_gate_multisession_2' };
+    const ctxSession1: TenantContext = {
+      merchant_id: MERCHANT,
+      agent_id: agentId,
+      session_id: 's_gate_multisession_1',
+    };
+    const ctxSession2: TenantContext = {
+      merchant_id: MERCHANT,
+      agent_id: agentId,
+      session_id: 's_gate_multisession_2',
+    };
     await new TenantRepo(ctxSession1).ensureSession();
     await new TenantRepo(ctxSession2).ensureSession();
 
@@ -240,7 +337,13 @@ describe('check 2: spend cap', () => {
       merchant_id: ctxSession1.merchant_id,
       agent_id: ctxSession1.agent_id,
       session_id: ctxSession1.session_id,
-      items: [{ item_id: PRODUCT_MULTISESSION.id, quantity: 1, asserted_price_paise: PRODUCT_MULTISESSION.price_paise }],
+      items: [
+        {
+          item_id: PRODUCT_MULTISESSION.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_MULTISESSION.price_paise,
+        },
+      ],
       amount_paise: 60_000,
       status: 'created',
       razorpay_order_id: null,
@@ -251,7 +354,13 @@ describe('check 2: spend cap', () => {
     // If the cap were (wrongly) scoped to session_id, this would see 0 prior
     // spend and be allowed - exactly the bug projectmem issue #0009 flags.
     const req: CheckoutRequest = {
-      items: [{ item_id: PRODUCT_MULTISESSION.id, quantity: 1, asserted_price_paise: PRODUCT_MULTISESSION.price_paise }],
+      items: [
+        {
+          item_id: PRODUCT_MULTISESSION.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_MULTISESSION.price_paise,
+        },
+      ],
     };
     const outcome = await decide(ctxSession2, req, makeDeps(ctxSession2));
 
@@ -289,7 +398,15 @@ describe('check 2: spend cap', () => {
     // Policy window is 3600s (1 hour). If the 90_000 order above counted,
     // 90_000 + 20_000 = 110_000 would exceed the 100_000 cap and this would
     // block. Because it is 2 hours old, it must not count, and this must allow.
-    const req: CheckoutRequest = { items: [{ item_id: PRODUCT_WINDOW.id, quantity: 1, asserted_price_paise: PRODUCT_WINDOW.price_paise }] };
+    const req: CheckoutRequest = {
+      items: [
+        {
+          item_id: PRODUCT_WINDOW.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_WINDOW.price_paise,
+        },
+      ],
+    };
     const outcome = await decide(ctx, req, makeDeps(ctx));
 
     expect(outcome.decision).toBe('allow');
@@ -317,7 +434,15 @@ describe('check 2: spend cap', () => {
 
     // 30 minutes old is still inside the 1-hour window, so this 90_000 MUST
     // count: 90_000 + 20_000 = 110_000 > the 100_000 cap -> block.
-    const req: CheckoutRequest = { items: [{ item_id: PRODUCT_WINDOW.id, quantity: 1, asserted_price_paise: PRODUCT_WINDOW.price_paise }] };
+    const req: CheckoutRequest = {
+      items: [
+        {
+          item_id: PRODUCT_WINDOW.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_WINDOW.price_paise,
+        },
+      ],
+    };
     const outcome = await decide(ctx, req, makeDeps(ctx));
 
     expect(outcome.decision).toBe('block');
@@ -337,13 +462,27 @@ describe('check 2: spend cap', () => {
       merchant_id: ctx.merchant_id,
       agent_id: ctx.agent_id,
       session_id: ctx.session_id,
-      items: [{ item_id: PRODUCT_CAP_EDGE.id, quantity: 1, asserted_price_paise: PRODUCT_CAP_EDGE.price_paise }],
+      items: [
+        {
+          item_id: PRODUCT_CAP_EDGE.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_CAP_EDGE.price_paise,
+        },
+      ],
       amount_paise: 60_000,
       status: 'created',
       razorpay_order_id: null,
     });
 
-    const req: CheckoutRequest = { items: [{ item_id: PRODUCT_CAP_EDGE.id, quantity: 1, asserted_price_paise: PRODUCT_CAP_EDGE.price_paise }] };
+    const req: CheckoutRequest = {
+      items: [
+        {
+          item_id: PRODUCT_CAP_EDGE.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_CAP_EDGE.price_paise,
+        },
+      ],
+    };
     const outcome = await decide(ctx, req, makeDeps(ctx));
 
     expect(outcome.decision).toBe('allow');
@@ -362,13 +501,27 @@ describe('check 2: spend cap', () => {
       merchant_id: ctx.merchant_id,
       agent_id: ctx.agent_id,
       session_id: ctx.session_id,
-      items: [{ item_id: PRODUCT_CAP_EDGE.id, quantity: 1, asserted_price_paise: PRODUCT_CAP_EDGE.price_paise }],
+      items: [
+        {
+          item_id: PRODUCT_CAP_EDGE.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_CAP_EDGE.price_paise,
+        },
+      ],
       amount_paise: 60_001,
       status: 'created',
       razorpay_order_id: null,
     });
 
-    const req: CheckoutRequest = { items: [{ item_id: PRODUCT_CAP_EDGE.id, quantity: 1, asserted_price_paise: PRODUCT_CAP_EDGE.price_paise }] };
+    const req: CheckoutRequest = {
+      items: [
+        {
+          item_id: PRODUCT_CAP_EDGE.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_CAP_EDGE.price_paise,
+        },
+      ],
+    };
     const outcome = await decide(ctx, req, makeDeps(ctx));
 
     expect(outcome.decision).toBe('block');
@@ -384,7 +537,13 @@ describe('check 3: category allowlist', () => {
   test('a line item outside the allowlist -> CATEGORY_NOT_ALLOWED', async () => {
     const ctx = await makeAgentCtx('category');
     const req: CheckoutRequest = {
-      items: [{ item_id: PRODUCT_DISALLOWED_CATEGORY.id, quantity: 1, asserted_price_paise: PRODUCT_DISALLOWED_CATEGORY.price_paise }],
+      items: [
+        {
+          item_id: PRODUCT_DISALLOWED_CATEGORY.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_DISALLOWED_CATEGORY.price_paise,
+        },
+      ],
     };
 
     const outcome = await decide(ctx, req, makeDeps(ctx));
@@ -406,7 +565,11 @@ describe('check 3: category allowlist', () => {
     const req: CheckoutRequest = {
       items: [
         { item_id: PRODUCT_BASIC.id, quantity: 1, asserted_price_paise: PRODUCT_BASIC.price_paise },
-        { item_id: PRODUCT_DISALLOWED_CATEGORY.id, quantity: 1, asserted_price_paise: PRODUCT_DISALLOWED_CATEGORY.price_paise },
+        {
+          item_id: PRODUCT_DISALLOWED_CATEGORY.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_DISALLOWED_CATEGORY.price_paise,
+        },
       ],
     };
 
@@ -425,7 +588,15 @@ describe('check 3: category allowlist', () => {
 describe('check 4: approval threshold', () => {
   test('amount above approval_threshold_paise -> PENDING_APPROVAL, and does not fall through to allow', async () => {
     const ctx = await makeAgentCtx('approval');
-    const req: CheckoutRequest = { items: [{ item_id: PRODUCT_APPROVAL.id, quantity: 1, asserted_price_paise: PRODUCT_APPROVAL.price_paise }] };
+    const req: CheckoutRequest = {
+      items: [
+        {
+          item_id: PRODUCT_APPROVAL.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_APPROVAL.price_paise,
+        },
+      ],
+    };
 
     const outcome = await decide(ctx, req, makeDeps(ctx));
 
@@ -445,7 +616,13 @@ describe('check 4: approval threshold', () => {
     // The check is `attempted > threshold`, so equality must fall through
     // to allow, not escalate.
     const req: CheckoutRequest = {
-      items: [{ item_id: PRODUCT_THRESHOLD_AT.id, quantity: 1, asserted_price_paise: PRODUCT_THRESHOLD_AT.price_paise }],
+      items: [
+        {
+          item_id: PRODUCT_THRESHOLD_AT.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_THRESHOLD_AT.price_paise,
+        },
+      ],
     };
 
     const outcome = await decide(ctx, req, makeDeps(ctx));
@@ -461,7 +638,13 @@ describe('check 4: approval threshold', () => {
     // escalates; on merchant A (threshold 150000), it doesn't. Same shape
     // here, pinned from the low side of the boundary.
     const req: CheckoutRequest = {
-      items: [{ item_id: PRODUCT_THRESHOLD_OVER.id, quantity: 1, asserted_price_paise: PRODUCT_THRESHOLD_OVER.price_paise }],
+      items: [
+        {
+          item_id: PRODUCT_THRESHOLD_OVER.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_THRESHOLD_OVER.price_paise,
+        },
+      ],
     };
 
     const outcome = await decide(ctx, req, makeDeps(ctx));
@@ -483,7 +666,15 @@ describe('check 4: approval threshold', () => {
     // adapter into decide() and called it on the escalate path, this queue
     // being empty would make that call throw and fail this test outright.
     const adapter = new FakeRazorpayAdapter();
-    const req: CheckoutRequest = { items: [{ item_id: PRODUCT_APPROVAL.id, quantity: 1, asserted_price_paise: PRODUCT_APPROVAL.price_paise }] };
+    const req: CheckoutRequest = {
+      items: [
+        {
+          item_id: PRODUCT_APPROVAL.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_APPROVAL.price_paise,
+        },
+      ],
+    };
 
     const outcome = await decide(ctx, req, makeDeps(ctx));
 
@@ -497,7 +688,11 @@ describe('check 4: approval threshold', () => {
 describe('check 5: allow', () => {
   test('a clean order allows, with amount_paise, and writes exactly one allow AuditEvent', async () => {
     const ctx = await makeAgentCtx('allow');
-    const req: CheckoutRequest = { items: [{ item_id: PRODUCT_BASIC.id, quantity: 2, asserted_price_paise: PRODUCT_BASIC.price_paise }] };
+    const req: CheckoutRequest = {
+      items: [
+        { item_id: PRODUCT_BASIC.id, quantity: 2, asserted_price_paise: PRODUCT_BASIC.price_paise },
+      ],
+    };
 
     const outcome = await decide(ctx, req, makeDeps(ctx));
 
@@ -528,7 +723,11 @@ describe('multi-item baskets: the right rule names the right item', () => {
     const req: CheckoutRequest = {
       items: [
         { item_id: PRODUCT_BASIC.id, quantity: 1, asserted_price_paise: PRODUCT_BASIC.price_paise },
-        { item_id: PRODUCT_LOW_STOCK.id, quantity: 3, asserted_price_paise: PRODUCT_LOW_STOCK.price_paise },
+        {
+          item_id: PRODUCT_LOW_STOCK.id,
+          quantity: 3,
+          asserted_price_paise: PRODUCT_LOW_STOCK.price_paise,
+        },
       ],
     };
 
@@ -564,7 +763,9 @@ describe('tenancy: multi-agent isolation under one merchant', () => {
       merchant_id: ctxA.merchant_id,
       agent_id: ctxA.agent_id,
       session_id: ctxA.session_id,
-      items: [{ item_id: PRODUCT_BASIC.id, quantity: 1, asserted_price_paise: PRODUCT_BASIC.price_paise }],
+      items: [
+        { item_id: PRODUCT_BASIC.id, quantity: 1, asserted_price_paise: PRODUCT_BASIC.price_paise },
+      ],
       amount_paise: 95_000,
       status: 'created',
       razorpay_order_id: null,
@@ -575,7 +776,11 @@ describe('tenancy: multi-agent isolation under one merchant', () => {
     // decide() call would see A's 95_000 as B's own prior spend, and
     // 95_000 + 10_000 = 105_000 would exceed the 100_000 cap and block.
     // Correctly scoped, B's own spend is 0 and this must allow.
-    const reqB: CheckoutRequest = { items: [{ item_id: PRODUCT_BASIC.id, quantity: 1, asserted_price_paise: PRODUCT_BASIC.price_paise }] };
+    const reqB: CheckoutRequest = {
+      items: [
+        { item_id: PRODUCT_BASIC.id, quantity: 1, asserted_price_paise: PRODUCT_BASIC.price_paise },
+      ],
+    };
     const outcomeB = await decide(ctxB, reqB, makeDeps(ctxB));
 
     expect(outcomeB.decision).toBe('allow');
@@ -588,7 +793,11 @@ describe('tenancy: multi-agent isolation under one merchant', () => {
     // Meanwhile agent A, attempting the same order on top of its own
     // 95_000, DOES get blocked - proving this is isolation, not a cap that
     // silently stopped enforcing.
-    const reqA: CheckoutRequest = { items: [{ item_id: PRODUCT_BASIC.id, quantity: 1, asserted_price_paise: PRODUCT_BASIC.price_paise }] };
+    const reqA: CheckoutRequest = {
+      items: [
+        { item_id: PRODUCT_BASIC.id, quantity: 1, asserted_price_paise: PRODUCT_BASIC.price_paise },
+      ],
+    };
     const outcomeA = await decide(ctxA, reqA, makeDeps(ctxA));
 
     expect(outcomeA.decision).toBe('block');
@@ -608,7 +817,13 @@ describe('tenancy: cross-merchant policy isolation', () => {
     // decision, this would block with CATEGORY_NOT_ALLOWED; correctly
     // scoped, it must allow.
     const req: CheckoutRequest = {
-      items: [{ item_id: PRODUCT_TENANT2_PERMISSIVE.id, quantity: 1, asserted_price_paise: PRODUCT_TENANT2_PERMISSIVE.price_paise }],
+      items: [
+        {
+          item_id: PRODUCT_TENANT2_PERMISSIVE.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_TENANT2_PERMISSIVE.price_paise,
+        },
+      ],
     };
 
     const outcome = await decide(ctx, req, makeDeps(ctx));
@@ -627,7 +842,13 @@ describe('tenancy: cross-merchant policy isolation', () => {
     // correctly scoped to MERCHANT_2, this blocks on MERCHANT_2's own cap
     // number, and the reported cap_paise proves which policy was used.
     const req: CheckoutRequest = {
-      items: [{ item_id: PRODUCT_TENANT2_CAP_EDGE.id, quantity: 1, asserted_price_paise: PRODUCT_TENANT2_CAP_EDGE.price_paise }],
+      items: [
+        {
+          item_id: PRODUCT_TENANT2_CAP_EDGE.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_TENANT2_CAP_EDGE.price_paise,
+        },
+      ],
     };
 
     const outcome = await decide(ctx, req, makeDeps(ctx));
@@ -680,7 +901,11 @@ describe('check 1 regressions: per-line vs per-aggregate validation', () => {
     const req: CheckoutRequest = {
       items: [
         { item_id: PRODUCT_BASIC.id, quantity: 1, asserted_price_paise: PRODUCT_BASIC.price_paise },
-        { item_id: PRODUCT_BASIC.id, quantity: 1, asserted_price_paise: PRODUCT_BASIC.price_paise - 5_000 },
+        {
+          item_id: PRODUCT_BASIC.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_BASIC.price_paise - 5_000,
+        },
       ],
     };
     const outcome = await decide(ctx, req, makeDeps(ctx));

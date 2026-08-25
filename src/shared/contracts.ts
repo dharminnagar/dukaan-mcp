@@ -54,12 +54,7 @@ export const GateRule = z.enum([
 ]);
 export type GateRule = z.infer<typeof GateRule>;
 
-export const ToolAction = z.enum([
-  'list_products',
-  'get_product',
-  'checkout',
-  'get_order_status',
-]);
+export const ToolAction = z.enum(['list_products', 'get_product', 'checkout', 'get_order_status']);
 export type ToolAction = z.infer<typeof ToolAction>;
 
 /* ------------------------------------------------- the tool-error envelope */
@@ -191,42 +186,44 @@ export function parseToolError(text: string): ToolError {
  * needs those reads in the log to prove the agent replayed a price it saw at
  * time T.
  */
-export const AuditEvent = z.object({
-  id: z.string().min(1),
-  merchant_id: z.string().min(1),
-  session_id: z.string().min(1),
-  agent_id: z.string().min(1),
-  order_id: z.string().min(1).nullable(),
-  action: ToolAction,
-  amount_paise: Paise.nullable(),
-  rule: GateRule,
-  decision: Decision,
-  reason_code: ReasonCode,
-  detail: z.record(z.string(), z.unknown()).nullable(),
-  latency_ms: z.int().nonnegative(),
-  ts: z.date(),
-}).refine(
-  (e) => (e.decision === 'allow') === (e.reason_code === 'ALLOWED'),
-  { message: 'decision "allow" requires reason_code "ALLOWED", and vice versa' },
-);
+export const AuditEvent = z
+  .object({
+    id: z.string().min(1),
+    merchant_id: z.string().min(1),
+    session_id: z.string().min(1),
+    agent_id: z.string().min(1),
+    order_id: z.string().min(1).nullable(),
+    action: ToolAction,
+    amount_paise: Paise.nullable(),
+    rule: GateRule,
+    decision: Decision,
+    reason_code: ReasonCode,
+    detail: z.record(z.string(), z.unknown()).nullable(),
+    latency_ms: z.int().nonnegative(),
+    ts: z.date(),
+  })
+  .refine((e) => (e.decision === 'allow') === (e.reason_code === 'ALLOWED'), {
+    message: 'decision "allow" requires reason_code "ALLOWED", and vice versa',
+  });
 export type AuditEvent = z.infer<typeof AuditEvent>;
 
-export const AuditEventInput = z.object({
-  merchant_id: z.string().min(1),
-  session_id: z.string().min(1),
-  agent_id: z.string().min(1),
-  order_id: z.string().min(1).nullable(),
-  action: ToolAction,
-  amount_paise: Paise.nullable(),
-  rule: GateRule,
-  decision: Decision,
-  reason_code: ReasonCode,
-  detail: z.record(z.string(), z.unknown()).nullable(),
-  latency_ms: z.int().nonnegative(),
-}).refine(
-  (e) => (e.decision === 'allow') === (e.reason_code === 'ALLOWED'),
-  { message: 'decision "allow" requires reason_code "ALLOWED", and vice versa' },
-);
+export const AuditEventInput = z
+  .object({
+    merchant_id: z.string().min(1),
+    session_id: z.string().min(1),
+    agent_id: z.string().min(1),
+    order_id: z.string().min(1).nullable(),
+    action: ToolAction,
+    amount_paise: Paise.nullable(),
+    rule: GateRule,
+    decision: Decision,
+    reason_code: ReasonCode,
+    detail: z.record(z.string(), z.unknown()).nullable(),
+    latency_ms: z.int().nonnegative(),
+  })
+  .refine((e) => (e.decision === 'allow') === (e.reason_code === 'ALLOWED'), {
+    message: 'decision "allow" requires reason_code "ALLOWED", and vice versa',
+  });
 export type AuditEventInput = z.infer<typeof AuditEventInput>;
 
 /* ------------------------------------------------------------ domain rows */
@@ -238,19 +235,18 @@ export const Merchant = z.object({
 });
 export type Merchant = z.infer<typeof Merchant>;
 
-export const Policy = z.object({
-  merchant_id: z.string().min(1),
-  spend_cap_paise: PositivePaise,
-  approval_threshold_paise: PositivePaise,
-  category_allowlist: z.array(z.string().min(1)).min(1),
-  window_seconds: z.int().positive(),
-}).refine(
-  (p) => p.approval_threshold_paise <= p.spend_cap_paise,
-  {
+export const Policy = z
+  .object({
+    merchant_id: z.string().min(1),
+    spend_cap_paise: PositivePaise,
+    approval_threshold_paise: PositivePaise,
+    category_allowlist: z.array(z.string().min(1)).min(1),
+    window_seconds: z.int().positive(),
+  })
+  .refine((p) => p.approval_threshold_paise <= p.spend_cap_paise, {
     message: 'approval_threshold must be <= spend_cap, or the escalate branch is unreachable',
     path: ['approval_threshold_paise'],
-  },
-);
+  });
 export type Policy = z.infer<typeof Policy>;
 
 export const Product = z.object({
@@ -319,6 +315,10 @@ export interface TenantContext {
 /* ------------------------------------------------------------ gate result */
 
 export type GateOutcome =
-  | { readonly decision: 'allow';    readonly rule: 'ALLOW'; readonly amount_paise: number }
-  | { readonly decision: 'block';    readonly rule: GateRule; readonly error: ToolError }
-  | { readonly decision: 'escalate'; readonly rule: 'APPROVAL_THRESHOLD'; readonly error: PendingApprovalError };
+  | { readonly decision: 'allow'; readonly rule: 'ALLOW'; readonly amount_paise: number }
+  | { readonly decision: 'block'; readonly rule: GateRule; readonly error: ToolError }
+  | {
+      readonly decision: 'escalate';
+      readonly rule: 'APPROVAL_THRESHOLD';
+      readonly error: PendingApprovalError;
+    };

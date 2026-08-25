@@ -44,7 +44,12 @@ export interface ReplayResult<T extends Transcript = Transcript> {
   readonly steps: readonly ReplayStepResult[];
 }
 
-async function persistOrderIfNeeded(repo: TenantRepo, ctx: TenantContext, items: Transcript['steps'][number]['items'], outcome: GateOutcome): Promise<void> {
+async function persistOrderIfNeeded(
+  repo: TenantRepo,
+  ctx: TenantContext,
+  items: Transcript['steps'][number]['items'],
+  outcome: GateOutcome,
+): Promise<void> {
   if (outcome.decision === 'allow') {
     await repo.insertOrder({
       id: `o_${randomUUID()}`,
@@ -97,7 +102,11 @@ export async function replayTranscript<T extends Transcript>(
     // class's first fixture names its session "s-01") — `sessions.id` is a
     // global PK, so it has to be qualified by the transcript id too.
     const sessionId = evalSessionId(namespace, `${transcript.id}-${step.session_id}`);
-    const ctx: TenantContext = { merchant_id: merchantId, agent_id: agentId, session_id: sessionId };
+    const ctx: TenantContext = {
+      merchant_id: merchantId,
+      agent_id: agentId,
+      session_id: sessionId,
+    };
     await ensureEvalSession(ctx);
 
     const repo = new TenantRepo(ctx);
@@ -113,7 +122,9 @@ export async function replayTranscript<T extends Transcript>(
 
     const audit = collected[0];
     if (audit === undefined) {
-      throw new Error(`replayTranscript: decide() wrote no AuditEvent for ${transcript.id} step ${i}`);
+      throw new Error(
+        `replayTranscript: decide() wrote no AuditEvent for ${transcript.id} step ${i}`,
+      );
     }
     steps.push({ stepIndex: i, sessionId, outcome, audit });
   }

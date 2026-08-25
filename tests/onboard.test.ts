@@ -4,7 +4,9 @@ import { pool, query, queryOne } from '../src/db/pool';
 import { createMerchant } from '../src/onboard/create-merchant';
 
 const FIXTURE_CSV = await Bun.file(`${import.meta.dir}/../fixtures/merchant-a.csv`).text();
-const FIXTURE_POLICY: unknown = await Bun.file(`${import.meta.dir}/../fixtures/merchant-a.policy.json`).json();
+const FIXTURE_POLICY: unknown = await Bun.file(
+  `${import.meta.dir}/../fixtures/merchant-a.policy.json`,
+).json();
 
 async function cleanupMerchant(merchantId: string): Promise<void> {
   await pool.query('DELETE FROM merchants WHERE id = $1', [merchantId]);

@@ -21,7 +21,10 @@ const BASE_INPUT: CreateOrderInput = {
 };
 
 function jsonResponse(status: number, body: unknown): Response {
-  return new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'content-type': 'application/json' },
+  });
 }
 
 function orderBody(id: string): unknown {
@@ -63,7 +66,10 @@ function buildAdapter(
 describe('RazorpayHttpAdapter — retry policy', () => {
   test('429 then success: retries once, applies a randomized backoff, and returns the order id', async () => {
     const { adapter, fetchMock, sleepMock } = buildAdapter(
-      [jsonResponse(429, razorpayErrorBody('BAD_REQUEST_ERROR', 'Too many requests')), jsonResponse(200, orderBody('order_ABC123'))],
+      [
+        jsonResponse(429, razorpayErrorBody('BAD_REQUEST_ERROR', 'Too many requests')),
+        jsonResponse(200, orderBody('order_ABC123')),
+      ],
       { random: () => 0.4 },
     );
 
@@ -133,7 +139,9 @@ describe('RazorpayHttpAdapter — retry policy', () => {
 
 describe('RazorpayHttpAdapter — success path', () => {
   test('returns an order_-prefixed id and sends integer paise plus both notes fields', async () => {
-    const { adapter, fetchMock } = buildAdapter([jsonResponse(200, orderBody('order_TTgT79PWPuu8Fh'))]);
+    const { adapter, fetchMock } = buildAdapter([
+      jsonResponse(200, orderBody('order_TTgT79PWPuu8Fh')),
+    ]);
 
     const result = await adapter.createOrder(BASE_INPUT);
 
@@ -168,7 +176,9 @@ describe('RazorpayHttpAdapter — success path', () => {
 
 describe('RazorpayHttpAdapter — programmer-error guards (throw, not {ok:false})', () => {
   test('refuses to construct against a non-test key', () => {
-    expect(() => new RazorpayHttpAdapter('rzp_live_should_never_be_used', TEST_KEY_SECRET)).toThrow(/rzp_test_/);
+    expect(() => new RazorpayHttpAdapter('rzp_live_should_never_be_used', TEST_KEY_SECRET)).toThrow(
+      /rzp_test_/,
+    );
   });
 
   test('throws on a non-integer amount_paise', async () => {
@@ -203,7 +213,9 @@ describe('RazorpayHttpAdapter — the key and secret never reach a log or an err
       const success = buildAdapter([jsonResponse(200, orderBody('order_LOGCHECK'))]);
       results.push(await success.adapter.createOrder(BASE_INPUT));
 
-      const serverError = buildAdapter([jsonResponse(500, razorpayErrorBody('SERVER_ERROR', 'boom'))]);
+      const serverError = buildAdapter([
+        jsonResponse(500, razorpayErrorBody('SERVER_ERROR', 'boom')),
+      ]);
       results.push(await serverError.adapter.createOrder(BASE_INPUT));
 
       const gaveUp = buildAdapter([
@@ -219,7 +231,8 @@ describe('RazorpayHttpAdapter — the key and secret never reach a log or an err
         constructorErrorMessage = (err as Error).message;
       }
 
-      const haystack = JSON.stringify(results) + constructorErrorMessage + JSON.stringify(consoleCalls);
+      const haystack =
+        JSON.stringify(results) + constructorErrorMessage + JSON.stringify(consoleCalls);
       expect(haystack).not.toContain(TEST_KEY_SECRET);
       expect(haystack).not.toContain(TEST_KEY_ID);
       expect(consoleCalls.length).toBe(0);
@@ -250,7 +263,13 @@ describe('FakeRazorpayAdapter', () => {
   test('serves scripted responses in FIFO order across multiple calls', async () => {
     const blockResult: CreateOrderResult = {
       ok: false,
-      error: { reason_code: 'RAZORPAY_ERROR', message: 'scripted', http_status: 500, razorpay_code: null, retryable: false },
+      error: {
+        reason_code: 'RAZORPAY_ERROR',
+        message: 'scripted',
+        http_status: 500,
+        razorpay_code: null,
+        retryable: false,
+      },
     };
     const fake = new FakeRazorpayAdapter([{ ok: true, razorpay_order_id: 'order_FIRST' }]);
     fake.enqueue(blockResult);

@@ -24,7 +24,9 @@ async function main(): Promise<void> {
   const dataset = JSON.parse(raw) as SplitTranscript[];
 
   console.log(`loaded ${dataset.length} transcripts from ${TRANSCRIPTS_PATH}`);
-  console.log(`provisioning eval merchants under namespace "${NAMESPACE}" (wipes any previous eval run's spend history)...`);
+  console.log(
+    `provisioning eval merchants under namespace "${NAMESPACE}" (wipes any previous eval run's spend history)...`,
+  );
 
   const merchantIds = await resetEvalMerchants(NAMESPACE);
   const results = await replayBatch(NAMESPACE, merchantIds, dataset);
@@ -38,7 +40,9 @@ async function main(): Promise<void> {
   if (missed.length > 0) {
     console.log(`\n${missed.length} transcript(s) did not match their expectation:`);
     for (const v of missed) {
-      console.log(`  ${v.transcript.id} (${v.transcript.attack_class ?? 'benign'}, ${v.transcript.split})`);
+      console.log(
+        `  ${v.transcript.id} (${v.transcript.attack_class ?? 'benign'}, ${v.transcript.split})`,
+      );
     }
   }
 }

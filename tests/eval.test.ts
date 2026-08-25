@@ -20,7 +20,9 @@ const NAMESPACE = 'evaltest';
 const EVAL_TEST_MERCHANT_IDS = ['m_evaltest_kirana', 'm_evaltest_electronics'];
 
 async function wipeEvalTestData(): Promise<void> {
-  await query('DELETE FROM audit_events WHERE merchant_id = ANY($1::text[])', [EVAL_TEST_MERCHANT_IDS]);
+  await query('DELETE FROM audit_events WHERE merchant_id = ANY($1::text[])', [
+    EVAL_TEST_MERCHANT_IDS,
+  ]);
   await query('DELETE FROM merchants WHERE id = ANY($1::text[])', [EVAL_TEST_MERCHANT_IDS]);
 }
 

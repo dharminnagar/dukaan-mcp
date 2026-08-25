@@ -46,7 +46,9 @@ function groupKey(t: Transcript): string {
   return t.attack_class ?? 'benign';
 }
 
-export function summarizeBySplit(verdicts: readonly TranscriptVerdict<SplitTranscript>[]): readonly MetricsRow[] {
+export function summarizeBySplit(
+  verdicts: readonly TranscriptVerdict<SplitTranscript>[],
+): readonly MetricsRow[] {
   const buckets = new Map<string, { total: number; caught: number }>();
 
   for (const v of verdicts) {

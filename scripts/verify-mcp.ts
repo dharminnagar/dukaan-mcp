@@ -78,18 +78,30 @@ async function main(): Promise<void> {
   console.log('tools (as A):', toolsA.map((t) => t.name).join(', '));
 
   const listA = await clientA.callTool({ name: 'list_products', arguments: {} });
-  console.log('list_products (as A) ->', listA.content?.[0]?.type === 'text' ? listA.content[0].text : listA);
+  console.log(
+    'list_products (as A) ->',
+    listA.content?.[0]?.type === 'text' ? listA.content[0].text : listA,
+  );
 
   const listB = await clientB.callTool({ name: 'list_products', arguments: {} });
-  console.log('list_products (as B) ->', listB.content?.[0]?.type === 'text' ? listB.content[0].text : listB);
+  console.log(
+    'list_products (as B) ->',
+    listB.content?.[0]?.type === 'text' ? listB.content[0].text : listB,
+  );
 
-  const ownProduct = await clientA.callTool({ name: 'get_product', arguments: { id: 'verify-a1' } });
+  const ownProduct = await clientA.callTool({
+    name: 'get_product',
+    arguments: { id: 'verify-a1' },
+  });
   console.log(
     "get_product (A, A's own sku verify-a1) ->",
     ownProduct.content?.[0]?.type === 'text' ? ownProduct.content[0].text : ownProduct,
   );
 
-  const crossTenant = await clientA.callTool({ name: 'get_product', arguments: { id: 'verify-b1' } });
+  const crossTenant = await clientA.callTool({
+    name: 'get_product',
+    arguments: { id: 'verify-b1' },
+  });
   console.log(
     "get_product (A, asking for B's sku verify-b1) ->",
     crossTenant.content?.[0]?.type === 'text' ? crossTenant.content[0].text : crossTenant,

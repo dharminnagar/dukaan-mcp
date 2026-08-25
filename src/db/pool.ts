@@ -53,7 +53,9 @@ export async function withTransaction<T>(fn: (c: PoolClient) => Promise<T>): Pro
     await client.query('COMMIT');
     return out;
   } catch (err) {
-    await client.query('ROLLBACK').catch(() => { /* connection already dead */ });
+    await client.query('ROLLBACK').catch(() => {
+      /* connection already dead */
+    });
     throw err;
   } finally {
     client.release();
@@ -84,7 +86,9 @@ export async function withAdvisoryLock<T>(key: string, fn: () => Promise<T>): Pr
     await client.query('COMMIT');
     return out;
   } catch (err) {
-    await client.query('ROLLBACK').catch(() => { /* connection already dead */ });
+    await client.query('ROLLBACK').catch(() => {
+      /* connection already dead */
+    });
     throw err;
   } finally {
     client.release();

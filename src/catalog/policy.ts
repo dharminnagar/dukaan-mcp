@@ -22,7 +22,9 @@ const WINDOW_UNIT_SECONDS: Record<string, number> = {
 export function parseWindow(s: string): number {
   const match = /^(\d+)(s|m|h|d)$/.exec(s.trim());
   if (match === null) {
-    throw new Error(`Invalid window ${JSON.stringify(s)}: expected a positive integer followed by s, m, h, or d`);
+    throw new Error(
+      `Invalid window ${JSON.stringify(s)}: expected a positive integer followed by s, m, h, or d`,
+    );
   }
   const [, amountStr, unit] = match;
   const amount = Number.parseInt(amountStr!, 10);
@@ -41,7 +43,9 @@ const RawPolicyInput = z.object({
 export function parsePolicy(json: unknown, merchantId: string): Policy {
   const rawResult = RawPolicyInput.safeParse(json);
   if (!rawResult.success) {
-    const messages = rawResult.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('; ');
+    const messages = rawResult.error.issues
+      .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+      .join('; ');
     throw new Error(`invalid policy input: ${messages}`);
   }
   const raw = rawResult.data;

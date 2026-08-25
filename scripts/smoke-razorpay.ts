@@ -44,7 +44,9 @@ function requireEnv(): { keyId: string; keySecret: string } {
     throw new Error('RAZORPAY_KEY_ID is not set. Add it to .env — see setup/razorpay-setup.html.');
   }
   if (KEY_SECRET === undefined || KEY_SECRET.trim() === '') {
-    throw new Error('RAZORPAY_KEY_SECRET is not set. Add it to .env — it is shown only once at generation.');
+    throw new Error(
+      'RAZORPAY_KEY_SECRET is not set. Add it to .env — it is shown only once at generation.',
+    );
   }
   if (!KEY_ID.startsWith('rzp_test_')) {
     throw new Error(

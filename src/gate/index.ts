@@ -44,7 +44,7 @@
  * the enforcement query.
  */
 import { randomUUID } from 'node:crypto';
-import { writeAuditEvent } from '../audit/write';
+import type { writeAuditEvent } from '../audit/write';
 import type { TenantRepo } from '../db/repo';
 import type {
   CategoryNotAllowedError,
@@ -91,7 +91,8 @@ export async function decide(
   const audit = (fields: {
     order_id: string | null;
     amount_paise: number | null;
-    rule: 'AUTHORITATIVE_REREAD' | 'SPEND_CAP' | 'CATEGORY_ALLOWLIST' | 'APPROVAL_THRESHOLD' | 'ALLOW';
+    rule:
+      'AUTHORITATIVE_REREAD' | 'SPEND_CAP' | 'CATEGORY_ALLOWLIST' | 'APPROVAL_THRESHOLD' | 'ALLOW';
     decision: 'allow' | 'block' | 'escalate';
     reason_code:
       | 'ALLOWED'
@@ -229,7 +230,12 @@ export async function decide(
         rule: 'AUTHORITATIVE_REREAD',
         decision: 'block',
         reason_code: 'STALE_CATALOG',
-        detail: { item_id: itemId, mismatch: 'stock', requested_quantity: requestedQuantity, true_stock: product.stock },
+        detail: {
+          item_id: itemId,
+          mismatch: 'stock',
+          requested_quantity: requestedQuantity,
+          true_stock: product.stock,
+        },
       });
       return { decision: 'block', rule: 'AUTHORITATIVE_REREAD', error };
     }
@@ -257,7 +263,11 @@ export async function decide(
       rule: 'SPEND_CAP',
       decision: 'block',
       reason_code: 'SPEND_CAP_EXCEEDED',
-      detail: { spent_paise: spentPaise, cap_paise: policy.spend_cap_paise, attempted_paise: attemptedPaise },
+      detail: {
+        spent_paise: spentPaise,
+        cap_paise: policy.spend_cap_paise,
+        attempted_paise: attemptedPaise,
+      },
     });
     return { decision: 'block', rule: 'SPEND_CAP', error };
   }

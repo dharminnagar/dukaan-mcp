@@ -66,22 +66,14 @@ beforeAll(async () => {
     ]);
   }
 
-  await query('INSERT INTO products (merchant_id, id, name, price_paise, stock, category) VALUES ($1, $2, $3, $4, $5, $6)', [
-    MERCHANT_A,
-    'p_a1',
-    'Product A1',
-    10000,
-    5,
-    'staples',
-  ]);
-  await query('INSERT INTO products (merchant_id, id, name, price_paise, stock, category) VALUES ($1, $2, $3, $4, $5, $6)', [
-    MERCHANT_B,
-    'p_b1',
-    'Product B1',
-    20000,
-    5,
-    'staples',
-  ]);
+  await query(
+    'INSERT INTO products (merchant_id, id, name, price_paise, stock, category) VALUES ($1, $2, $3, $4, $5, $6)',
+    [MERCHANT_A, 'p_a1', 'Product A1', 10000, 5, 'staples'],
+  );
+  await query(
+    'INSERT INTO products (merchant_id, id, name, price_paise, stock, category) VALUES ($1, $2, $3, $4, $5, $6)',
+    [MERCHANT_B, 'p_b1', 'Product B1', 20000, 5, 'staples'],
+  );
 
   await query(
     'INSERT INTO policies (merchant_id, spend_cap_paise, approval_threshold_paise, category_allowlist, window_seconds) VALUES ($1, $2, $3, $4, $5)',
@@ -98,7 +90,7 @@ afterAll(async () => {
 });
 
 describe('tenancy isolation', () => {
-  test('cross-tenant: a product under merchant B is invisible to merchant A\'s repo', async () => {
+  test("cross-tenant: a product under merchant B is invisible to merchant A's repo", async () => {
     const repoA = new TenantRepo(ctxAWindow);
     const product = await repoA.getProduct('p_b1');
     expect(product).toBeNull();
@@ -112,14 +104,14 @@ describe('tenancy isolation', () => {
     expect(product?.merchant_id).toBe(MERCHANT_A);
   });
 
-  test('listProducts only returns the calling tenant\'s products', async () => {
+  test("listProducts only returns the calling tenant's products", async () => {
     const repoA = new TenantRepo(ctxAWindow);
     const products = await repoA.listProducts();
     expect(products.every((p) => p.merchant_id === MERCHANT_A)).toBe(true);
     expect(products.some((p) => p.id === 'p_b1')).toBe(false);
   });
 
-  test('getPolicy resolves the calling tenant\'s policy', async () => {
+  test("getPolicy resolves the calling tenant's policy", async () => {
     const repoA = new TenantRepo(ctxAWindow);
     const policy = await repoA.getPolicy();
     expect(policy.merchant_id).toBe(MERCHANT_A);

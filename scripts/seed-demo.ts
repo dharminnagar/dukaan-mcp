@@ -112,14 +112,14 @@ async function main(): Promise<void> {
     console.log(`  products loaded: ${result.productCount}`);
     console.log(
       `  policy: spend_cap=${formatRupees(result.policy.spend_cap_paise)} ` +
-      `approval_threshold=${formatRupees(result.policy.approval_threshold_paise)} ` +
-      `window=${result.policy.window_seconds}s ` +
-      `allowlist=[${result.policy.category_allowlist.join(', ')}]`,
+        `approval_threshold=${formatRupees(result.policy.approval_threshold_paise)} ` +
+        `window=${result.policy.window_seconds}s ` +
+        `allowlist=[${result.policy.category_allowlist.join(', ')}]`,
     );
     console.log(
       `  price distribution: mean=${formatRupees(stats.mean_price_paise)} ` +
-      `range=[${formatRupees(stats.min_price_paise)}, ${formatRupees(stats.max_price_paise)}] ` +
-      `over ${stats.item_count} SKUs`,
+        `range=[${formatRupees(stats.min_price_paise)}, ${formatRupees(stats.max_price_paise)}] ` +
+        `over ${stats.item_count} SKUs`,
     );
     console.log(`  agent: ${result.agent.id} (${result.agent.label})`);
     console.log('  agent token (shown once — save it now, it will differ on the next reseed):');

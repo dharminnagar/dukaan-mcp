@@ -31,7 +31,9 @@ export function rupeesToPaise(input: string): number {
   const withoutSeparators = input.trim().replace(/,/g, '');
   const match = /^(\d+)(?:\.(\d{1,2}))?$/.exec(withoutSeparators);
   if (match === null) {
-    throw new Error(`Invalid rupee amount ${JSON.stringify(input)}: expected digits, optional comma separators, and at most 2 decimal places`);
+    throw new Error(
+      `Invalid rupee amount ${JSON.stringify(input)}: expected digits, optional comma separators, and at most 2 decimal places`,
+    );
   }
   const [, rupeesPart, paisePart] = match;
   // rupeesPart is guaranteed by the regex's mandatory first group.
@@ -44,7 +46,11 @@ const REQUIRED_COLUMNS = ['sku', 'name', 'price', 'stock', 'category'] as const;
 
 type RawRow = Record<string, string | undefined>;
 
-function requireField(row: RawRow, column: (typeof REQUIRED_COLUMNS)[number], line: number): string {
+function requireField(
+  row: RawRow,
+  column: (typeof REQUIRED_COLUMNS)[number],
+  line: number,
+): string {
   const value = row[column];
   if (value === undefined || value.trim().length === 0) {
     throw csvError(line, `missing required field "${column}"`);

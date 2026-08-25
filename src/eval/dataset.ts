@@ -14,7 +14,7 @@
 import { generateBenignTranscripts } from './benign';
 import { generateHandScriptedAdversarial } from './hand-attacks';
 import { mulberry32, shuffle } from './prng';
-import type { SplitTranscript, Split, Transcript, TranscriptSource } from './transcript';
+import type { SplitTranscript, Transcript, TranscriptSource } from './transcript';
 
 /** Fixed at authoring time. Never `Date.now()` — see the module comment. */
 export const FROZEN_AT = '2026-08-25T00:00:00.000Z';
@@ -71,11 +71,17 @@ function assignSplit(transcripts: readonly Transcript[], seed: number): readonly
     // assignment — otherwise adding a sixth attack class later would silently
     // re-roll the split for all five existing ones.
     const rng = mulberry32(seed + hashStratum(key));
-    const order = shuffle(rng, bucket.map((t) => t.id));
+    const order = shuffle(
+      rng,
+      bucket.map((t) => t.id),
+    );
     for (const id of order.slice(0, Math.round(order.length * TRAIN_FRACTION))) trainIds.add(id);
   }
 
-  return transcripts.map((t) => ({ ...t, split: (trainIds.has(t.id) ? 'train' : 'holdout') as Split }));
+  return transcripts.map((t) => ({
+    ...t,
+    split: trainIds.has(t.id) ? 'train' : 'holdout',
+  }));
 }
 
 /** Small stable string hash, so a stratum's seed depends on its name only. */
