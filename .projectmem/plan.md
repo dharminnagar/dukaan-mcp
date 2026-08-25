@@ -18,16 +18,16 @@ days and there is no video.
       *Exit: two merchants creatable from CSV, each with a token and a policy*
 - [x] **D3 (25 Aug, done early on 24 Aug)** — DUK-11 seed two merchants · DUK-12 MCP server pt1 (Streamable HTTP + catalog tools). 80 tests pass across 9 files. Found DUK-28.
       *Exit: A's token returns A's catalog, B's returns B's*
-- [ ] **D4 (26 Aug)** — DUK-13 MCP server pt2 (checkout, order status, transport hardening). NEXT UP. Unblocked: gate seam and adapter seam both frozen and shipped.
+- [x] **D4 (26 Aug, done early on 25 Aug)** — DUK-13 MCP server pt2. All four tools live. Orchestrator probe found the spend-cap concurrency race (#0018).
       *Exit: all four tools over HTTP with per-request tenancy. **Risk retired: transport***
 - [x] **D5 (27 Aug, done early on 24 Aug)** — DUK-14 the gate. Orchestrator probes found 3 holes in check 1 the agent's 10 tests missed; all fixed before commit. See issue #0016.
       *Exit: every branch reachable, every branch writes an AuditEvent*
-- [ ] **D6 (28 Aug)** — DUK-15 gate tests (13 already in tests/gate.test.ts; DUK-15 is now the ADVERSARIAL top-up, not the first tests) · ~~DUK-16 Razorpay adapter~~ **done 24 Aug**
+- [x] **D6 (28 Aug, done early on 25 Aug)** — DUK-15 gate tests, 24 total, no gate bug found; mutation test confirms the suite goes red on either wrong cap scope · DUK-16 Razorpay adapter
       *Exit: allow branch produces a real order id, tests green. **Risk retired: the gate***
 - [ ] **D7 (29 Aug)** — DUK-17 buyer agent · **HARD GATE 21:00**
       *Exit: blocked, re-planned, substituted, succeeded — three linked AuditEvents*
       *Not working by 21:00? Switch to scripted transcripts tomorrow. Do NOT debug on D8.*
-- [ ] **D8 (30 Aug)** — DUK-18 eval pt1: transcripts + adversarial generation, split frozen
+- [~] **D8 (30 Aug)** — DUK-18 eval pt1: deterministic half DONE 25 Aug (200 transcripts, stratified frozen split, replay runner). LLM adversarial generator BLOCKED on ANTHROPIC_API_KEY (#0017).
 - [ ] **D9 (31 Aug)** — DUK-19 eval pt2: metrics reporter, tuning on training split ONLY
       *Exit: real metrics table with a non-empty escapes list. **Risk retired: the differentiator***
 - [ ] **D10 (1 Sept)** — DUK-20 held-out run (ONCE) + onboarding form + audit CLI printer · DUK-27 CSV column mapping + merchant confirm (DROPPABLE, starts only if D5-D9 landed on time)
@@ -55,6 +55,10 @@ the metrics table with its escapes list and honesty framing · one real `order_`
 id on camera · the video · the README · the two long-form form fields.
 
 ## Open
+
+- **#0018 SPEND CAP RACE — needs a decision.** Three concurrent checkouts, 40000 paise each against a 100000 cap, all allowed; 120000 persisted. It is budget-split evasion in parallel form, and the sequential eval will report that class as CAUGHT while this variant escapes. Fix is ~15 lines: a transaction-scoped advisory lock on (merchant_id, agent_id) in the checkout handler, leaving decide() pure so src/eval is untouched. Alternative is a README limitation.
+- **#0017 ANTHROPIC_API_KEY missing — blocks DUK-17 entirely** (highest-risk ticket, hard gate 29 Aug) and the DUK-18 LLM generator. No workaround. `bun add @anthropic-ai/sdk` plus the key in .env.
+- Hold-out wording for the README: the pre-stratification dataset WAS replayed during construction to confirm each class triggers its rule. No rule or threshold was tuned at any point. The split was then re-frozen stratified, and DUK-20 remains the single scoring run. State this plainly rather than implying the holdout was never touched.
 
 - DUK-28 DEPRIORITISED by Dharmin 24 Aug to an end-if-time improvement. Acceptable ONLY because fix (a), the buyer agent sending a stable mcp-session-id header, moved into DUK-17 as a required acceptance criterion. If (b) never ships, the hosted endpoint's audit trail is ungroupable by session for any client we don't own — state that in the README limitations list rather than hiding it.
 - DUK-7: Dharmin will raise the tickets himself. Verdict recorded: LOW importance. BharatQR is the only documented headless simulate-payment route, but a working headless authorisation would partly undercut the NPCI-regulation argument the pitch makes, and 2-3 weeks review against ~11 days means it will not land. Raise it for the Build Challenges paragraph, not the capability.
