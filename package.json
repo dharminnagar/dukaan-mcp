@@ -27,7 +27,7 @@
     "eval:generate": "bun run src/eval/generate.ts",
     "audit": "bun run scripts/audit-print.ts",
     "prepare": "husky",
-    "lint": "eslint .",
+    "lint": "eslint . && prettier --check .",
     "lint:fix": "eslint . --fix && prettier --write .",
     "eval:report": "bun run src/eval/report.ts"
   },
