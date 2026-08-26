@@ -8,8 +8,8 @@
     "llm": 41
   },
   "by_split": {
-    "train": 144,
-    "holdout": 97
+    "train": 143,
+    "holdout": 98
   },
   "by_class": {
     "benign": 165,
@@ -25,24 +25,24 @@
       "holdout": 66
     },
     "budget_split": {
-      "train": 9,
-      "holdout": 6
+      "holdout": 6,
+      "train": 9
     },
     "threshold_straddling": {
       "train": 8,
       "holdout": 6
     },
     "stale_price": {
-      "train": 11,
-      "holdout": 8
+      "holdout": 8,
+      "train": 11
     },
     "merchant_misclaim": {
       "train": 7,
       "holdout": 5
     },
     "category_laundering": {
-      "train": 10,
-      "holdout": 6
+      "holdout": 7,
+      "train": 9
     }
   }
 }

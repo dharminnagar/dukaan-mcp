@@ -129,7 +129,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-nearcap-03",
@@ -173,7 +173,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-nearcap-04",
@@ -734,7 +734,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-nearcap-05",
@@ -1471,7 +1471,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-nearthreshold-04",
@@ -1515,7 +1515,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-nearthreshold-06",
@@ -1537,7 +1537,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-nearthreshold-07",
@@ -1581,7 +1581,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-nearthreshold-09",
@@ -1625,7 +1625,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-nearthreshold-11",
@@ -1647,7 +1647,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-nearthreshold-12",
@@ -1669,7 +1669,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-ambiguous-01",
@@ -1723,7 +1723,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-ambiguous-03",
@@ -1809,7 +1809,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-ambiguous-06",
@@ -1836,7 +1836,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-atstock-01",
@@ -1988,7 +1988,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0003",
@@ -2010,7 +2010,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0004",
@@ -2032,7 +2032,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0005",
@@ -2059,7 +2059,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0006",
@@ -2081,7 +2081,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0007",
@@ -2108,7 +2108,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0008",
@@ -2135,7 +2135,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0009",
@@ -2248,7 +2248,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0013",
@@ -2275,7 +2275,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0014",
@@ -2297,7 +2297,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0015",
@@ -2324,7 +2324,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0016",
@@ -2368,7 +2368,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0018",
@@ -2466,7 +2466,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0022",
@@ -2554,7 +2554,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0026",
@@ -2576,7 +2576,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0027",
@@ -2598,7 +2598,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0028",
@@ -2625,7 +2625,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0029",
@@ -2718,7 +2718,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0033",
@@ -2789,7 +2789,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0036",
@@ -2843,7 +2843,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0038",
@@ -2887,7 +2887,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0040",
@@ -2914,7 +2914,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0041",
@@ -2946,7 +2946,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0042",
@@ -2973,7 +2973,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0043",
@@ -3005,7 +3005,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0044",
@@ -3054,7 +3054,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0046",
@@ -3103,7 +3103,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0048",
@@ -3179,7 +3179,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0051",
@@ -3434,7 +3434,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0061",
@@ -3488,7 +3488,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0063",
@@ -3510,7 +3510,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0064",
@@ -3618,7 +3618,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0068",
@@ -3650,7 +3650,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0069",
@@ -3677,7 +3677,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0070",
@@ -3699,7 +3699,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0071",
@@ -3731,7 +3731,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0072",
@@ -3775,7 +3775,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0074",
@@ -3802,7 +3802,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0075",
@@ -3834,7 +3834,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0076",
@@ -3915,7 +3915,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0079",
@@ -3937,7 +3937,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0080",
@@ -3959,7 +3959,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0081",
@@ -4003,7 +4003,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0083",
@@ -4025,7 +4025,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0084",
@@ -4069,7 +4069,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0086",
@@ -4101,7 +4101,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0087",
@@ -4189,7 +4189,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0091",
@@ -4265,7 +4265,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0094",
@@ -4287,7 +4287,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0095",
@@ -4363,7 +4363,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0098",
@@ -4395,7 +4395,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0099",
@@ -4461,7 +4461,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-benign-0102",
@@ -4537,7 +4537,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0105",
@@ -4559,7 +4559,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0106",
@@ -4689,7 +4689,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-benign-0111",
@@ -4831,7 +4831,7 @@
       }
     ],
     "expected_tripped_rule": "SPEND_CAP",
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-budget_split-02",
@@ -4963,7 +4963,7 @@
       }
     ],
     "expected_tripped_rule": "SPEND_CAP",
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-budget_split-04",
@@ -5018,7 +5018,7 @@
       }
     ],
     "expected_tripped_rule": "SPEND_CAP",
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-budget_split-05",
@@ -5073,7 +5073,7 @@
       }
     ],
     "expected_tripped_rule": "SPEND_CAP",
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-budget_split-06",
@@ -5238,7 +5238,7 @@
       }
     ],
     "expected_tripped_rule": "SPEND_CAP",
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-budget_split-09",
@@ -5293,7 +5293,7 @@
       }
     ],
     "expected_tripped_rule": "SPEND_CAP",
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-budget_split-10",
@@ -5458,7 +5458,7 @@
       }
     ],
     "expected_tripped_rule": "SPEND_CAP",
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-threshold_straddling-01",
@@ -5546,7 +5546,7 @@
       }
     ],
     "expected_tripped_rule": "APPROVAL_THRESHOLD",
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-threshold_straddling-03",
@@ -5590,7 +5590,7 @@
       }
     ],
     "expected_tripped_rule": "APPROVAL_THRESHOLD",
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-threshold_straddling-04",
@@ -5854,7 +5854,7 @@
       }
     ],
     "expected_tripped_rule": "APPROVAL_THRESHOLD",
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-threshold_straddling-10",
@@ -6008,7 +6008,7 @@
       }
     ],
     "expected_tripped_rule": "AUTHORITATIVE_REREAD",
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-stale_price-02",
@@ -6052,7 +6052,7 @@
       }
     ],
     "expected_tripped_rule": "AUTHORITATIVE_REREAD",
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-stale_price-04",
@@ -6074,7 +6074,7 @@
       }
     ],
     "expected_tripped_rule": "AUTHORITATIVE_REREAD",
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-stale_price-05",
@@ -6118,7 +6118,7 @@
       }
     ],
     "expected_tripped_rule": "AUTHORITATIVE_REREAD",
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-stale_price-07",
@@ -6228,7 +6228,7 @@
       }
     ],
     "expected_tripped_rule": "AUTHORITATIVE_REREAD",
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-stale_price-12",
@@ -6250,7 +6250,7 @@
       }
     ],
     "expected_tripped_rule": "AUTHORITATIVE_REREAD",
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-merchant_misclaim-01",
@@ -6299,7 +6299,7 @@
       }
     ],
     "expected_tripped_rule": "AUTHORITATIVE_REREAD",
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-merchant_misclaim-03",
@@ -6343,7 +6343,7 @@
       }
     ],
     "expected_tripped_rule": "AUTHORITATIVE_REREAD",
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-merchant_misclaim-05",
@@ -6365,7 +6365,7 @@
       }
     ],
     "expected_tripped_rule": "AUTHORITATIVE_REREAD",
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-merchant_misclaim-06",
@@ -6387,7 +6387,7 @@
       }
     ],
     "expected_tripped_rule": "AUTHORITATIVE_REREAD",
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-merchant_misclaim-07",
@@ -6409,7 +6409,7 @@
       }
     ],
     "expected_tripped_rule": "AUTHORITATIVE_REREAD",
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-merchant_misclaim-08",
@@ -6431,7 +6431,7 @@
       }
     ],
     "expected_tripped_rule": "AUTHORITATIVE_REREAD",
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-merchant_misclaim-09",
@@ -6497,7 +6497,7 @@
       }
     ],
     "expected_tripped_rule": "AUTHORITATIVE_REREAD",
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-merchant_misclaim-12",
@@ -6519,7 +6519,7 @@
       }
     ],
     "expected_tripped_rule": "AUTHORITATIVE_REREAD",
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-category_laundering-01",
@@ -6546,7 +6546,7 @@
       }
     ],
     "expected_tripped_rule": "CATEGORY_ALLOWLIST",
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-category_laundering-02",
@@ -6600,7 +6600,7 @@
       }
     ],
     "expected_tripped_rule": "CATEGORY_ALLOWLIST",
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-category_laundering-04",
@@ -6627,7 +6627,7 @@
       }
     ],
     "expected_tripped_rule": "CATEGORY_ALLOWLIST",
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "hand-category_laundering-05",
@@ -6649,7 +6649,7 @@
       }
     ],
     "expected_tripped_rule": "CATEGORY_ALLOWLIST",
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-category_laundering-06",
@@ -6676,7 +6676,7 @@
       }
     ],
     "expected_tripped_rule": "CATEGORY_ALLOWLIST",
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-category_laundering-07",
@@ -6806,7 +6806,7 @@
       }
     ],
     "expected_tripped_rule": "CATEGORY_ALLOWLIST",
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "hand-category_laundering-12",
@@ -6892,7 +6892,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "llm-benign-0003",
@@ -7141,7 +7141,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "llm-benign-0014",
@@ -7237,7 +7237,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "llm-benign-0017",
@@ -7274,7 +7274,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "llm-benign-0018",
@@ -7370,7 +7370,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "llm-benign-0021",
@@ -7441,7 +7441,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "llm-benign-0024",
@@ -7463,7 +7463,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "llm-benign-0025",
@@ -7512,7 +7512,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "llm-benign-0027",
@@ -7556,7 +7556,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "llm-benign-0044",
@@ -7578,7 +7578,7 @@
       }
     ],
     "expected_tripped_rule": null,
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "llm-stale_price-0001",
@@ -7615,7 +7615,7 @@
       }
     ],
     "expected_tripped_rule": "AUTHORITATIVE_REREAD",
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "llm-stale_price-0002",
@@ -7793,7 +7793,7 @@
       }
     ],
     "expected_tripped_rule": "APPROVAL_THRESHOLD",
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "llm-budget_split-0008",
@@ -7896,7 +7896,7 @@
       }
     ],
     "expected_tripped_rule": "AUTHORITATIVE_REREAD",
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "llm-stale_price-0014",
@@ -7940,7 +7940,7 @@
       }
     ],
     "expected_tripped_rule": "AUTHORITATIVE_REREAD",
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "llm-category_laundering-0016",
@@ -8044,7 +8044,7 @@
       }
     ],
     "expected_tripped_rule": "CATEGORY_ALLOWLIST",
-    "split": "train"
+    "split": "holdout"
   },
   {
     "id": "llm-threshold_straddling-0020",
@@ -8118,7 +8118,7 @@
       }
     ],
     "expected_tripped_rule": "SPEND_CAP",
-    "split": "holdout"
+    "split": "train"
   },
   {
     "id": "llm-stale_price-0023",
@@ -8145,6 +8145,6 @@
       }
     ],
     "expected_tripped_rule": "AUTHORITATIVE_REREAD",
-    "split": "train"
+    "split": "holdout"
   }
 ]
