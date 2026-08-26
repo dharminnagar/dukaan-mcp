@@ -8,7 +8,7 @@
  */
 import "./assert-server-only";
 
-const DEFAULT_MODEL = "z-ai/glm-5.3-flash";
+const DEFAULT_MODEL = "nvidia/nemotron-3-nano-30b-a3b";
 const DEFAULT_BASE_URL = "https://openrouter.ai/api/v1";
 
 function optionalEnv(name: string, fallback: string): string {

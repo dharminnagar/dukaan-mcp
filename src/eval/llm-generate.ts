@@ -65,8 +65,13 @@ const MANIFEST_PATH = `${FIXTURES_DIR}/llm-manifest.json`;
  * The default below is only for a FUTURE batch, which would be a different
  * author and must be labelled as such rather than merged into the existing
  * one. Override with OPENROUTER_MODEL; no code change needed.
+ *
+ * Deliberately the PAID nano endpoint rather than a `:free` sibling, at
+ * roughly five paise per thousand calls. A free preview slug is exactly what
+ * just vanished out from under this file, and the saving is not worth
+ * repeating that.
  */
-const DEFAULT_MODEL = "z-ai/glm-5.3-flash";
+const DEFAULT_MODEL = "nvidia/nemotron-3-nano-30b-a3b";
 const DEFAULT_BASE_URL = "https://openrouter.ai/api/v1";
 
 function optionalEnv(name: string, fallback: string): string {
