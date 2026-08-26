@@ -360,9 +360,18 @@ describe("onboard (integration, against real Postgres, namespaced m_web_*)", () 
     };
 
     await onboard(SHOPIFY_CSV, SHOPIFY_MAPPING, name, policy);
+
+    // Asserting the MESSAGE, not just that it rejects. A repeated name is the
+    // one failure a human hits by accident, and Postgres words it as
+    // "duplicate key value violates unique constraint", which lands on screen
+    // mid-demo as alarming and unactionable. `toThrow()` alone passed happily
+    // while that was what the merchant saw.
     await expect(
       onboard(SHOPIFY_CSV, SHOPIFY_MAPPING, name, policy)
-    ).rejects.toThrow();
+    ).rejects.toThrow(/already exists/i);
+    await expect(
+      onboard(SHOPIFY_CSV, SHOPIFY_MAPPING, name, policy)
+    ).rejects.not.toThrow(/duplicate key|unique constraint/i);
 
     const agentRows = await query(
       "SELECT id FROM agents WHERE merchant_id = $1",

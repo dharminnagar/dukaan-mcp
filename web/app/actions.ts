@@ -168,14 +168,43 @@ export async function onboard(
 
   const canonicalCsv = renameToCanonicalCsv(csvText, mapping);
 
-  const result = await createMerchant({
-    merchantId,
-    name: trimmedName,
-    csv: canonicalCsv,
-    policyJson: policy,
-    agentLabel: "web-onboarding-agent",
-    buyerCapRupees,
-  });
+  let result: Awaited<ReturnType<typeof createMerchant>>;
+  try {
+    result = await createMerchant({
+      merchantId,
+      name: trimmedName,
+      csv: canonicalCsv,
+      policyJson: policy,
+      agentLabel: "web-onboarding-agent",
+      buyerCapRupees,
+    });
+  } catch (err) {
+    // A repeated merchant name is the ONE failure a human will hit by accident
+    // — re-recording a demo, or onboarding the same shop twice — and Postgres
+    // reports it as `duplicate key value violates unique constraint`, which is
+    // both alarming and unactionable on screen. Every other error keeps its own
+    // message; this one gets translated because the fix is obvious once said
+    // out loud.
+    //
+    // Matched on SQLSTATE 23505, not on message text, so it survives a Postgres
+    // locale or version that words the message differently.
+    if (
+      typeof err === "object" &&
+      err !== null &&
+      "code" in err &&
+      (err as { code?: unknown }).code === "23505"
+    ) {
+      // `cause` keeps the driver's own error reachable: the merchant reads the
+      // sentence, a developer reading a log still gets the SQLSTATE and the
+      // constraint name.
+      throw new Error(
+        `A merchant named "${trimmedName}" already exists (id ${merchantId}). ` +
+          `Pick a different name, or open its dashboard at /dashboard/${merchantId}.`,
+        { cause: err }
+      );
+    }
+    throw err;
+  }
 
   return {
     token: result.token,
