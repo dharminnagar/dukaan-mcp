@@ -13,7 +13,10 @@
  *      catalog AT DECISION TIME. Runs first: it is a single indexed read per
  *      item, and every amount this function computes below is derived from
  *      the asserted price, so a stale price would poison every later check.
- *   2. Spend cap            - over (merchant_id, agent_id, window).
+ *   2. Spend cap            - over (merchant_id, agent_id, window), against
+ *      the TIGHTEST of the buyer's, the merchant's and the platform's caps
+ *      (src/gate/limits.ts). Still ONE check, in the same position: the three
+ *      caps collapse to one number before the comparison.
  *   3. Category allowlist   - per line item.
  *   4. Approval threshold   - escalates; does not fall through to allow.
  *   5. Allow.
@@ -46,6 +49,7 @@
 import { randomUUID } from "node:crypto";
 import type { writeAuditEvent } from "../audit/write";
 import type { TenantRepo } from "../db/repo";
+import { effectiveCap } from "./limits";
 import type {
   CategoryNotAllowedError,
   GateOutcome,
@@ -61,9 +65,23 @@ import type {
 export interface GateDeps {
   readonly repo: Pick<
     TenantRepo,
-    "getProduct" | "getPolicy" | "spentInWindowPaise"
+    "getProduct" | "getPolicy" | "spentInWindowPaise" | "buyerCapPaise"
   >;
   readonly writeAudit: typeof writeAuditEvent;
+  /**
+   * The platform's ceiling on what a merchant may set for itself, in paise;
+   * absent or `null` means no ceiling. Injected, NOT read from src/config.ts,
+   * because this function must stay a pure function of (ctx, req, deps): a
+   * config import here would make the gate's verdict depend on ambient
+   * environment a caller cannot vary, and src/eval/ drives `decide()` with no
+   * server and no environment at all.
+   *
+   * Optional rather than required-and-nullable so every call site that predates
+   * the ceiling keeps compiling AND keeps deciding identically — `undefined` and
+   * `null` are the same "no ceiling" input to `effectiveCap`. That matters most
+   * for src/eval/runner.ts, which is frozen alongside the scored corpus.
+   */
+  readonly platformCeilingPaise?: number | null;
   // Deliberately NO injectable clock. The cap window is enforced inside
   // `repo.spentInWindowPaise`'s SQL against Postgres's own now(), so a clock
   // passed in from here would be silently ignored. Tests get window-boundary
@@ -261,16 +279,33 @@ export async function decide(
   const attemptedPaise = totalAssertedPaise(req.items);
 
   // ---- check 2: spend cap --------------------------------------------------
+  // Three parties each name a limit and the tightest binds - see
+  // src/gate/limits.ts for who they are and why ties resolve the way they do.
+  // The merchant's policy figure is the only one that existed before, and with
+  // no buyer cap and no platform ceiling `effectiveCap` returns exactly it with
+  // `bound_by: "merchant"`, so this comparison is unchanged for every caller
+  // that has not opted in. That is what keeps the frozen eval corpus valid.
   const policy = await deps.repo.getPolicy();
   const spentPaise = await deps.repo.spentInWindowPaise(policy.window_seconds);
+  const buyerCapPaise = await deps.repo.buyerCapPaise();
+  const platformCeilingPaise = deps.platformCeilingPaise ?? null;
+  const cap = effectiveCap(
+    buyerCapPaise,
+    policy.spend_cap_paise,
+    platformCeilingPaise
+  );
 
-  if (spentPaise + attemptedPaise > policy.spend_cap_paise) {
+  if (spentPaise + attemptedPaise > cap.cap_paise) {
     const error: SpendCapExceededError = {
       reason_code: "SPEND_CAP_EXCEEDED",
-      message: `This order (${attemptedPaise} paise) would take agent spend to ${spentPaise + attemptedPaise} paise, past the ${policy.spend_cap_paise} paise cap over the last ${policy.window_seconds}s.`,
-      cap_paise: policy.spend_cap_paise,
+      message: `This order (${attemptedPaise} paise) would take agent spend to ${spentPaise + attemptedPaise} paise, past the ${cap.bound_by}'s ${cap.cap_paise} paise cap over the last ${policy.window_seconds}s.`,
+      cap_paise: cap.cap_paise,
+      bound_by: cap.bound_by,
+      buyer_cap_paise: buyerCapPaise,
+      merchant_cap_paise: policy.spend_cap_paise,
+      platform_ceiling_paise: platformCeilingPaise,
       spent_paise: spentPaise,
-      remaining_budget_paise: Math.max(policy.spend_cap_paise - spentPaise, 0),
+      remaining_budget_paise: Math.max(cap.cap_paise - spentPaise, 0),
       attempted_paise: attemptedPaise,
       window_seconds: policy.window_seconds,
     };
@@ -280,10 +315,18 @@ export async function decide(
       rule: "SPEND_CAP",
       decision: "block",
       reason_code: "SPEND_CAP_EXCEEDED",
+      // `bound_by` and the three inputs go in `detail` (JSONB) deliberately.
+      // audit_events.action and .rule are closed enums whose members the
+      // "every gate decision is reconstructible from the log alone" claim
+      // depends on; 'SPEND_CAP' is already one of them, so nothing widens.
       detail: {
         spent_paise: spentPaise,
-        cap_paise: policy.spend_cap_paise,
+        cap_paise: cap.cap_paise,
         attempted_paise: attemptedPaise,
+        bound_by: cap.bound_by,
+        buyer_cap_paise: buyerCapPaise,
+        merchant_cap_paise: policy.spend_cap_paise,
+        platform_ceiling_paise: platformCeilingPaise,
       },
     });
     return { decision: "block", rule: "SPEND_CAP", error };
@@ -338,13 +381,26 @@ export async function decide(
   }
 
   // ---- check 5: allow ---------------------------------------------------------
+  // Minted HERE, not by the caller, for the same reason check 4 mints its own:
+  // the gate never writes to `orders`, so the id has to come back with the
+  // outcome for the caller to persist under. Until DUK-31's follow-up this
+  // branch audited `order_id: null` while the caller generated a fresh id it
+  // never wrote back, which left the ALLOW row unlinked to the order it
+  // authorised — an audit gap on the ONLY path where money actually moves,
+  // while the escalate path (which never reaches Razorpay) was fully linked.
+  const orderId = `o_${randomUUID()}`;
   await audit({
-    order_id: null,
+    order_id: orderId,
     amount_paise: attemptedPaise,
     rule: "ALLOW",
     decision: "allow",
     reason_code: "ALLOWED",
     detail: { item_count: req.items.length },
   });
-  return { decision: "allow", rule: "ALLOW", amount_paise: attemptedPaise };
+  return {
+    decision: "allow",
+    rule: "ALLOW",
+    amount_paise: attemptedPaise,
+    order_id: orderId,
+  };
 }

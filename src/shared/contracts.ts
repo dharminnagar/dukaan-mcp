@@ -82,10 +82,34 @@ export const StaleCatalogError = z.object({
   true_stock: z.int().nonnegative().nullable(),
 });
 
+/**
+ * Which of the three parties' caps actually bound. The member list is spelled
+ * out here because src/gate/limits.ts exports `BindingParty` as a type only;
+ * the gate assigning `bound_by: effectiveCap(...).bound_by` into this shape is
+ * what makes a divergence between the two a typecheck failure rather than a
+ * production parse error.
+ */
+export const BindingPartyCode = z.enum(["buyer", "merchant", "platform"]);
+export type BindingPartyCode = z.infer<typeof BindingPartyCode>;
+
+/**
+ * `cap_paise` and `remaining_budget_paise` are the EFFECTIVE cap — the tightest
+ * of the three — because that is the number the agent has to re-plan against;
+ * an agent told the merchant's figure while a tighter buyer limit is what
+ * actually blocked it would retry forever.
+ *
+ * All three inputs are reported alongside `bound_by` so a reader of the block
+ * (or of the audit row's `detail`) can see WHY that one bound, without going
+ * back to the policy row and the deployment config to reconstruct it.
+ */
 export const SpendCapExceededError = z.object({
   reason_code: z.literal("SPEND_CAP_EXCEEDED"),
   message: z.string().min(1),
   cap_paise: PositivePaise,
+  bound_by: BindingPartyCode,
+  buyer_cap_paise: PositivePaise.nullable(),
+  merchant_cap_paise: PositivePaise,
+  platform_ceiling_paise: PositivePaise.nullable(),
   spent_paise: Paise,
   remaining_budget_paise: Paise,
   attempted_paise: PositivePaise,
@@ -330,6 +354,13 @@ export type GateOutcome =
       readonly decision: "allow";
       readonly rule: "ALLOW";
       readonly amount_paise: number;
+      /**
+       * Minted by the gate, exactly as the escalate branch does, so the ALLOW
+       * audit row and the `orders` row it authorises share one id. The caller
+       * must persist under THIS id rather than generating its own, or the audit
+       * log stops being self-contained on the one path where money moves.
+       */
+      readonly order_id: string;
     }
   | {
       readonly decision: "block";

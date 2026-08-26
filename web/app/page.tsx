@@ -24,6 +24,8 @@ interface OnboardResult {
   token: string;
   endpoint: string;
   productCount: number;
+  merchantId: string;
+  buyerCapPaise: number | null;
 }
 
 const CANONICAL_FIELD_LABELS: Record<CanonicalField, string> = {
@@ -35,6 +37,15 @@ const CANONICAL_FIELD_LABELS: Record<CanonicalField, string> = {
 };
 
 const NO_MATCH = "__none__";
+
+/**
+ * Integer paise -> a rupee string for display. Splits with `/` and `%` rather
+ * than dividing by 100 and calling toFixed, so the rendered figure can never
+ * pick up a binary-floating-point artefact on the way to the screen.
+ */
+function formatPaise(paise: number): string {
+  return `${Math.trunc(paise / 100)}.${String(paise % 100).padStart(2, "0")}`;
+}
 
 function parseAllowlist(raw: string): string[] {
   return raw
@@ -52,6 +63,14 @@ export default function OnboardingPage() {
   const [merchantName, setMerchantName] = useState("");
   const [csvText, setCsvText] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+  /**
+   * The BUYER's cap, kept out of `PolicyDraft` on purpose: the policy is the
+   * merchant's own exposure limit, and this is the limit imposed on the agent
+   * by whoever funds it. Blank means the buyer sets no cap. Never parsed to a
+   * number here — it goes to the server as the string the merchant typed, and
+   * `rupeesToPaise` converts it with integer string maths.
+   */
+  const [buyerCapRupees, setBuyerCapRupees] = useState("");
   const [policy, setPolicy] = useState<PolicyDraft>({
     spendCapRupees: "",
     approvalThresholdRupees: "",
@@ -186,7 +205,8 @@ export default function OnboardingPage() {
         csvText,
         mapping,
         merchantName,
-        policyInput
+        policyInput,
+        buyerCapRupees.trim()
       );
       setResult(outcome);
       setStep(3);
@@ -286,6 +306,8 @@ export default function OnboardingPage() {
           onFileChange={handleFileChange}
           policy={policy}
           setPolicy={setPolicy}
+          buyerCapRupees={buyerCapRupees}
+          setBuyerCapRupees={setBuyerCapRupees}
           categoryOptions={categoryOptions}
           valid={step1Valid}
           busy={busy}
@@ -353,6 +375,8 @@ function StepUpload(props: {
   onFileChange: (f: File | null) => void;
   policy: PolicyDraft;
   setPolicy: React.Dispatch<React.SetStateAction<PolicyDraft>>;
+  buyerCapRupees: string;
+  setBuyerCapRupees: (v: string) => void;
   categoryOptions: string[];
   valid: boolean;
   busy: boolean;
@@ -366,6 +390,8 @@ function StepUpload(props: {
     onFileChange,
     policy,
     setPolicy,
+    buyerCapRupees,
+    setBuyerCapRupees,
     categoryOptions,
     valid,
     busy,
@@ -464,6 +490,26 @@ function StepUpload(props: {
               setPolicy((p) => ({ ...p, window: e.target.value }))
             }
             placeholder="24h"
+          />
+        </LabeledField>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-base font-semibold">Buyer limit</h2>
+        <p className="text-xs text-[var(--color-muted)]">
+          Separate from the spend policy above, and deliberately so: the policy
+          is the merchant&apos;s own exposure limit, this is the ceiling the
+          party funding the agent puts on it. Whichever is tighter binds.
+        </p>
+        <LabeledField
+          label="Buyer cap (₹, per window) — optional"
+          hint="Leave blank for no buyer cap. Set once, when the token is minted; it is never raised afterwards.">
+          <input
+            className={fieldClass}
+            inputMode="decimal"
+            value={buyerCapRupees}
+            onChange={(e) => setBuyerCapRupees(e.target.value)}
+            placeholder="2500.00"
           />
         </LabeledField>
       </section>
@@ -689,6 +735,9 @@ function StepDone(props: {
       <div className="rounded-md border border-[var(--color-accent)] bg-[#f0f7f3] px-4 py-3 text-sm text-[var(--color-accent)]">
         Merchant onboarded — {result.productCount} product
         {result.productCount === 1 ? "" : "s"} loaded and ready.
+        {result.buyerCapPaise !== null && (
+          <> Buyer cap: ₹{formatPaise(result.buyerCapPaise)} per window.</>
+        )}
       </div>
 
       <section className="space-y-2">
@@ -722,6 +771,19 @@ function StepDone(props: {
             {copied === "endpoint" ? "Copied" : "Copy"}
           </button>
         </div>
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="text-base font-semibold">Gate dashboard</h2>
+        <p className="text-xs text-[var(--color-muted)]">
+          Every decision this merchant&apos;s agents get, with the reason code
+          and which party&apos;s cap bound.
+        </p>
+        <a
+          href={`/dashboard/${result.merchantId}`}
+          className="inline-block rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--color-accent-hover)]">
+          Open dashboard
+        </a>
       </section>
     </div>
   );

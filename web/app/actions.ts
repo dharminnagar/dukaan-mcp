@@ -139,8 +139,21 @@ export async function onboard(
   csvText: string,
   mapping: ColumnMapping,
   name: string,
-  policy: PolicyFormInput
-): Promise<{ token: string; endpoint: string; productCount: number }> {
+  policy: PolicyFormInput,
+  /**
+   * The BUYER's cap on the agent this call mints, in rupees. Optional, and
+   * blank is the same as absent: it stores NULL, meaning the buyer imposes no
+   * constraint. Converted server-side by `createMerchant` through the one
+   * integer-string rupee converter — never parsed to a float in the browser.
+   */
+  buyerCapRupees?: string
+): Promise<{
+  token: string;
+  endpoint: string;
+  productCount: number;
+  merchantId: string;
+  buyerCapPaise: number | null;
+}> {
   const trimmedName = name.trim();
   if (trimmedName.length === 0) {
     throw new Error("Merchant name is required.");
@@ -161,11 +174,16 @@ export async function onboard(
     csv: canonicalCsv,
     policyJson: policy,
     agentLabel: "web-onboarding-agent",
+    buyerCapRupees,
   });
 
   return {
     token: result.token,
     endpoint: MCP_ENDPOINT,
     productCount: result.productCount,
+    // Returned rather than re-derived on the client: this is the id actually
+    // written, and it is what the dashboard link on the success screen needs.
+    merchantId: result.merchant.id,
+    buyerCapPaise: result.buyerCapPaise,
   };
 }

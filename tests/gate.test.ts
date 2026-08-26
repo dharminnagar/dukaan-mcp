@@ -113,11 +113,15 @@ const PRODUCT_TENANT2_CAP_EDGE = {
 async function makeAgentCtx(
   agentSuffix: string,
   sessionSuffix = agentSuffix,
-  merchantId = MERCHANT
+  merchantId = MERCHANT,
+  // The BUYER's cap, written at agent-creation time and never updated - which
+  // is the whole point of it living on the agent row rather than the policy.
+  // null means the buyer imposed no constraint.
+  buyerCapPaise: number | null = null
 ): Promise<TenantContext> {
   const agentId = `ag_gate_${agentSuffix}`;
   await query(
-    "INSERT INTO agents (id, merchant_id, label, token_hash) VALUES ($1, $2, $3, $4)",
+    "INSERT INTO agents (id, merchant_id, label, token_hash, buyer_cap_paise) VALUES ($1, $2, $3, $4, $5)",
     [
       agentId,
       merchantId,
@@ -125,6 +129,7 @@ async function makeAgentCtx(
       // Not a real credential - decide() is driven directly with a TenantContext,
       // bypassing auth/resolve.ts entirely, so only a valid unique digest shape matters.
       hashToken(agentId),
+      buyerCapPaise,
     ]
   );
   const ctx: TenantContext = {
@@ -136,8 +141,41 @@ async function makeAgentCtx(
   return ctx;
 }
 
-function makeDeps(ctx: TenantContext): GateDeps {
-  return { repo: new TenantRepo(ctx), writeAudit: writeAuditEvent };
+/**
+ * `platformCeilingPaise` is omitted by default, which is the pre-DUK-31 shape
+ * and must stay indistinguishable from passing null - every existing test in
+ * this file calls makeDeps with one argument and must be unaffected.
+ */
+function makeDeps(
+  ctx: TenantContext,
+  platformCeilingPaise?: number | null
+): GateDeps {
+  return {
+    repo: new TenantRepo(ctx),
+    writeAudit: writeAuditEvent,
+    platformCeilingPaise,
+  };
+}
+
+/**
+ * The `detail` JSONB of an agent's most recent checkout decision. `bound_by`
+ * lives there rather than in a column: audit_events.action and .rule are closed
+ * enums the "reconstructible from the log alone" claim depends on, and
+ * 'SPEND_CAP' is already one of rule's members.
+ */
+async function lastCheckoutAuditDetail(
+  agentId: string
+): Promise<Record<string, unknown>> {
+  const row = await queryOne<{ detail: Record<string, unknown> | null }>(
+    `SELECT detail FROM audit_events
+      WHERE merchant_id = $1 AND agent_id = $2 AND action = 'checkout'
+      ORDER BY ts DESC LIMIT 1`,
+    [MERCHANT, agentId]
+  );
+  if (row === null || row.detail === null) {
+    throw new Error(`no checkout audit detail for ${agentId}`);
+  }
+  return row.detail;
 }
 
 async function countCheckoutAudits(
@@ -588,6 +626,398 @@ describe("check 2: spend cap", () => {
       throw new Error("unreachable");
     expect(outcome.error.spent_paise).toBe(60_001);
     expect(outcome.error.remaining_budget_paise).toBe(39_999);
+  });
+});
+
+/**
+ * DUK-31: the cap check reads THREE numbers - the buyer's, the merchant's, and
+ * the platform's - and the tightest binds. The point of the change is that the
+ * merchant is the party that profits when its own number is loose, so a cap
+ * only it can set is not a buyer protection.
+ *
+ * These tests are structured around `bound_by`: one per party, each asserting
+ * the block payload names the RIGHT party and reports all three inputs, so a
+ * payload that reported the correct number under the wrong attribution would
+ * still fail. A reader of the block has to be able to see why that one bound.
+ */
+describe("check 2: three-party cap and bound_by", () => {
+  test('a buyer cap tighter than the merchant policy blocks, and bound_by is "buyer"', async () => {
+    // No prior spend at all. Under the merchant's 100_000 policy this order
+    // would sail through; the buyer's 15_000 is what stops it.
+    const ctx = await makeAgentCtx(
+      "bound_buyer",
+      "bound_buyer",
+      MERCHANT,
+      15_000
+    );
+    const req: CheckoutRequest = {
+      items: [
+        {
+          item_id: PRODUCT_BASIC.id,
+          quantity: 2,
+          asserted_price_paise: PRODUCT_BASIC.price_paise,
+        },
+      ],
+    };
+
+    const outcome = await decide(ctx, req, makeDeps(ctx));
+
+    expect(outcome.decision).toBe("block");
+    if (outcome.decision !== "block") throw new Error("unreachable");
+    expect(outcome.rule).toBe("SPEND_CAP");
+    expect(outcome.error.reason_code).toBe("SPEND_CAP_EXCEEDED");
+    if (outcome.error.reason_code !== "SPEND_CAP_EXCEEDED")
+      throw new Error("unreachable");
+    expect(outcome.error.bound_by).toBe("buyer");
+    // cap_paise and remaining_budget_paise are the EFFECTIVE cap, not the
+    // merchant's - an agent told 100_000 while 15_000 is what blocked it would
+    // re-plan straight into the same wall.
+    expect(outcome.error.cap_paise).toBe(15_000);
+    expect(outcome.error.remaining_budget_paise).toBe(15_000);
+    expect(outcome.error.spent_paise).toBe(0);
+    expect(outcome.error.attempted_paise).toBe(20_000);
+    // All three inputs, so the block explains itself.
+    expect(outcome.error.buyer_cap_paise).toBe(15_000);
+    expect(outcome.error.merchant_cap_paise).toBe(SPEND_CAP_PAISE);
+    expect(outcome.error.platform_ceiling_paise).toBeNull();
+    expect(outcome.error.message).toContain("buyer");
+
+    const detail = await lastCheckoutAuditDetail(ctx.agent_id);
+    expect(detail["bound_by"]).toBe("buyer");
+    expect(detail["buyer_cap_paise"]).toBe(15_000);
+    expect(detail["merchant_cap_paise"]).toBe(SPEND_CAP_PAISE);
+    expect(detail["platform_ceiling_paise"]).toBeNull();
+    expect(detail["cap_paise"]).toBe(15_000);
+  });
+
+  test('a merchant policy tighter than a loose buyer cap blocks, and bound_by is "merchant"', async () => {
+    const ctx = await makeAgentCtx(
+      "bound_merchant",
+      "bound_merchant",
+      MERCHANT,
+      500_000
+    );
+    // 95_000 spent leaves 5_000 under the merchant's 100_000; the buyer's
+    // 500_000 is nowhere near binding.
+    await new TenantRepo(ctx).insertOrder({
+      id: "o_gate_bound_merchant_prior",
+      merchant_id: ctx.merchant_id,
+      agent_id: ctx.agent_id,
+      session_id: ctx.session_id,
+      items: [
+        {
+          item_id: PRODUCT_BASIC.id,
+          quantity: 1,
+          asserted_price_paise: 95_000,
+        },
+      ],
+      amount_paise: 95_000,
+      status: "created",
+      razorpay_order_id: null,
+    });
+
+    const req: CheckoutRequest = {
+      items: [
+        {
+          item_id: PRODUCT_BASIC.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_BASIC.price_paise,
+        },
+      ],
+    };
+    const outcome = await decide(ctx, req, makeDeps(ctx));
+
+    expect(outcome.decision).toBe("block");
+    if (outcome.decision !== "block") throw new Error("unreachable");
+    expect(outcome.error.reason_code).toBe("SPEND_CAP_EXCEEDED");
+    if (outcome.error.reason_code !== "SPEND_CAP_EXCEEDED")
+      throw new Error("unreachable");
+    expect(outcome.error.bound_by).toBe("merchant");
+    expect(outcome.error.cap_paise).toBe(SPEND_CAP_PAISE);
+    expect(outcome.error.buyer_cap_paise).toBe(500_000);
+    expect(outcome.error.merchant_cap_paise).toBe(SPEND_CAP_PAISE);
+    expect(outcome.error.platform_ceiling_paise).toBeNull();
+
+    const detail = await lastCheckoutAuditDetail(ctx.agent_id);
+    expect(detail["bound_by"]).toBe("merchant");
+  });
+
+  test('a platform ceiling below the merchant cap blocks, and bound_by is "platform"', async () => {
+    // THE case the whole ticket exists for: the merchant set itself 100_000,
+    // its policy row still says 100_000, and it still only gets to spend 8_000.
+    const ctx = await makeAgentCtx("bound_platform");
+    const req: CheckoutRequest = {
+      items: [
+        {
+          item_id: PRODUCT_BASIC.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_BASIC.price_paise,
+        },
+      ],
+    };
+
+    const outcome = await decide(ctx, req, makeDeps(ctx, 8_000));
+
+    expect(outcome.decision).toBe("block");
+    if (outcome.decision !== "block") throw new Error("unreachable");
+    expect(outcome.error.reason_code).toBe("SPEND_CAP_EXCEEDED");
+    if (outcome.error.reason_code !== "SPEND_CAP_EXCEEDED")
+      throw new Error("unreachable");
+    expect(outcome.error.bound_by).toBe("platform");
+    expect(outcome.error.cap_paise).toBe(8_000);
+    expect(outcome.error.buyer_cap_paise).toBeNull();
+    // The merchant's own figure is reported UNCHANGED: the ceiling tightens
+    // what it may spend without rewriting what it asked for.
+    expect(outcome.error.merchant_cap_paise).toBe(SPEND_CAP_PAISE);
+    expect(outcome.error.platform_ceiling_paise).toBe(8_000);
+
+    const detail = await lastCheckoutAuditDetail(ctx.agent_id);
+    expect(detail["bound_by"]).toBe("platform");
+    expect(detail["platform_ceiling_paise"]).toBe(8_000);
+  });
+
+  test("with all three set, the tightest binds regardless of which party it is", async () => {
+    const ctx = await makeAgentCtx(
+      "bound_tightest",
+      "bound_tightest",
+      MERCHANT,
+      30_000
+    );
+    const req: CheckoutRequest = {
+      items: [
+        {
+          item_id: PRODUCT_BASIC.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_BASIC.price_paise,
+        },
+      ],
+    };
+
+    // buyer 30_000, merchant 100_000, platform 9_000 -> platform.
+    const outcome = await decide(ctx, req, makeDeps(ctx, 9_000));
+
+    expect(outcome.decision).toBe("block");
+    if (outcome.decision !== "block") throw new Error("unreachable");
+    expect(outcome.error.reason_code).toBe("SPEND_CAP_EXCEEDED");
+    if (outcome.error.reason_code !== "SPEND_CAP_EXCEEDED")
+      throw new Error("unreachable");
+    expect(outcome.error.bound_by).toBe("platform");
+    expect(outcome.error.cap_paise).toBe(9_000);
+    expect(outcome.error.buyer_cap_paise).toBe(30_000);
+    expect(outcome.error.merchant_cap_paise).toBe(SPEND_CAP_PAISE);
+    expect(outcome.error.platform_ceiling_paise).toBe(9_000);
+  });
+
+  test("THE additivity guarantee: buyer cap null and NO ceiling decides exactly as the two-party check did", async () => {
+    // If this test ever fails, the change stopped being additive and the frozen
+    // eval corpus's scores stopped meaning what they claim.
+    const ctx = await makeAgentCtx("bound_unchanged");
+    await new TenantRepo(ctx).insertOrder({
+      id: "o_gate_bound_unchanged_prior",
+      merchant_id: ctx.merchant_id,
+      agent_id: ctx.agent_id,
+      session_id: ctx.session_id,
+      items: [
+        {
+          item_id: PRODUCT_BASIC.id,
+          quantity: 1,
+          asserted_price_paise: 95_000,
+        },
+      ],
+      amount_paise: 95_000,
+      status: "created",
+      razorpay_order_id: null,
+    });
+
+    const req: CheckoutRequest = {
+      items: [
+        {
+          item_id: PRODUCT_BASIC.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_BASIC.price_paise,
+        },
+      ],
+    };
+    const outcome = await decide(ctx, req, makeDeps(ctx));
+
+    expect(outcome.decision).toBe("block");
+    if (outcome.decision !== "block") throw new Error("unreachable");
+    expect(outcome.rule).toBe("SPEND_CAP");
+    expect(outcome.error.reason_code).toBe("SPEND_CAP_EXCEEDED");
+    if (outcome.error.reason_code !== "SPEND_CAP_EXCEEDED")
+      throw new Error("unreachable");
+    // Every number the pre-DUK-31 payload carried, identical.
+    expect(outcome.error.cap_paise).toBe(SPEND_CAP_PAISE);
+    expect(outcome.error.spent_paise).toBe(95_000);
+    expect(outcome.error.remaining_budget_paise).toBe(5_000);
+    expect(outcome.error.attempted_paise).toBe(PRODUCT_BASIC.price_paise);
+    expect(outcome.error.window_seconds).toBe(3600);
+    // Plus the new fields, all reporting "nobody but the merchant spoke".
+    expect(outcome.error.bound_by).toBe("merchant");
+    expect(outcome.error.buyer_cap_paise).toBeNull();
+    expect(outcome.error.platform_ceiling_paise).toBeNull();
+  });
+
+  test("an omitted platformCeilingPaise and an explicit null are the same input", async () => {
+    const ctxOmitted = await makeAgentCtx("ceiling_omitted");
+    const ctxNull = await makeAgentCtx("ceiling_null");
+    const req: CheckoutRequest = {
+      items: [
+        {
+          item_id: PRODUCT_BASIC.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_BASIC.price_paise,
+        },
+      ],
+    };
+
+    const omitted = await decide(ctxOmitted, req, makeDeps(ctxOmitted));
+    const explicitNull = await decide(ctxNull, req, makeDeps(ctxNull, null));
+
+    expect(omitted.decision).toBe("allow");
+    expect(explicitNull.decision).toBe("allow");
+  });
+
+  test("buyer cap boundary: spending exactly TO the buyer cap is allowed, one paise past is blocked", async () => {
+    // The `>` vs `>=` off-by-one, pinned on the buyer's number specifically -
+    // the merchant's own boundary is already covered above.
+    const ctxAt = await makeAgentCtx(
+      "buyer_boundary_allow",
+      "buyer_boundary_allow",
+      MERCHANT,
+      PRODUCT_BASIC.price_paise
+    );
+    const ctxOver = await makeAgentCtx(
+      "buyer_boundary_block",
+      "buyer_boundary_block",
+      MERCHANT,
+      PRODUCT_BASIC.price_paise - 1
+    );
+    const req: CheckoutRequest = {
+      items: [
+        {
+          item_id: PRODUCT_BASIC.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_BASIC.price_paise,
+        },
+      ],
+    };
+
+    const at = await decide(ctxAt, req, makeDeps(ctxAt));
+    expect(at.decision).toBe("allow");
+
+    const over = await decide(ctxOver, req, makeDeps(ctxOver));
+    expect(over.decision).toBe("block");
+    if (over.decision !== "block") throw new Error("unreachable");
+    if (over.error.reason_code !== "SPEND_CAP_EXCEEDED")
+      throw new Error("unreachable");
+    expect(over.error.bound_by).toBe("buyer");
+    expect(over.error.cap_paise).toBe(PRODUCT_BASIC.price_paise - 1);
+    expect(over.error.remaining_budget_paise).toBe(
+      PRODUCT_BASIC.price_paise - 1
+    );
+  });
+
+  test("a buyer cap constrains ONE agent, not its merchant's other agents", async () => {
+    // The cap is per-agent because it is per-credential: the buyer who funded
+    // this agent said nothing about the merchant's other agents. A leak here
+    // would read as a mysterious block on an unrelated agent.
+    const capped = await makeAgentCtx(
+      "buyer_scope_capped",
+      "buyer_scope_capped",
+      MERCHANT,
+      5_000
+    );
+    const uncapped = await makeAgentCtx("buyer_scope_uncapped");
+    const req: CheckoutRequest = {
+      items: [
+        {
+          item_id: PRODUCT_BASIC.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_BASIC.price_paise,
+        },
+      ],
+    };
+
+    const blocked = await decide(capped, req, makeDeps(capped));
+    expect(blocked.decision).toBe("block");
+    if (blocked.decision !== "block") throw new Error("unreachable");
+    if (blocked.error.reason_code !== "SPEND_CAP_EXCEEDED")
+      throw new Error("unreachable");
+    expect(blocked.error.bound_by).toBe("buyer");
+
+    const allowed = await decide(uncapped, req, makeDeps(uncapped));
+    expect(allowed.decision).toBe("allow");
+  });
+
+  test("a buyer cap still blocks across a NEW SESSION for the same agent", async () => {
+    // The session-reset attack, re-run against the buyer's number rather than
+    // the merchant's: the cap is scoped to (merchant, agent, window), and the
+    // buyer cap is read off the agent row, so neither is session-resettable.
+    const first = await makeAgentCtx(
+      "buyer_multisession",
+      "buyer_multisession_s1",
+      MERCHANT,
+      15_000
+    );
+    const second: TenantContext = {
+      merchant_id: first.merchant_id,
+      agent_id: first.agent_id,
+      session_id: "s_gate_buyer_multisession_s2",
+    };
+    await new TenantRepo(second).ensureSession();
+
+    await new TenantRepo(first).insertOrder({
+      id: "o_gate_buyer_multisession_prior",
+      merchant_id: first.merchant_id,
+      agent_id: first.agent_id,
+      session_id: first.session_id,
+      items: [
+        {
+          item_id: PRODUCT_BASIC.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_BASIC.price_paise,
+        },
+      ],
+      amount_paise: PRODUCT_BASIC.price_paise,
+      status: "created",
+      razorpay_order_id: null,
+    });
+
+    const req: CheckoutRequest = {
+      items: [
+        {
+          item_id: PRODUCT_BASIC.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_BASIC.price_paise,
+        },
+      ],
+    };
+    const outcome = await decide(second, req, makeDeps(second));
+
+    expect(outcome.decision).toBe("block");
+    if (outcome.decision !== "block") throw new Error("unreachable");
+    if (outcome.error.reason_code !== "SPEND_CAP_EXCEEDED")
+      throw new Error("unreachable");
+    expect(outcome.error.bound_by).toBe("buyer");
+    expect(outcome.error.spent_paise).toBe(PRODUCT_BASIC.price_paise);
+    expect(outcome.error.remaining_budget_paise).toBe(5_000);
+  });
+
+  test("a platform ceiling ABOVE the merchant cap changes nothing", async () => {
+    const ctx = await makeAgentCtx("ceiling_slack");
+    const req: CheckoutRequest = {
+      items: [
+        {
+          item_id: PRODUCT_BASIC.id,
+          quantity: 1,
+          asserted_price_paise: PRODUCT_BASIC.price_paise,
+        },
+      ],
+    };
+
+    const outcome = await decide(ctx, req, makeDeps(ctx, 10_000_000));
+    expect(outcome.decision).toBe("allow");
   });
 });
 

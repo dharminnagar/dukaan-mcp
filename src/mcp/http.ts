@@ -1,10 +1,9 @@
-import { randomUUID } from "node:crypto";
 import { createMcpHandler, McpServer } from "@modelcontextprotocol/server";
 import type { CallToolResult } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import { resolveTenant } from "../auth/resolve";
 import { writeAuditEvent } from "../audit/write";
-import { requireRazorpay } from "../config";
+import { env, requireRazorpay } from "../config";
 import { TenantRepo } from "../db/repo";
 import { withAdvisoryLock } from "../db/pool";
 import { decide } from "../gate/index";
@@ -217,7 +216,6 @@ export const mcpHandler = createMcpHandler(
       },
       async ({ items }) => {
         const start = performance.now();
-        const orderId = `o_${randomUUID()}`;
 
         // DUK-29: `decide()`'s spend-cap check and the insertOrder that
         // persists its outcome must be atomic with respect to this SAME
@@ -241,10 +239,18 @@ export const mcpHandler = createMcpHandler(
         return withAdvisoryLock(
           `${ctx.merchant_id}:${ctx.agent_id}`,
           async () => {
+            // This process is the only place the platform ceiling enters the
+            // gate: `decide()` deliberately cannot read src/config.ts itself.
+            // Null when PLATFORM_SPEND_CEILING_PAISE is unset, which is the
+            // pre-existing two-party behaviour.
             const outcome = await decide(
               ctx,
               { items },
-              { repo, writeAudit: writeAuditEvent }
+              {
+                repo,
+                writeAudit: writeAuditEvent,
+                platformCeilingPaise: env.PLATFORM_SPEND_CEILING_PAISE,
+              }
             );
 
             if (outcome.decision === "block") {
@@ -279,7 +285,7 @@ export const mcpHandler = createMcpHandler(
 
             // decision === 'allow'. The gate already wrote the ALLOW/ALLOWED
             // AuditEvent; only a Razorpay-side failure below needs a second one.
-            const receipt = orderId;
+            const receipt = outcome.order_id;
             const razorpayResult = await getRazorpayAdapter().createOrder({
               amount_paise: outcome.amount_paise,
               merchant_id: ctx.merchant_id,
@@ -289,7 +295,7 @@ export const mcpHandler = createMcpHandler(
 
             if (!razorpayResult.ok) {
               await repo.insertOrder({
-                id: orderId,
+                id: outcome.order_id,
                 merchant_id: ctx.merchant_id,
                 agent_id: ctx.agent_id,
                 session_id: ctx.session_id,
@@ -313,7 +319,7 @@ export const mcpHandler = createMcpHandler(
                 merchant_id: ctx.merchant_id,
                 session_id: ctx.session_id,
                 agent_id: ctx.agent_id,
-                order_id: orderId,
+                order_id: outcome.order_id,
                 action: "checkout",
                 amount_paise: outcome.amount_paise,
                 rule: "ALLOW",
@@ -330,7 +336,7 @@ export const mcpHandler = createMcpHandler(
             }
 
             const order = await repo.insertOrder({
-              id: orderId,
+              id: outcome.order_id,
               merchant_id: ctx.merchant_id,
               agent_id: ctx.agent_id,
               session_id: ctx.session_id,

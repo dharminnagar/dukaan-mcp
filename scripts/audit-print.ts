@@ -239,7 +239,12 @@ export function formatDetail(row: AuditRow): string {
     case "SPEND_CAP_EXCEEDED": {
       const spent = num("spent_paise");
       const cap = num("cap_paise");
-      return `spent ${spent === null ? "?" : formatRupees(spent)} of ${cap === null ? "?" : formatRupees(cap)} cap`;
+      // WHOSE cap bound is the point of a three-party limit, so name it. Absent
+      // on rows written before DUK-31, hence the fallback to the bare figure
+      // rather than printing "bound by ?" over historical audit data.
+      const boundBy = str("bound_by");
+      const suffix = boundBy === null ? " cap" : ` cap (${boundBy}'s)`;
+      return `spent ${spent === null ? "?" : formatRupees(spent)} of ${cap === null ? "?" : formatRupees(cap)}${suffix}`;
     }
     case "CATEGORY_NOT_ALLOWED": {
       const category = str("category") ?? "?";

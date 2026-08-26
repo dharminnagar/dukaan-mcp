@@ -63,7 +63,15 @@ function fakeAudit(
 }
 
 function allowOutcome(amountPaise: number): GateOutcome {
-  return { decision: "allow", rule: "ALLOW", amount_paise: amountPaise };
+  // A fixed id, not a random one: this helper feeds report assertions, and the
+  // report never reads order_id, so a random value would add nondeterminism to
+  // a suite whose whole point is byte-identical reproducibility.
+  return {
+    decision: "allow",
+    rule: "ALLOW",
+    amount_paise: amountPaise,
+    order_id: "o_report_test_fixture",
+  };
 }
 
 function blockOutcome(rule: GateRule): GateOutcome {
@@ -602,6 +610,10 @@ describe("report over the real frozen train split (Postgres, eval-namespaced)", 
       const weakenedRepo = {
         getProduct: repo.getProduct.bind(repo),
         spentInWindowPaise: repo.spentInWindowPaise.bind(repo),
+        // Real, unweakened: DUK-31 added it to GateDeps.repo, and stubbing it
+        // to null here would weaken a SECOND rule and muddy what this test
+        // measures.
+        buyerCapPaise: repo.buyerCapPaise.bind(repo),
         getPolicy: async () => {
           const policy = await repo.getPolicy();
           return { ...policy, category_allowlist: everyCategory };

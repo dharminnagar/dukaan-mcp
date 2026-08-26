@@ -16,6 +16,20 @@ const ctxAWindow: TenantContext = {
   session_id: "s_u4_repo_a_window",
 };
 
+/**
+ * The buyer cap is read from `agents`, not `policies`, so it gets its own
+ * fixtures: two agents under the SAME merchant, one capped and one not, which
+ * is what makes a cross-agent leak visible rather than plausible.
+ */
+const AGENT_A_BUYER_CAPPED = "ag_u4_repo_a_buyer_capped";
+const BUYER_CAP_PAISE = 25_000;
+
+const ctxABuyerCapped: TenantContext = {
+  merchant_id: MERCHANT_A,
+  agent_id: AGENT_A_BUYER_CAPPED,
+  session_id: "s_u4_repo_a_buyer_capped",
+};
+
 async function insertOrderAt(args: {
   id: string;
   merchantId: string;
@@ -55,13 +69,14 @@ beforeAll(async () => {
     "Repo Test Merchant B",
   ]);
 
-  for (const [id, merchantId, label] of [
-    [AGENT_A_WINDOW, MERCHANT_A, "A Window Agent"],
-    [AGENT_A_MULTISESSION, MERCHANT_A, "A Multisession Agent"],
-    [AGENT_B, MERCHANT_B, "B Agent"],
+  for (const [id, merchantId, label, buyerCapPaise] of [
+    [AGENT_A_WINDOW, MERCHANT_A, "A Window Agent", null],
+    [AGENT_A_MULTISESSION, MERCHANT_A, "A Multisession Agent", null],
+    [AGENT_B, MERCHANT_B, "B Agent", null],
+    [AGENT_A_BUYER_CAPPED, MERCHANT_A, "A Buyer-Capped Agent", BUYER_CAP_PAISE],
   ] as const) {
     await query(
-      "INSERT INTO agents (id, merchant_id, label, token_hash) VALUES ($1, $2, $3, $4)",
+      "INSERT INTO agents (id, merchant_id, label, token_hash, buyer_cap_paise) VALUES ($1, $2, $3, $4, $5)",
       [
         id,
         merchantId,
@@ -70,6 +85,7 @@ beforeAll(async () => {
         // construct TenantContext directly, so only a valid, unique digest
         // shape matters here.
         hashToken(id),
+        buyerCapPaise,
       ]
     );
   }
@@ -89,6 +105,89 @@ beforeAll(async () => {
   );
 
   await new TenantRepo(ctxAWindow).ensureSession();
+});
+
+describe("buyerCapPaise", () => {
+  test("returns null for an agent the buyer did not cap", async () => {
+    // Null is a real answer, not a missing one: "the buyer imposed no
+    // constraint", which is what every agent row created before the column
+    // existed says.
+    expect(await new TenantRepo(ctxAWindow).buyerCapPaise()).toBeNull();
+  });
+
+  test("returns the stored cap as a NUMBER, not a BIGINT string", async () => {
+    // src/db/pool.ts registers an INT8 type parser globally, so a `parseInt`
+    // at the call site would be both redundant and a lie about the type.
+    const cap = await new TenantRepo(ctxABuyerCapped).buyerCapPaise();
+    expect(cap).toBe(BUYER_CAP_PAISE);
+    expect(typeof cap).toBe("number");
+  });
+
+  test("one agent's buyer cap is invisible to a sibling agent under the same merchant", async () => {
+    expect(await new TenantRepo(ctxABuyerCapped).buyerCapPaise()).toBe(
+      BUYER_CAP_PAISE
+    );
+    expect(await new TenantRepo(ctxAWindow).buyerCapPaise()).toBeNull();
+  });
+
+  test("an agent id that exists under merchant A is not reachable through merchant B's repo", async () => {
+    // The query is scoped by BOTH ids off this.ctx. Scoping by agent_id alone
+    // would make an agent id collision across tenants a cap leak.
+    const strayCtx: TenantContext = {
+      merchant_id: MERCHANT_B,
+      agent_id: AGENT_A_BUYER_CAPPED,
+      session_id: "s_u4_repo_b",
+    };
+    await expect(new TenantRepo(strayCtx).buyerCapPaise()).rejects.toThrow(
+      "no agent"
+    );
+  });
+
+  test("THROWS rather than reporting no cap when the agent row is missing", async () => {
+    // Fail loud, not open. Returning null here would turn a tenant-resolution
+    // bug into a silently uncapped agent — the exact failure this cap exists
+    // to prevent.
+    const ghost: TenantContext = {
+      merchant_id: MERCHANT_A,
+      agent_id: "ag_u4_repo_ghost",
+      session_id: "s_u4_repo_a_window",
+    };
+    await expect(new TenantRepo(ghost).buyerCapPaise()).rejects.toThrow(
+      "buyerCapPaise"
+    );
+  });
+});
+
+describe("migration 0002: agents.buyer_cap_paise", () => {
+  test("the column is nullable, so agent rows that predate it stay legal", async () => {
+    const rows = await query<{ is_nullable: string; data_type: string }>(
+      `SELECT is_nullable, data_type FROM information_schema.columns
+        WHERE table_name = 'agents' AND column_name = 'buyer_cap_paise'`
+    );
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.is_nullable).toBe("YES");
+    expect(rows[0]?.data_type).toBe("bigint");
+  });
+
+  test("a zero or negative buyer cap is rejected by the CHECK, not stored", async () => {
+    // A cap of 0 would block every order while reading like "no cap set" to
+    // anyone skimming the row; the constraint is what keeps null the only way
+    // to say "no cap".
+    for (const bad of [0, -1]) {
+      await expect(
+        query(
+          "INSERT INTO agents (id, merchant_id, label, token_hash, buyer_cap_paise) VALUES ($1, $2, $3, $4, $5)",
+          [
+            "ag_u4_repo_bad_cap",
+            MERCHANT_A,
+            "Bad Cap Agent",
+            hashToken(`bad_cap_${bad}`),
+            bad,
+          ]
+        )
+      ).rejects.toThrow();
+    }
+  });
 });
 
 afterAll(async () => {

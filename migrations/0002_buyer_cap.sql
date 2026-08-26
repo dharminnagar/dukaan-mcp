@@ -1,0 +1,24 @@
+-- 0002_buyer_cap.sql
+-- The buyer's own spend limit, so "the agent cannot overspend" stops resting
+-- on a number the constrained party sets for itself.
+--
+-- NULL means the buyer imposes no constraint, and there is deliberately NO
+-- DEFAULT: every agent row that predates this migration keeps behaving exactly
+-- as it did, because effectiveCap() (src/gate/limits.ts) then falls through to
+-- the merchant's policy figure. Any default here would silently re-cap every
+-- existing agent and move the eval numbers.
+--
+-- Written once, when the agent is created, and never UPDATEd — that is what
+-- stops the party being limited from raising its own limit mid-session. Nothing
+-- in src/ issues an UPDATE against this column; the guarantee is a convention
+-- backed by there being exactly one writer (src/onboard/create-merchant.ts),
+-- not a trigger, because a real deployment mints tokens from the buyer's side
+-- and would want its own write path here.
+--
+-- The PLATFORM ceiling gets no column on purpose. It is deployment config
+-- (PLATFORM_SPEND_CEILING_PAISE, src/config.ts), not tenant data, and a SQL
+-- CHECK cannot see the environment — which is also why the "merchant may not
+-- set a cap above the ceiling" rule lives in the validation path rather than
+-- next to this constraint.
+ALTER TABLE agents
+    ADD COLUMN buyer_cap_paise BIGINT NULL CHECK (buyer_cap_paise > 0);

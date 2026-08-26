@@ -374,6 +374,148 @@ describe("onboard (integration, against real Postgres, namespaced m_web_*)", () 
   });
 });
 
+describe("onboard: buyer cap and the dashboard link", () => {
+  test("returns the merchantId that was actually written, for the success screen's dashboard link", async () => {
+    // Returned rather than re-derived on the client: the success screen links
+    // to /dashboard/<id>, and re-slugifying the name there would be a second
+    // implementation of the id that could drift from the row.
+    const name = "Web Onboard Dash Link";
+    const merchantId = slugifyMerchantId(name);
+    await cleanupMerchant(merchantId);
+
+    const result = await onboard(SHOPIFY_CSV, SHOPIFY_MAPPING, name, {
+      spend_cap_rupees: "5000.00",
+      approval_threshold_rupees: "1500.00",
+      category_allowlist: ["groceries", "dairy"],
+      window: "24h",
+    });
+
+    expect(result.merchantId).toBe(merchantId);
+    const row = await queryOne<{ id: string }>(
+      "SELECT id FROM merchants WHERE id = $1",
+      [merchantId]
+    );
+    expect(row?.id).toBe(merchantId);
+
+    await cleanupMerchant(merchantId);
+  });
+
+  test("an omitted buyer cap leaves the agent row NULL — the field is optional end to end", async () => {
+    const name = "Web Onboard No Buyer Cap";
+    const merchantId = slugifyMerchantId(name);
+    await cleanupMerchant(merchantId);
+
+    const result = await onboard(SHOPIFY_CSV, SHOPIFY_MAPPING, name, {
+      spend_cap_rupees: "5000.00",
+      approval_threshold_rupees: "1500.00",
+      category_allowlist: ["groceries", "dairy"],
+      window: "24h",
+    });
+
+    expect(result.buyerCapPaise).toBeNull();
+    const row = await queryOne<{ buyer_cap_paise: number | null }>(
+      "SELECT buyer_cap_paise FROM agents WHERE merchant_id = $1",
+      [merchantId]
+    );
+    expect(row?.buyer_cap_paise).toBeNull();
+
+    await cleanupMerchant(merchantId);
+  });
+
+  test("a blank buyer cap field is the same as leaving it out — the form always sends a string", async () => {
+    // The form passes `buyerCapRupees.trim()` unconditionally, so "" is the
+    // shape an untouched optional field actually arrives in; it must not
+    // become a zero cap, which would block every order.
+    const name = "Web Onboard Blank Buyer Cap";
+    const merchantId = slugifyMerchantId(name);
+    await cleanupMerchant(merchantId);
+
+    const result = await onboard(
+      SHOPIFY_CSV,
+      SHOPIFY_MAPPING,
+      name,
+      {
+        spend_cap_rupees: "5000.00",
+        approval_threshold_rupees: "1500.00",
+        category_allowlist: ["groceries", "dairy"],
+        window: "24h",
+      },
+      ""
+    );
+
+    expect(result.buyerCapPaise).toBeNull();
+    await cleanupMerchant(merchantId);
+  });
+
+  test("a rupee buyer cap from the form reaches the agent row as integer paise", async () => {
+    const name = "Web Onboard Buyer Cap";
+    const merchantId = slugifyMerchantId(name);
+    await cleanupMerchant(merchantId);
+
+    const result = await onboard(
+      SHOPIFY_CSV,
+      SHOPIFY_MAPPING,
+      name,
+      {
+        spend_cap_rupees: "5000.00",
+        approval_threshold_rupees: "1500.00",
+        category_allowlist: ["groceries", "dairy"],
+        window: "24h",
+      },
+      "2500.50"
+    );
+
+    expect(result.buyerCapPaise).toBe(250_050);
+    const row = await queryOne<{ buyer_cap_paise: number | null }>(
+      "SELECT buyer_cap_paise FROM agents WHERE merchant_id = $1",
+      [merchantId]
+    );
+    expect(row?.buyer_cap_paise).toBe(250_050);
+
+    await cleanupMerchant(merchantId);
+  });
+
+  test("a malformed buyer cap rejects the whole onboarding without a partial write", async () => {
+    const name = "Web Onboard Bad Buyer Cap";
+    const merchantId = slugifyMerchantId(name);
+    await cleanupMerchant(merchantId);
+
+    await expect(
+      onboard(
+        SHOPIFY_CSV,
+        SHOPIFY_MAPPING,
+        name,
+        {
+          spend_cap_rupees: "5000.00",
+          approval_threshold_rupees: "1500.00",
+          category_allowlist: ["groceries", "dairy"],
+          window: "24h",
+        },
+        "twenty five hundred"
+      )
+    ).rejects.toThrow();
+
+    const merchantRow = await queryOne(
+      "SELECT id FROM merchants WHERE id = $1",
+      [merchantId]
+    );
+    expect(merchantRow).toBeNull();
+  });
+
+  /**
+   * STATIC guard, like the MCP_PORT one below: the dashboard route is built by
+   * a different ticket, so this asserts the LINK exists and points at the
+   * agreed path rather than rendering the page.
+   */
+  test("the success screen links to /dashboard/<merchantId>", async () => {
+    const src = await Bun.file(
+      new URL("../web/app/page.tsx", import.meta.url)
+    ).text();
+
+    expect(src).toContain("`/dashboard/${result.merchantId}`");
+  });
+});
+
 describe("MCP endpoint handed to the merchant", () => {
   /**
    * STATIC guard, not a behavioural one: MCP_ENDPOINT is read at module load,

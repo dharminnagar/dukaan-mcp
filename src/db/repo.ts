@@ -78,6 +78,33 @@ export class TenantRepo {
     return row.spent_paise;
   }
 
+  /**
+   * The buyer's own cap on this agent, or `null` when the buyer imposed none.
+   *
+   * Lives on `agents`, not `policies`, because the merchant owns the policy row:
+   * a buyer limit stored there would be a limit the constrained party could
+   * raise. The gate reaches it through this method rather than through its own
+   * config or signature so that `decide()` stays a pure function of
+   * (ctx, req, deps).
+   *
+   * A missing agent row THROWS rather than returning null. Null here means "the
+   * buyer chose not to limit this agent", and an absent row is not that — it is
+   * a resolution bug, and treating it as "no cap" would fail open on exactly the
+   * protection this method exists to provide.
+   */
+  async buyerCapPaise(): Promise<number | null> {
+    const row = await queryOne<{ buyer_cap_paise: number | null }>(
+      "SELECT buyer_cap_paise FROM agents WHERE merchant_id = $1 AND id = $2",
+      [this.ctx.merchant_id, this.ctx.agent_id]
+    );
+    if (row === null) {
+      throw new Error(
+        `buyerCapPaise: no agent ${this.ctx.agent_id} under merchant ${this.ctx.merchant_id}`
+      );
+    }
+    return row.buyer_cap_paise;
+  }
+
   async ensureSession(): Promise<Session> {
     const existing = await queryOne<Session>(
       "SELECT id, merchant_id, agent_id, started_at FROM sessions WHERE merchant_id = $1 AND agent_id = $2 AND id = $3",
