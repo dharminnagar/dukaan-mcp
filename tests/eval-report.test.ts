@@ -18,6 +18,8 @@ import {
   loadSkuPriceDistribution,
   parseSplitArg,
   renderReport,
+  computeInterruptedNetPaise,
+  summarizeInterruptedIntent,
 } from "../src/eval/report";
 import { replayBatch, replayTranscript } from "../src/eval/runner";
 import type { ReplayResult, ReplayStepResult } from "../src/eval/runner";
@@ -74,6 +76,21 @@ function blockOutcome(rule: GateRule): GateOutcome {
       item_id: "sku-test",
       category: "test-category",
       category_allowlist: ["ok-category"],
+    },
+  };
+}
+
+function escalateOutcome(amountPaise: number): GateOutcome {
+  return {
+    decision: "escalate",
+    rule: "APPROVAL_THRESHOLD",
+    error: {
+      reason_code: "PENDING_APPROVAL",
+      message: "escalated for test",
+      order_id: "o_test",
+      amount_paise: amountPaise,
+      approval_threshold_paise: 100_000,
+      approval_url: null,
     },
   };
 }
@@ -250,6 +267,80 @@ describe("renderReport (pure, synthetic data, no Postgres)", () => {
     expect(costSection).not.toMatch(/lost revenue/i);
   });
 
+  test("an interrupted-intent session's blocked step is EXCLUDED from the cost section's false-positive figure", () => {
+    // DUK-30 Gap 2's central invariant: a step stopped by a correct policy
+    // decision must never inflate "Blocked benign GMV" — that figure is
+    // scoped to sessions the gate was WRONG to stop.
+    const interrupted = makeTranscript({
+      id: "synthetic-interrupted-01",
+      expected_step_decisions: ["block", "allow"],
+      steps: [makeStep("s-1", 50_000), makeStep("s-2", 2_000)],
+    });
+    const interruptedResult = makeResult(interrupted, [
+      blockOutcome("CATEGORY_ALLOWLIST"),
+      allowOutcome(2_000),
+    ]);
+
+    const report = renderReport(
+      "train",
+      [interruptedResult],
+      priceDistribution
+    );
+    const costSection = extractSection(
+      report,
+      "## Cost of blocking benign traffic"
+    );
+
+    // No benign step at all in this replay, so blocked benign GMV stays at
+    // its zero/NOT-MEASURABLE baseline rather than picking up the
+    // interrupted session's 50,000-paise blocked step.
+    expect(costSection).toContain("over 0 benign checkout step(s)");
+    expect(costSection).toContain("NOT MEASURABLE");
+  });
+
+  test("interrupted-intent section: recovered and unrecovered sessions both count, as raw N of M, with the gate-was-right sentence present", () => {
+    const recovered = makeTranscript({
+      id: "synthetic-interrupted-recovered-01",
+      expected_step_decisions: ["block", "allow"],
+      steps: [makeStep("s-1", 8_900), makeStep("s-2", 2_500)],
+    });
+    const recoveredResult = makeResult(recovered, [
+      blockOutcome("CATEGORY_ALLOWLIST"),
+      allowOutcome(2_500),
+    ]);
+
+    const unrecovered = makeTranscript({
+      id: "synthetic-interrupted-unrecovered-01",
+      expected_step_decisions: ["escalate"],
+      steps: [makeStep("s-1", 200_000)],
+    });
+    const unrecoveredResult = makeResult(unrecovered, [
+      escalateOutcome(200_000),
+    ]);
+
+    const report = renderReport(
+      "train",
+      [recoveredResult, unrecoveredResult],
+      priceDistribution
+    );
+    const section = extractSection(report, "## Interrupted legitimate intent");
+
+    expect(section).toContain("1 of 2 interrupted session");
+    // The no-percentage rule targets small-denominator RATES, where a single
+    // session moves the number misleadingly far. It is not a ban on the
+    // character: the concentration share is a fraction of a value total, not of
+    // a session count, and disclosing it is what stops a reader taking an
+    // outlier-dominated total for a typical one. So assert on the recovery line
+    // specifically, which is the rate.
+    const recoveryLine = section
+      .split("\n")
+      .find((l) => l.startsWith("2. **Recovery:**"));
+    expect(recoveryLine).toBeDefined();
+    expect(recoveryLine).not.toMatch(/%/);
+    expect(recoveryLine).toMatch(/1 of 2/);
+    expect(section).toContain("The gate was right in every one of these");
+  });
+
   test("the price distribution prints, with per-SKU and per-order figures clearly distinguished", () => {
     const benignKirana = makeTranscript({
       id: "synthetic-benign-price-01",
@@ -321,6 +412,55 @@ async function wipeReportTestData(): Promise<void> {
 }
 
 beforeAll(wipeReportTestData);
+describe("interrupted-intent net is summed, not scaled (regression)", () => {
+  // The first implementation computed net as stoppedValue * (1 - recovered/total),
+  // scaling a VALUE by a session COUNT ratio. That assumes recovered and
+  // unrecovered sessions carry the same average value. Here they do not: the
+  // recovered ones are the expensive ones, so the scaled figure came out 435%
+  // too high (6,505,775 paise against a true 1,215,300). This pins the method.
+  test("net equals the summed stopped value of unrecovered sessions only", () => {
+    const rows = [
+      {
+        stopped: true,
+        recovered: true,
+        stoppedValuePaise: 1_000_000,
+        matchesExpectation: true,
+      },
+      {
+        stopped: true,
+        recovered: true,
+        stoppedValuePaise: 1_000_000,
+        matchesExpectation: true,
+      },
+      {
+        stopped: true,
+        recovered: true,
+        stoppedValuePaise: 1_000_000,
+        matchesExpectation: true,
+      },
+      {
+        stopped: true,
+        recovered: false,
+        stoppedValuePaise: 10_000,
+        matchesExpectation: true,
+      },
+    ] as unknown as Parameters<typeof computeInterruptedNetPaise>[0];
+
+    // Summed: only the unrecovered session counts.
+    expect(computeInterruptedNetPaise(rows)).toBe(10_000);
+
+    // What rate-scaling would have produced, for contrast: total 3,010,000
+    // times (1 - 3/4) = 752,500 — seventy-five times the true figure.
+    const summary = summarizeInterruptedIntent(rows);
+    const scaled = Math.round(
+      summary.stoppedValuePaise *
+        (1 - summary.recoveredCount / summary.interruptedCount)
+    );
+    expect(scaled).not.toBe(computeInterruptedNetPaise(rows));
+    expect(scaled).toBeGreaterThan(computeInterruptedNetPaise(rows) ?? 0);
+  });
+});
+
 afterAll(wipeReportTestData);
 
 describe("report over the real frozen train split (Postgres, eval-namespaced)", () => {
@@ -383,6 +523,39 @@ describe("report over the real frozen train split (Postgres, eval-namespaced)", 
     const bm = /(\d+) of (\d+)/.exec(benignRow ?? "");
     expect(bm?.[1]).toBe(bm?.[2]);
     expect(Number(bm?.[2])).toBeGreaterThan(50);
+  }, 30_000);
+
+  test("interrupted-intent section reports over the real train split, separately from the existing false-positive figure", async () => {
+    // Fresh spend history: this describe block's merchants/agents are
+    // shared across tests, and the prior test in this file already replayed
+    // the same trainDataset once — without resetting, this replay would see
+    // that leftover spend and could tip a near-cap session over the real
+    // cap, corrupting the false-positive figure this test is meant to check.
+    merchantIds = await resetEvalMerchants(NAMESPACE);
+    const results = await replayBatch(NAMESPACE, merchantIds, trainDataset);
+    const report = renderReport("train", results, loadSkuPriceDistribution());
+
+    const interruptedSection = extractSection(
+      report,
+      "## Interrupted legitimate intent"
+    );
+    const costSection = extractSection(
+      report,
+      "## Cost of blocking benign traffic"
+    );
+
+    // The gate does not touch src/eval/interrupted.ts's fixtures — every one
+    // replays exactly as its own fixture declares, so no mismatch callout
+    // should appear.
+    expect(interruptedSection).not.toContain("did not replay as their fixture");
+    expect(interruptedSection).toContain("The gate was right in every one");
+    const m = /(\d+) interrupted session/.exec(interruptedSection);
+    expect(m).not.toBeNull();
+    expect(Number(m?.[1])).toBeGreaterThanOrEqual(4); // train-split holdout floor, mirrored here
+
+    // The existing false-positive figure must be completely unmoved by the
+    // interrupted-intent population: still zero benign steps blocked.
+    expect(costSection).toContain("₹0.00");
   }, 30_000);
 
   /**

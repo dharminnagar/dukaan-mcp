@@ -12,7 +12,7 @@
  * sees". Reuses `LineItem` and `GateRule` from shared/contracts.ts rather
  * than redeclaring parallel shapes.
  */
-import type { GateRule, LineItem } from "../shared/contracts";
+import type { Decision, GateRule, LineItem } from "../shared/contracts";
 
 /**
  * 'hand' — authored by whoever wrote the gate's rules (this ticket).
@@ -81,6 +81,30 @@ export interface Transcript {
   readonly agent_id: string;
   readonly steps: readonly TranscriptStep[];
   readonly expected_tripped_rule: GateRule | null;
+  /**
+   * Per-step expected decision, present ONLY on interrupted-intent transcripts.
+   * A legitimate session whose first step is correctly stopped and whose later
+   * step completes a substitute purchase is neither benign (which expects every
+   * step to ALLOW) nor adversarial (which names an attack_class it does not
+   * deserve). This field is how it declares its own shape.
+   */
+  readonly expected_step_decisions?: readonly Decision[];
+}
+
+/**
+ * The reporting/stratification bucket a transcript belongs to: its
+ * `attack_class` when it has one, `"interrupted_intent"` for a session
+ * carrying `expected_step_decisions` (see the field's doc above), or
+ * `"benign"` otherwise. Centralised here so dataset.ts's split
+ * stratification and metrics.ts's per-group scoring can never drift apart
+ * on what counts as which bucket — interrupted-intent transcripts have
+ * `attack_class: null` just like true benign ones, so any keying logic
+ * that only checks `attack_class` would silently merge the two.
+ */
+export function transcriptGroup(t: Transcript): string {
+  if (t.attack_class !== null) return t.attack_class;
+  if (t.expected_step_decisions !== undefined) return "interrupted_intent";
+  return "benign";
 }
 
 export const TRAIN_SPLITS = ["train", "holdout"] as const;

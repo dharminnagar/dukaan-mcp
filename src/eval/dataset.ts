@@ -13,8 +13,10 @@
  */
 import { generateBenignTranscripts } from "./benign";
 import { generateHandScriptedAdversarial } from "./hand-attacks";
+import { generateInterruptedIntentTranscripts } from "./interrupted";
 import { llmSource } from "./llm-source";
 import { mulberry32, shuffle } from "./prng";
+import { transcriptGroup } from "./transcript";
 import type {
   SplitTranscript,
   Transcript,
@@ -26,8 +28,9 @@ export const FROZEN_AT = "2026-08-25T00:00:00.000Z";
 export const REFROZEN_AT = "2026-08-25T12:00:00.000Z";
 export const SECOND_REFROZEN_AT = "2026-08-26T00:00:00.000Z";
 export const THIRD_REFROZEN_AT = "2026-08-26T18:00:00.000Z";
+export const FOURTH_REFROZEN_AT = "2026-08-26T20:00:00.000Z";
 export const FREEZE_NOTE =
-  "Train/held-out assignment re-frozen 2026-08-25 to stratify per attack class. The first assignment pooled all transcripts and left category_laundering with 1 holdout instance and stale_price with 2, which cannot support a per-rule figure. Re-frozen again 2026-08-26 (projectmem #0023): src/eval/benign.ts's benign population previously contained ordinary shopping only, comfortably inside every threshold, so the gate never had an opportunity to be wrong and 'Blocked benign GMV' in src/eval/report.ts was a trivial ₹0.00 at n=0. Added 27 hand-scripted near-boundary benign sessions (near-cap, near-threshold, ambiguous-but-allowed-category, and at-stock-quantity) so that metric has sessions a correct gate could have wrongly blocked. This changed the benign stratum's composition, so the stratified split re-derives — that is expected. Re-frozen a third time 2026-08-26 (projectmem #0010, scope-widened by #0026): folded in `origin: \"llm\"` transcripts from src/eval/llm-source.ts — a separate model call whose prompt (fixtures/eval/llm-generation-prompt.md) held only the MCP tool schemas, the published policy JSON, and the catalog, never the gate implementation. Both benign and adversarial LLM transcripts join the existing 'benign'/per-attack-class strata by composition, which again changes every stratum's size and re-derives the split — expected, not a re-tuning. No gate rule or threshold was changed at any point across any of the four freezes. The held-out split is scored once, at DUK-20.";
+  "Train/held-out assignment re-frozen 2026-08-25 to stratify per attack class. The first assignment pooled all transcripts and left category_laundering with 1 holdout instance and stale_price with 2, which cannot support a per-rule figure. Re-frozen again 2026-08-26 (projectmem #0023): src/eval/benign.ts's benign population previously contained ordinary shopping only, comfortably inside every threshold, so the gate never had an opportunity to be wrong and 'Blocked benign GMV' in src/eval/report.ts was a trivial ₹0.00 at n=0. Added 27 hand-scripted near-boundary benign sessions (near-cap, near-threshold, ambiguous-but-allowed-category, and at-stock-quantity) so that metric has sessions a correct gate could have wrongly blocked. This changed the benign stratum's composition, so the stratified split re-derives — that is expected. Re-frozen a third time 2026-08-26 (projectmem #0010, scope-widened by #0026): folded in `origin: \"llm\"` transcripts from src/eval/llm-source.ts — a separate model call whose prompt (fixtures/eval/llm-generation-prompt.md) held only the MCP tool schemas, the published policy JSON, and the catalog, never the gate implementation. Both benign and adversarial LLM transcripts join the existing 'benign'/per-attack-class strata by composition, which again changes every stratum's size and re-derives the split — expected, not a re-tuning. Re-frozen a fourth time 2026-08-26 (DUK-30 Gap 2): the near-boundary benign population blocks zero sessions, so recovery/net were NOT MEASURABLE/NOT COMPUTABLE, and the ticket's own reframe is that a legitimate shopper stopped by a CORRECT policy decision is not a false positive in the first place — calling it one would be exactly the overclaim this project exists to avoid. Added 20 hand-scripted interrupted-intent transcripts (src/eval/interrupted.ts: category_substitute, stock_substitute, threshold_no_substitute) carrying `expected_step_decisions` instead of `attack_class`/`expected_tripped_rule`, and gave them their own stratum via `transcriptGroup()` in transcript.ts so they are counted separately from both true-benign and adversarial — recovery and net now attach to this population, and the existing false-positive figure is untouched. No gate rule or threshold was changed at any point across any of the five freezes. The held-out split is scored once, at DUK-20.";
 
 export const DATASET_SEED = 0xd0417a51; // "d0 47a51" — arbitrary, fixed, never regenerated per-run.
 export const BENIGN_COUNT = 140;
@@ -40,6 +43,7 @@ export const handScriptedSource: TranscriptSource = {
     return [
       ...generateBenignTranscripts(rng, BENIGN_COUNT),
       ...generateHandScriptedAdversarial(),
+      ...generateInterruptedIntentTranscripts(),
     ];
   },
 };
@@ -75,7 +79,7 @@ function assignSplit(
 ): readonly SplitTranscript[] {
   const strata = new Map<string, Transcript[]>();
   for (const t of transcripts) {
-    const key = `${t.origin}:${t.attack_class ?? "benign"}`;
+    const key = `${t.origin}:${transcriptGroup(t)}`;
     const bucket = strata.get(key);
     if (bucket === undefined) strata.set(key, [t]);
     else bucket.push(t);

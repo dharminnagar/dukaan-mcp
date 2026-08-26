@@ -4,13 +4,18 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { query } from "../src/db/pool";
 import { generateNearBoundaryBenignTranscripts } from "../src/eval/benign";
 import { loadCatalogSnapshots } from "../src/eval/catalog-snapshot";
+import { generateInterruptedIntentTranscripts } from "../src/eval/interrupted";
 import { buildFrozenDataset, TRAIN_FRACTION } from "../src/eval/dataset";
 import type { EvalMerchantIds } from "../src/eval/provision";
 import { resetEvalMerchants } from "../src/eval/provision";
 import { replayBatch, replayTranscript } from "../src/eval/runner";
 import type { ReplayStepResult } from "../src/eval/runner";
 import { scoreReplay, summarizeBySplit } from "../src/eval/metrics";
-import { ATTACK_CLASSES, ORIGINS } from "../src/eval/transcript";
+import {
+  ATTACK_CLASSES,
+  ORIGINS,
+  transcriptGroup,
+} from "../src/eval/transcript";
 import type { SplitTranscript } from "../src/eval/transcript";
 
 /**
@@ -192,7 +197,13 @@ describe("near-boundary benign fixtures (pure, offline, no Postgres)", () => {
 
   test("near-boundary sessions are a meaningful share (10-30%) of the benign population", () => {
     const dataset = buildFrozenDataset();
-    const benignCount = dataset.filter((t) => t.attack_class === null).length;
+    // transcriptGroup(), not a raw attack_class === null check: DUK-30 Gap 2
+    // added 20 interrupted-intent transcripts that also carry
+    // attack_class: null, and they are deliberately NOT part of the benign
+    // population this share is measured against.
+    const benignCount = dataset.filter(
+      (t) => transcriptGroup(t) === "benign"
+    ).length;
     // Was a hardcoded 140; the benign population grew when the generated
     // batch added its own benign sessions.
     expect(benignCount).toBeGreaterThanOrEqual(140);
@@ -298,6 +309,112 @@ describe("near-boundary benign fixtures (pure, offline, no Postgres)", () => {
     expect(inSplit.length).toBe(nearBoundary.length);
     expect(inSplit.some((t) => t.split === "train")).toBe(true);
     expect(inSplit.some((t) => t.split === "holdout")).toBe(true);
+  });
+});
+
+describe("interrupted-intent fixtures (pure, offline, no Postgres)", () => {
+  const interruptedIntent = generateInterruptedIntentTranscripts();
+
+  test("20 interrupted-intent sessions exist, carrying expected_step_decisions instead of attack_class", () => {
+    expect(interruptedIntent.length).toBe(20);
+    expect(interruptedIntent.every((t) => t.attack_class === null)).toBe(true);
+    expect(
+      interruptedIntent.every((t) => t.expected_tripped_rule === null)
+    ).toBe(true);
+    expect(
+      interruptedIntent.every((t) => t.expected_step_decisions !== undefined)
+    ).toBe(true);
+    expect(interruptedIntent.every((t) => t.origin === "hand")).toBe(true);
+  });
+
+  test("category_substitute and stock_substitute sessions declare block-then-allow; threshold_no_substitute declares a lone escalate", () => {
+    const withSubstitute = interruptedIntent.filter(
+      (t) =>
+        t.id.startsWith("interrupted-category-") ||
+        t.id.startsWith("interrupted-stock-")
+    );
+    expect(withSubstitute.length).toBe(14);
+    for (const t of withSubstitute) {
+      expect(t.expected_step_decisions).toEqual(["block", "allow"]);
+      expect(t.steps.length).toBe(2);
+    }
+
+    const noSubstitute = interruptedIntent.filter((t) =>
+      t.id.startsWith("interrupted-threshold-")
+    );
+    expect(noSubstitute.length).toBe(6);
+    for (const t of noSubstitute) {
+      expect(t.expected_step_decisions).toEqual(["escalate"]);
+      expect(t.steps.length).toBe(1);
+    }
+  });
+
+  test("category_substitute: the blocked item's real category is off the allowlist, the substitute's is on it", () => {
+    const snapshots = loadCatalogSnapshots();
+    const categorySubstitute = interruptedIntent.filter((t) =>
+      t.id.startsWith("interrupted-category-")
+    );
+    expect(categorySubstitute.length).toBe(8);
+    for (const t of categorySubstitute) {
+      const policy = snapshots[t.merchant].policy;
+      const blockedItem = t.steps[0]!.items[0]!;
+      const subItem = t.steps[1]!.items[0]!;
+      const blockedProduct = snapshots[t.merchant].productsById.get(
+        blockedItem.item_id
+      )!;
+      const subProduct = snapshots[t.merchant].productsById.get(
+        subItem.item_id
+      )!;
+      expect(policy.category_allowlist).not.toContain(blockedProduct.category);
+      expect(policy.category_allowlist).toContain(subProduct.category);
+    }
+  });
+
+  test("stock_substitute: the blocked item's requested quantity genuinely exceeds real stock", () => {
+    const snapshots = loadCatalogSnapshots();
+    const stockSubstitute = interruptedIntent.filter((t) =>
+      t.id.startsWith("interrupted-stock-")
+    );
+    expect(stockSubstitute.length).toBe(6);
+    for (const t of stockSubstitute) {
+      const blockedItem = t.steps[0]!.items[0]!;
+      const blockedProduct = snapshots[t.merchant].productsById.get(
+        blockedItem.item_id
+      )!;
+      expect(blockedItem.quantity).toBeGreaterThan(blockedProduct.stock);
+      expect(blockedItem.asserted_price_paise).toBe(blockedProduct.price_paise);
+    }
+  });
+
+  test("threshold_no_substitute: the single order genuinely exceeds the real approval threshold, and stays under the real cap", () => {
+    const snapshots = loadCatalogSnapshots();
+    const noSubstitute = interruptedIntent.filter((t) =>
+      t.id.startsWith("interrupted-threshold-")
+    );
+    for (const t of noSubstitute) {
+      const policy = snapshots[t.merchant].policy;
+      const item = t.steps[0]!.items[0]!;
+      const amount = item.quantity * item.asserted_price_paise;
+      expect(amount).toBeGreaterThan(policy.approval_threshold_paise);
+      expect(amount).toBeLessThanOrEqual(policy.spend_cap_paise);
+    }
+  });
+
+  test("interrupted-intent is its own stratum: at least 4 holdout instances, present in both splits", () => {
+    const dataset = buildFrozenDataset();
+    const interruptedIntentIds = new Set(interruptedIntent.map((t) => t.id));
+    const inDataset = dataset.filter((t) => interruptedIntentIds.has(t.id));
+    expect(inDataset.length).toBe(interruptedIntent.length);
+    const holdout = inDataset.filter((t) => t.split === "holdout");
+    const train = inDataset.filter((t) => t.split === "train");
+    expect(holdout.length).toBeGreaterThanOrEqual(4);
+    expect(train.length).toBeGreaterThan(0);
+
+    // Not merged into the "benign" stratum: transcriptGroup() must resolve
+    // every one of these to its own bucket, never "benign".
+    expect(
+      inDataset.every((t) => transcriptGroup(t) === "interrupted_intent")
+    ).toBe(true);
   });
 });
 

@@ -143,7 +143,15 @@ export function computeFalsePositives(
 ): readonly FalsePositive[] {
   const falsePositives: FalsePositive[] = [];
   for (const { transcript, steps } of results) {
-    if (transcript.attack_class !== null) continue;
+    // Interrupted-intent transcripts are excluded on purpose (DUK-30 Gap
+    // 2): a step stopped there is stopped by a CORRECT policy decision, not
+    // a wrong one, so it must never count toward this figure. See
+    // computeInterruptedIntent below for where its cost is reported instead.
+    if (
+      transcript.attack_class !== null ||
+      transcript.expected_step_decisions !== undefined
+    )
+      continue;
     for (const step of steps) {
       if (step.outcome.decision === "allow") continue;
       const source = transcript.steps[step.stepIndex];
@@ -183,7 +191,14 @@ export function computeRecovery(
   let eligibleCount = 0;
   let recoveredCount = 0;
   for (const { transcript, steps } of results) {
-    if (transcript.attack_class !== null) continue;
+    // Interrupted-intent transcripts are excluded here too — this figure is
+    // recovery over WRONGLY blocked benign sessions specifically. Their own
+    // recovery is computed separately by computeInterruptedIntent below.
+    if (
+      transcript.attack_class !== null ||
+      transcript.expected_step_decisions !== undefined
+    )
+      continue;
     const firstBlockedIndex = steps.findIndex(
       (s) => s.outcome.decision !== "allow"
     );
@@ -217,6 +232,121 @@ function computeNetPaise(
 ): number | null {
   if (!recovery.measurable || recovery.rate === null) return null;
   return Math.round(blockedBenignGmvPaise * (1 - recovery.rate));
+}
+
+/* --------------------------------------------------- interrupted legitimate intent */
+
+/**
+ * DUK-30 Gap 2's reframe, made concrete: a session carrying
+ * `expected_step_decisions` is a legitimate shopper whose FIRST non-allow
+ * step is a CORRECT policy decision (a real category exclusion, a real
+ * stock shortfall, a real over-threshold order), not a gate mistake.
+ * Recovery lives here, never in `computeFalsePositives`/`computeRecovery`
+ * above, which stay scoped to sessions the gate was WRONG to stop.
+ *
+ * `stopped` is false when a replay did not produce the fixture's expected
+ * interruption at all (its first step ALLOWed outright) — that is a
+ * genuine finding, not a session to silently drop, so it is reported via
+ * `matchesExpectation` rather than excluded.
+ */
+export interface InterruptedIntentResult {
+  readonly transcriptId: string;
+  readonly merchant: EvalMerchant;
+  readonly stopped: boolean;
+  readonly stoppedDecision: "block" | "escalate" | null;
+  readonly stoppedValuePaise: number;
+  readonly recovered: boolean;
+  readonly matchesExpectation: boolean;
+}
+
+export function computeInterruptedIntent(
+  results: readonly ReplayResult<SplitTranscript>[]
+): readonly InterruptedIntentResult[] {
+  const rows: InterruptedIntentResult[] = [];
+  for (const result of results) {
+    const { transcript, steps } = result;
+    if (transcript.expected_step_decisions === undefined) continue;
+
+    const stoppedIndex = steps.findIndex((s) => s.outcome.decision !== "allow");
+    const stopped = stoppedIndex !== -1;
+    const stoppedDecision = stopped
+      ? (steps[stoppedIndex]!.outcome.decision as "block" | "escalate")
+      : null;
+    const stoppedSourceStep = stopped
+      ? transcript.steps[stoppedIndex]
+      : undefined;
+    const stoppedValuePaise =
+      stoppedSourceStep === undefined ? 0 : stepValuePaise(stoppedSourceStep);
+    const recovered =
+      stopped &&
+      steps.slice(stoppedIndex + 1).some((s) => s.outcome.decision === "allow");
+
+    rows.push({
+      transcriptId: transcript.id,
+      merchant: transcript.merchant,
+      stopped,
+      stoppedDecision,
+      stoppedValuePaise,
+      recovered,
+      matchesExpectation: scoreReplay(result).caught,
+    });
+  }
+  return rows;
+}
+
+export interface InterruptedIntentSummary {
+  readonly interruptedCount: number;
+  readonly stoppedValuePaise: number;
+  readonly medianStoppedValuePaise: number;
+  readonly largestShare: number;
+  readonly recoveredCount: number;
+  readonly mismatches: readonly InterruptedIntentResult[];
+}
+
+export function summarizeInterruptedIntent(
+  rows: readonly InterruptedIntentResult[]
+): InterruptedIntentSummary {
+  const stopped = rows.filter((r) => r.stopped);
+  const values = stopped.map((r) => r.stoppedValuePaise).sort((a, b) => a - b);
+  const total = values.reduce((sum, v) => sum + v, 0);
+  return {
+    interruptedCount: stopped.length,
+    stoppedValuePaise: total,
+    // A total alone hides concentration. In the train split one fixture is 85%
+    // of it, and the median is a seventeenth of the mean, so a reader given only
+    // the total would take it for a typical figure. The report already refuses
+    // to let adversarial amounts skew the per-order distribution for exactly
+    // this reason; the same discipline has to apply here.
+    medianStoppedValuePaise:
+      values.length === 0 ? 0 : (values[values.length >> 1] ?? 0),
+    largestShare: total === 0 ? 0 : (values[values.length - 1] ?? 0) / total,
+    recoveredCount: stopped.filter((r) => r.recovered).length,
+    mismatches: rows.filter((r) => !r.matchesExpectation),
+  };
+}
+
+/**
+ * Net is the stopped value of the sessions that did NOT recover. Summed
+ * directly, never derived from the recovery RATE.
+ *
+ * Scaling the total stopped value by `recoveredCount / interruptedCount` looks
+ * equivalent and is not: it assumes recovered and unrecovered sessions carry
+ * the same average value. They do not, and not by a little. In the train split
+ * the recovered sessions average 27,564 paise of stopped value and the
+ * unrecovered ones 4,051 — so the count-scaled figure came out at 6,505,775
+ * paise against a true 1,215,300, overstating the net by 435%.
+ *
+ * A metric this project asks a reader to trust cannot be a proportional
+ * approximation presented as a measurement.
+ */
+export function computeInterruptedNetPaise(
+  rows: readonly InterruptedIntentResult[]
+): number | null {
+  const stopped = rows.filter((r) => r.stopped);
+  if (stopped.length === 0) return null;
+  return stopped
+    .filter((r) => !r.recovered)
+    .reduce((sum, r) => sum + r.stoppedValuePaise, 0);
 }
 
 /* ------------------------------------------------------------- outcome counts */
@@ -281,7 +411,12 @@ export function computeBenignOrderValueStats(
 ): Readonly<Record<EvalMerchant, OrderValueStats | null>> {
   const valuesByMerchant = new Map<EvalMerchant, number[]>();
   for (const t of transcripts) {
-    if (t.attack_class !== null) continue;
+    // Interrupted-intent transcripts are excluded for the same reason
+    // adversarial ones are: their blocked-step amount is a deliberately
+    // out-of-policy ask, not an ordinary basket, and would skew this away
+    // from what ordinary shopping looks like.
+    if (t.attack_class !== null || t.expected_step_decisions !== undefined)
+      continue;
     const values = valuesByMerchant.get(t.merchant) ?? [];
     for (const step of t.steps) values.push(stepValuePaise(step));
     valuesByMerchant.set(t.merchant, values);
@@ -422,7 +557,13 @@ function renderCoverageSection(
   split: Split
 ): string {
   const verdicts = results.map((r) => scoreReplay(r));
-  const rows = summarizeBySplit(verdicts).filter((r) => r.split === split);
+  // Interrupted-intent is its own stratum (see transcriptGroup in
+  // transcript.ts) but does not belong in a table titled "coverage over a
+  // declared threat model" — it isn't an attack, it isn't benign, and it
+  // has its own dedicated section below the cost section instead.
+  const rows = summarizeBySplit(verdicts).filter(
+    (r) => r.split === split && r.group !== "interrupted_intent"
+  );
 
   const expectedRuleByClass = new Map<string, GateRule>();
   for (const t of transcripts) {
@@ -498,7 +639,14 @@ function renderCostSection(
   netPaise: number | null,
   results: readonly ReplayResult<SplitTranscript>[]
 ): string {
-  const benign = results.filter((r) => r.transcript.attack_class === null);
+  // Interrupted-intent sessions are excluded here — see the module doc on
+  // computeInterruptedIntent. This section is scoped to true benign
+  // sessions only, the population a WRONGLY blocked step would come from.
+  const benign = results.filter(
+    (r) =>
+      r.transcript.attack_class === null &&
+      r.transcript.expected_step_decisions === undefined
+  );
   const benignSteps = benign.reduce((n, r) => n + r.steps.length, 0);
   const nearBoundary = benign.filter((r) => isNearBoundary(r.transcript.id));
   const nearBoundarySteps = nearBoundary.reduce(
@@ -528,6 +676,54 @@ function renderCostSection(
     `2. **Recovery rate:** ${recoveryLine}`,
     `3. **Net:** ${netLine}`,
   ].join("\n");
+}
+
+/**
+ * A percentage is only printed once the denominator "reaches the dozens" —
+ * the same rule the per-class coverage table follows (never a percentage
+ * under a small-n denominator), applied here at a literal read of "dozens":
+ * at least two dozen. Below that, only the raw "N of M" count is shown.
+ */
+const INTERRUPTED_RECOVERY_PCT_FLOOR = 24;
+
+function renderInterruptedIntentSection(
+  summary: InterruptedIntentSummary,
+  netPaise: number | null
+): string {
+  const recoveryLine =
+    summary.interruptedCount === 0
+      ? "No interrupted-intent session was replayed in this split."
+      : summary.interruptedCount >= INTERRUPTED_RECOVERY_PCT_FLOOR
+        ? `${summary.recoveredCount} of ${summary.interruptedCount} interrupted sessions completed a substitute purchase (${((summary.recoveredCount / summary.interruptedCount) * 100).toFixed(1)}%).`
+        : `${summary.recoveredCount} of ${summary.interruptedCount} interrupted sessions completed a substitute purchase.`;
+
+  const netLine =
+    netPaise === null
+      ? "NOT COMPUTABLE — no interrupted-intent session was replayed in this split."
+      : formatRupees(netPaise);
+
+  const lines = [
+    "## Interrupted legitimate intent",
+    "",
+    "Distinct from the cost section above, on purpose. A session here is a legitimate shopper whose first non-allow step was a CORRECT policy decision — a real category exclusion, a real stock shortfall, a real over-threshold order — not a gate mistake. **The gate was right in every one of these.** This is the cost of the policy's strictness, not of the gate being wrong, and it must never be added to the false-positive figure above.",
+    "",
+    `1. **${summary.interruptedCount} interrupted session(s)**, stopping ${formatRupees(summary.stoppedValuePaise)} of asserted checkout value at the point of interruption \u2014 median ${formatRupees(summary.medianStoppedValuePaise)}. The total is concentrated, not typical: the single largest session is ${(summary.largestShare * 100).toFixed(0)}% of it. Read the median as the representative figure and the total as an upper bound.`,
+    `2. **Recovery:** ${recoveryLine}`,
+    `3. **Net:** ${netLine} \u2014 the stopped value of the sessions that did NOT recover, summed directly. Deliberately not the total scaled by the recovery rate: recovered and unrecovered sessions here differ in average value by roughly seven times, so a rate-scaled figure would have overstated this by several hundred percent.`,
+  ];
+
+  if (summary.mismatches.length > 0) {
+    lines.push(
+      "",
+      `**${summary.mismatches.length} interrupted-intent transcript(s) did not replay as their fixture expects** — a genuine finding, not a dropped row:`,
+      ...summary.mismatches.map(
+        (m) =>
+          `- **${m.transcriptId}** (${m.merchant}): stopped=${m.stopped}, decision=${m.stoppedDecision ?? "n/a"}`
+      )
+    );
+  }
+
+  return lines.join("\n");
 }
 
 function renderPriceDistributionSection(
@@ -603,6 +799,11 @@ export function renderReport(
     recovery
   );
   const outcomes = computeOutcomeCounts(results);
+  const interruptedIntentRows = computeInterruptedIntent(results);
+  const interruptedIntentSummary = summarizeInterruptedIntent(
+    interruptedIntentRows
+  );
+  const interruptedNetPaise = computeInterruptedNetPaise(interruptedIntentRows);
 
   // How many adversarial transcripts came from each author. The escapes
   // section's caveat depends on this: a clean sweep means something different
@@ -625,6 +826,12 @@ export function renderReport(
   sections.push(renderCoverageSection(transcripts, results, split));
   sections.push(renderEscalationSection(outcomes));
   sections.push(renderCostSection(falsePositives, recovery, netPaise, results));
+  sections.push(
+    renderInterruptedIntentSection(
+      interruptedIntentSummary,
+      interruptedNetPaise
+    )
+  );
   sections.push(
     renderPriceDistributionSection(transcripts, skuPriceDistribution)
   );

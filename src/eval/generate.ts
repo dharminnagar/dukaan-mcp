@@ -11,7 +11,7 @@
  * change (which would then require re-freezing, deliberately, not silently).
  */
 import { writeFileSync } from "node:fs";
-import { ATTACK_CLASSES } from "./transcript";
+import { ATTACK_CLASSES, transcriptGroup } from "./transcript";
 import type { SplitTranscript } from "./transcript";
 import {
   buildFrozenDataset,
@@ -36,13 +36,18 @@ function countBy<T>(
   return counts;
 }
 
+// "benign" and "interrupted_intent" both carry attack_class: null;
+// transcriptGroup() is the single source of truth for telling them apart
+// (see transcript.ts) so this manifest can never quietly re-merge the two.
+const REPORTED_GROUPS = ["benign", "interrupted_intent", ...ATTACK_CLASSES];
+
 function buildManifest(dataset: readonly SplitTranscript[]) {
-  const byClass = countBy(dataset, (t) => t.attack_class ?? "benign");
+  const byClass = countBy(dataset, transcriptGroup);
   const bySplit = countBy(dataset, (t) => t.split);
   const byClassAndSplit: Record<string, Record<string, number>> = {};
-  for (const cls of ["benign", ...ATTACK_CLASSES]) {
+  for (const cls of REPORTED_GROUPS) {
     byClassAndSplit[cls] = countBy(
-      dataset.filter((t) => (t.attack_class ?? "benign") === cls),
+      dataset.filter((t) => transcriptGroup(t) === cls),
       (t) => t.split
     );
   }

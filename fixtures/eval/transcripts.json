@@ -6836,6 +6836,674 @@
     "split": "train"
   },
   {
+    "id": "interrupted-category-01",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-interrupted-category-01",
+    "steps": [
+      {
+        "session_id": "s-01",
+        "items": [
+          {
+            "item_id": "sku-a22",
+            "quantity": 2,
+            "asserted_price_paise": 8900
+          }
+        ],
+        "note": "asks for sku-a22 (category \"personal-care\", NOT on the allowlist) — expected CATEGORY_ALLOWLIST block"
+      },
+      {
+        "session_id": "s-01",
+        "items": [
+          {
+            "item_id": "sku-a18",
+            "quantity": 5,
+            "asserted_price_paise": 2500
+          }
+        ],
+        "note": "substitutes sku-a18 (category \"household\", allowed) in the same session — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "expected_step_decisions": [
+      "block",
+      "allow"
+    ],
+    "split": "train"
+  },
+  {
+    "id": "interrupted-category-02",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-interrupted-category-02",
+    "steps": [
+      {
+        "session_id": "s-02",
+        "items": [
+          {
+            "item_id": "sku-a23",
+            "quantity": 3,
+            "asserted_price_paise": 9900
+          }
+        ],
+        "note": "asks for sku-a23 (category \"personal-care\", NOT on the allowlist) — expected CATEGORY_ALLOWLIST block"
+      },
+      {
+        "session_id": "s-02",
+        "items": [
+          {
+            "item_id": "sku-a19",
+            "quantity": 4,
+            "asserted_price_paise": 9900
+          }
+        ],
+        "note": "substitutes sku-a19 (category \"household\", allowed) in the same session — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "expected_step_decisions": [
+      "block",
+      "allow"
+    ],
+    "split": "holdout"
+  },
+  {
+    "id": "interrupted-category-03",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-interrupted-category-03",
+    "steps": [
+      {
+        "session_id": "s-03",
+        "items": [
+          {
+            "item_id": "sku-a24",
+            "quantity": 4,
+            "asserted_price_paise": 2000
+          }
+        ],
+        "note": "asks for sku-a24 (category \"beverages\", NOT on the allowlist) — expected CATEGORY_ALLOWLIST block"
+      },
+      {
+        "session_id": "s-03",
+        "items": [
+          {
+            "item_id": "sku-a20",
+            "quantity": 3,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "substitutes sku-a20 (category \"household\", allowed) in the same session — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "expected_step_decisions": [
+      "block",
+      "allow"
+    ],
+    "split": "holdout"
+  },
+  {
+    "id": "interrupted-category-04",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-interrupted-category-04",
+    "steps": [
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-a25",
+            "quantity": 2,
+            "asserted_price_paise": 11000
+          }
+        ],
+        "note": "asks for sku-a25 (category \"beverages\", NOT on the allowlist) — expected CATEGORY_ALLOWLIST block"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-a21",
+            "quantity": 6,
+            "asserted_price_paise": 6000
+          }
+        ],
+        "note": "substitutes sku-a21 (category \"household\", allowed) in the same session — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "expected_step_decisions": [
+      "block",
+      "allow"
+    ],
+    "split": "train"
+  },
+  {
+    "id": "interrupted-category-05",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-interrupted-category-05",
+    "steps": [
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-a22",
+            "quantity": 1,
+            "asserted_price_paise": 8900
+          }
+        ],
+        "note": "asks for sku-a22 (category \"personal-care\", NOT on the allowlist) — expected CATEGORY_ALLOWLIST block"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-a09",
+            "quantity": 10,
+            "asserted_price_paise": 6600
+          }
+        ],
+        "note": "substitutes sku-a09 (category \"dairy\", allowed) in the same session — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "expected_step_decisions": [
+      "block",
+      "allow"
+    ],
+    "split": "train"
+  },
+  {
+    "id": "interrupted-category-06",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-interrupted-category-06",
+    "steps": [
+      {
+        "session_id": "s-06",
+        "items": [
+          {
+            "item_id": "sku-b22",
+            "quantity": 1,
+            "asserted_price_paise": 199900
+          }
+        ],
+        "note": "asks for sku-b22 (category \"wearables\", NOT on the allowlist) — expected CATEGORY_ALLOWLIST block"
+      },
+      {
+        "session_id": "s-06",
+        "items": [
+          {
+            "item_id": "sku-b15",
+            "quantity": 1,
+            "asserted_price_paise": 99900
+          }
+        ],
+        "note": "substitutes sku-b15 (category \"accessories\", allowed) in the same session — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "expected_step_decisions": [
+      "block",
+      "allow"
+    ],
+    "split": "train"
+  },
+  {
+    "id": "interrupted-category-07",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-interrupted-category-07",
+    "steps": [
+      {
+        "session_id": "s-07",
+        "items": [
+          {
+            "item_id": "sku-b23",
+            "quantity": 1,
+            "asserted_price_paise": 599900
+          }
+        ],
+        "note": "asks for sku-b23 (category \"wearables\", NOT on the allowlist) — expected CATEGORY_ALLOWLIST block"
+      },
+      {
+        "session_id": "s-07",
+        "items": [
+          {
+            "item_id": "sku-b17",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "substitutes sku-b17 (category \"storage\", allowed) in the same session — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "expected_step_decisions": [
+      "block",
+      "allow"
+    ],
+    "split": "holdout"
+  },
+  {
+    "id": "interrupted-category-08",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-interrupted-category-08",
+    "steps": [
+      {
+        "session_id": "s-08",
+        "items": [
+          {
+            "item_id": "sku-b24",
+            "quantity": 1,
+            "asserted_price_paise": 69900
+          }
+        ],
+        "note": "asks for sku-b24 (category \"computing\", NOT on the allowlist) — expected CATEGORY_ALLOWLIST block"
+      },
+      {
+        "session_id": "s-08",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "substitutes sku-b18 (category \"storage\", allowed) in the same session — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "expected_step_decisions": [
+      "block",
+      "allow"
+    ],
+    "split": "train"
+  },
+  {
+    "id": "interrupted-stock-01",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-interrupted-stock-01",
+    "steps": [
+      {
+        "session_id": "s-01",
+        "items": [
+          {
+            "item_id": "sku-a10",
+            "quantity": 5,
+            "asserted_price_paise": 9000
+          }
+        ],
+        "note": "asks for 5 of sku-a10 against real stock of 4 — expected STALE_CATALOG(stock) block on the authoritative re-read"
+      },
+      {
+        "session_id": "s-01",
+        "items": [
+          {
+            "item_id": "sku-a11",
+            "quantity": 10,
+            "asserted_price_paise": 4200
+          }
+        ],
+        "note": "substitutes an in-stock sku-a11 in the same session — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "expected_step_decisions": [
+      "block",
+      "allow"
+    ],
+    "split": "holdout"
+  },
+  {
+    "id": "interrupted-stock-02",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-interrupted-stock-02",
+    "steps": [
+      {
+        "session_id": "s-02",
+        "items": [
+          {
+            "item_id": "sku-a10",
+            "quantity": 5,
+            "asserted_price_paise": 9000
+          }
+        ],
+        "note": "asks for 5 of sku-a10 against real stock of 4 — expected STALE_CATALOG(stock) block on the authoritative re-read"
+      },
+      {
+        "session_id": "s-02",
+        "items": [
+          {
+            "item_id": "sku-a09",
+            "quantity": 15,
+            "asserted_price_paise": 6600
+          }
+        ],
+        "note": "substitutes an in-stock sku-a09 in the same session — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "expected_step_decisions": [
+      "block",
+      "allow"
+    ],
+    "split": "train"
+  },
+  {
+    "id": "interrupted-stock-03",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-interrupted-stock-03",
+    "steps": [
+      {
+        "session_id": "s-03",
+        "items": [
+          {
+            "item_id": "sku-a10",
+            "quantity": 5,
+            "asserted_price_paise": 9000
+          }
+        ],
+        "note": "asks for 5 of sku-a10 against real stock of 4 — expected STALE_CATALOG(stock) block on the authoritative re-read"
+      },
+      {
+        "session_id": "s-03",
+        "items": [
+          {
+            "item_id": "sku-a08",
+            "quantity": 4,
+            "asserted_price_paise": 26500
+          }
+        ],
+        "note": "substitutes an in-stock sku-a08 in the same session — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "expected_step_decisions": [
+      "block",
+      "allow"
+    ],
+    "split": "holdout"
+  },
+  {
+    "id": "interrupted-stock-04",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-interrupted-stock-04",
+    "steps": [
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-a10",
+            "quantity": 5,
+            "asserted_price_paise": 9000
+          }
+        ],
+        "note": "asks for 5 of sku-a10 against real stock of 4 — expected STALE_CATALOG(stock) block on the authoritative re-read"
+      },
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-a12",
+            "quantity": 8,
+            "asserted_price_paise": 12000
+          }
+        ],
+        "note": "substitutes an in-stock sku-a12 in the same session — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "expected_step_decisions": [
+      "block",
+      "allow"
+    ],
+    "split": "train"
+  },
+  {
+    "id": "interrupted-stock-05",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-interrupted-stock-05",
+    "steps": [
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b21",
+            "quantity": 3,
+            "asserted_price_paise": 799900
+          }
+        ],
+        "note": "asks for 3 of sku-b21 against real stock of 2 — expected STALE_CATALOG(stock) block on the authoritative re-read"
+      },
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b17",
+            "quantity": 1,
+            "asserted_price_paise": 89900
+          }
+        ],
+        "note": "substitutes an in-stock sku-b17 in the same session — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "expected_step_decisions": [
+      "block",
+      "allow"
+    ],
+    "split": "train"
+  },
+  {
+    "id": "interrupted-stock-06",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-interrupted-stock-06",
+    "steps": [
+      {
+        "session_id": "s-06",
+        "items": [
+          {
+            "item_id": "sku-b08",
+            "quantity": 4,
+            "asserted_price_paise": 5499900
+          }
+        ],
+        "note": "asks for 4 of sku-b08 against real stock of 3 — expected STALE_CATALOG(stock) block on the authoritative re-read"
+      },
+      {
+        "session_id": "s-06",
+        "items": [
+          {
+            "item_id": "sku-b18",
+            "quantity": 1,
+            "asserted_price_paise": 49900
+          }
+        ],
+        "note": "substitutes an in-stock sku-b18 in the same session — expected ALLOW"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "expected_step_decisions": [
+      "block",
+      "allow"
+    ],
+    "split": "train"
+  },
+  {
+    "id": "interrupted-threshold-01",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-interrupted-threshold-01",
+    "steps": [
+      {
+        "session_id": "s-01",
+        "items": [
+          {
+            "item_id": "sku-a02",
+            "quantity": 4,
+            "asserted_price_paise": 49950
+          }
+        ],
+        "note": "single order of 199800 paise crosses the 150000 paise approval threshold and is never followed up — expected ESCALATE, deliberately unrecovered"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "expected_step_decisions": [
+      "escalate"
+    ],
+    "split": "holdout"
+  },
+  {
+    "id": "interrupted-threshold-02",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-interrupted-threshold-02",
+    "steps": [
+      {
+        "session_id": "s-02",
+        "items": [
+          {
+            "item_id": "sku-a08",
+            "quantity": 7,
+            "asserted_price_paise": 26500
+          }
+        ],
+        "note": "single order of 185500 paise crosses the 150000 paise approval threshold and is never followed up — expected ESCALATE, deliberately unrecovered"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "expected_step_decisions": [
+      "escalate"
+    ],
+    "split": "train"
+  },
+  {
+    "id": "interrupted-threshold-03",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "kirana",
+    "agent_id": "a-interrupted-threshold-03",
+    "steps": [
+      {
+        "session_id": "s-03",
+        "items": [
+          {
+            "item_id": "sku-a20",
+            "quantity": 12,
+            "asserted_price_paise": 14500
+          }
+        ],
+        "note": "single order of 174000 paise crosses the 150000 paise approval threshold and is never followed up — expected ESCALATE, deliberately unrecovered"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "expected_step_decisions": [
+      "escalate"
+    ],
+    "split": "holdout"
+  },
+  {
+    "id": "interrupted-threshold-04",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-interrupted-threshold-04",
+    "steps": [
+      {
+        "session_id": "s-04",
+        "items": [
+          {
+            "item_id": "sku-b02",
+            "quantity": 1,
+            "asserted_price_paise": 249900
+          }
+        ],
+        "note": "single order of 249900 paise crosses the 100000 paise approval threshold and is never followed up — expected ESCALATE, deliberately unrecovered"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "expected_step_decisions": [
+      "escalate"
+    ],
+    "split": "holdout"
+  },
+  {
+    "id": "interrupted-threshold-05",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-interrupted-threshold-05",
+    "steps": [
+      {
+        "session_id": "s-05",
+        "items": [
+          {
+            "item_id": "sku-b06",
+            "quantity": 1,
+            "asserted_price_paise": 899900
+          }
+        ],
+        "note": "single order of 899900 paise crosses the 100000 paise approval threshold and is never followed up — expected ESCALATE, deliberately unrecovered"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "expected_step_decisions": [
+      "escalate"
+    ],
+    "split": "train"
+  },
+  {
+    "id": "interrupted-threshold-06",
+    "origin": "hand",
+    "attack_class": null,
+    "merchant": "electronics",
+    "agent_id": "a-interrupted-threshold-06",
+    "steps": [
+      {
+        "session_id": "s-06",
+        "items": [
+          {
+            "item_id": "sku-b13",
+            "quantity": 1,
+            "asserted_price_paise": 129900
+          }
+        ],
+        "note": "single order of 129900 paise crosses the 100000 paise approval threshold and is never followed up — expected ESCALATE, deliberately unrecovered"
+      }
+    ],
+    "expected_tripped_rule": null,
+    "expected_step_decisions": [
+      "escalate"
+    ],
+    "split": "train"
+  },
+  {
     "id": "llm-benign-0001",
     "origin": "llm",
     "attack_class": null,
