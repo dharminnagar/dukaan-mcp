@@ -1,0 +1,28 @@
+{
+  "name": "@dukaan-mcp/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "csv-parse": "7.0.2",
+    "next": "15.5.4",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "pg": "8.23.0",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "@types/react": "19.2.9",
+    "@types/react-dom": "19.2.4",
+    "@tailwindcss/postcss": "4.1.16",
+    "tailwindcss": "4.1.16",
+    "typescript": "5.9.3"
+  }
+}

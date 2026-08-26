@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+:root {
+  --color-ink: #1a1a1a;
+  --color-muted: #6b7280;
+  --color-border: #d9d9d9;
+  --color-accent: #16643f;
+  --color-accent-hover: #114f32;
+  --color-danger: #b3261e;
+  --color-danger-bg: #fdecea;
+  --color-warn-bg: #fff7e6;
+  --color-warn-border: #f0b429;
+}
+
+body {
+  color: var(--color-ink);
+  background: #fafafa;
+}
+
+/* Visible keyboard focus state, consistent everywhere a control can be focused. */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}

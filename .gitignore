@@ -27,3 +27,7 @@ out/
 
 # eslint --cache artifact
 .eslintcache
+
+# Playwright MCP scratch output (snapshots, console logs, ad-hoc screenshots).
+# Screenshots worth keeping live in docs/screenshots/.
+.playwright-mcp/
