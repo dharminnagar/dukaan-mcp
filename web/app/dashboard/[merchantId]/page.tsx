@@ -56,7 +56,7 @@ function windowLabel(seconds: number): string {
  * is on camera in the demo, so a dashboard reading "merchant onboarding" is a
  * visible seam.
  */
-export const metadata = { title: "Dukaan — merchant dashboard" };
+export const metadata = { title: "Dukaan MCP — merchant dashboard" };
 
 export default async function DashboardPage({
   params,
