@@ -40,6 +40,7 @@
 import { randomBytes } from "node:crypto";
 import type { TenantContext, UnauthenticatedError } from "@/shared/contracts";
 import { query } from "../db/pool";
+import { mcpProtectedResourceMetadataUrl } from "../oauth/urls";
 import { hashToken, hashesEqual, parseBearer } from "./token";
 
 export type ResolveResult =
@@ -56,7 +57,14 @@ interface RecentSessionRow {
   id: string;
 }
 
-const WWW_AUTHENTICATE = 'Bearer realm="dukaan-mcp"';
+/**
+ * DUK-35: carries a `resource_metadata` pointer (RFC 9728 section 5.1) at
+ * every 401, not just realm text, so an OAuth-aware MCP client can discover
+ * `/.well-known/oauth-protected-resource` (src/mcp/http.ts) without being
+ * told the URL out of band. The paste-a-token flow is untouched by this —
+ * a client that ignores the header still authenticates exactly as before.
+ */
+const WWW_AUTHENTICATE = `Bearer realm="dukaan-mcp", resource_metadata="${mcpProtectedResourceMetadataUrl()}"`;
 
 /**
  * How long a session with no explicit `mcp-session-id` stays "current" for

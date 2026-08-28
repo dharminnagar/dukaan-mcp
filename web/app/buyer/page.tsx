@@ -8,14 +8,38 @@
  * try/catch, so a thrown Error (duplicate email, bad password) becomes a
  * message on screen instead of Next's default error overlay.
  */
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { login, register } from "../../lib/buyer-actions";
 
 type Mode = "login" | "register";
 
+/**
+ * DUK-35: /oauth/authorize sends a signed-out buyer here with
+ * `?next=/oauth/authorize?...` so login returns them to the consent screen
+ * instead of always landing on /buyer/stores. Restricted to a same-origin
+ * relative path (must start with exactly one `/`, never `//`) so this can
+ * never become an open redirect via a crafted `next` value.
+ */
+function safeNextPath(next: string | null): string {
+  if (next === null) return "/buyer/stores";
+  return next.startsWith("/") && !next.startsWith("//")
+    ? next
+    : "/buyer/stores";
+}
+
 export default function BuyerAuthPage() {
+  return (
+    <Suspense fallback={null}>
+      <BuyerAuthForm />
+    </Suspense>
+  );
+}
+
+function BuyerAuthForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = safeNextPath(searchParams.get("next"));
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,7 +55,7 @@ export default function BuyerAuthPage() {
       } else {
         await register(email, password);
       }
-      router.push("/buyer/stores");
+      router.push(next);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));

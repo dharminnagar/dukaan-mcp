@@ -7,6 +7,7 @@ import { env, requireRazorpay } from "../config";
 import { TenantRepo } from "../db/repo";
 import { withAdvisoryLock } from "../db/pool";
 import { decide } from "../gate/index";
+import { authServerBaseUrl, mcpResourceUrl } from "../oauth/urls";
 import { RazorpayHttpAdapter } from "../razorpay/index";
 import type { RazorpayAdapter } from "../razorpay/index";
 import { LineItem, toolError } from "../shared/contracts";
@@ -421,6 +422,20 @@ function unauthorizedResponse(error: UnauthenticatedError): Response {
 export async function fetchMcp(req: Request): Promise<Response> {
   const url = new URL(req.url);
   if (url.pathname === "/health") return new Response("ok\n");
+
+  // OAuth Protected Resource Metadata (RFC 9728). Lets a client that hit our
+  // 401 (which now carries `resource_metadata`, see src/auth/resolve.ts)
+  // discover the authorization server without any out-of-band configuration.
+  // No auth required — this is public discovery data, same trust level as
+  // the tool descriptions returned inside the MCP protocol itself.
+  if (url.pathname === "/.well-known/oauth-protected-resource") {
+    return Response.json({
+      resource: mcpResourceUrl(),
+      authorization_servers: [authServerBaseUrl()],
+      bearer_methods_supported: ["header"],
+    });
+  }
+
   if (url.pathname !== "/mcp")
     return new Response("not found\n", { status: 404 });
 
