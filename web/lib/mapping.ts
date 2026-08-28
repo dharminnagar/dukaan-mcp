@@ -22,22 +22,31 @@
  * `csv-parse` never reaches the browser bundle.
  */
 import { parse } from "csv-parse/sync";
-import { CANONICAL_FIELDS } from "./mapping-types";
+import { CANONICAL_FIELDS, CATEGORY_DISTINCT_CAP } from "./mapping-types";
 import type {
   CanonicalField,
   ColumnMapping,
+  CsvColumns,
   MappingProposal,
 } from "./mapping-types";
 
 export {
   CANONICAL_FIELDS,
+  CATEGORY_DISTINCT_CAP,
+  CATEGORY_REVIEW_THRESHOLD,
   LOW_CONFIDENCE_THRESHOLD,
+  availableCategoriesFor,
+  categoryColumnVerdict,
   isLowConfidence,
   lowConfidenceFields,
+  selectedFrom,
 } from "./mapping-types";
 export type {
   CanonicalField,
+  CategoryColumnVerdict,
   ColumnMapping,
+  ColumnValueSummary,
+  CsvColumns,
   MappingProposal,
   ProposedConfidence,
   ProposedMapping,
@@ -264,27 +273,92 @@ export function renameToCanonicalCsv(
   return `${lines.join("\n")}\n`;
 }
 
+interface MutableColumnSummary {
+  values: string[];
+  distinctCount: number;
+  blankRows: number;
+  truncated: boolean;
+}
+
 /**
- * Parses the CSV into plain row objects keyed by header name, capped at
- * `limit` rows. Used server-side to hand the client a small, already-mapped
- * JSON-serialisable preview slice so the browser never needs a CSV parser
- * of its own — `csv-parse` stays a server-only dependency.
+ * Reads a CSV's header, its full row count, a preview slice, and — per
+ * column — the distinct non-blank values in first-appearance order.
+ *
+ * A SINGLE `parse()` pass does all of it. `csv-parse`'s `columns` option
+ * accepts a function that receives the raw header row and returns the
+ * column names to key every subsequent row object by; that is used here to
+ * capture the header without a second parse, rather than the two-pass
+ * `readHeaderAndSamples` + `columns: true` shape this replaces.
+ *
+ * The distinct-value bookkeeping runs over EVERY data row, not a preview
+ * slice — see `CsvColumns`'s module doc in mapping-types.ts for why that is
+ * not optional: `fixtures/demo-merchant-a.csv`'s `personal-care` and
+ * `beverages` categories first appear at rows 22 and 24, past any
+ * short preview window.
  */
-export function parseCsvRowObjects(
+export function readCsvColumns(
   csvText: string,
-  limit = 20
-): { header: readonly string[]; rows: readonly Record<string, string>[] } {
-  const { header } = readHeaderAndSamples(csvText, 0);
+  opts?: { previewLimit?: number; distinctCap?: number }
+): CsvColumns {
+  const previewLimit = opts?.previewLimit ?? 10;
+  const distinctCap = opts?.distinctCap ?? CATEGORY_DISTINCT_CAP;
+
+  let header: string[] = [];
   const rows: Record<string, string | undefined>[] = parse(csvText, {
-    columns: true,
+    columns: (headerRow: string[]) => {
+      header = [...headerRow];
+      return headerRow;
+    },
     skip_empty_lines: true,
     trim: true,
-    to: limit,
   });
+
+  const summaries: Record<string, MutableColumnSummary> = {};
+  const seen: Record<string, Set<string>> = {};
+  for (const col of header) {
+    summaries[col] = {
+      values: [],
+      distinctCount: 0,
+      blankRows: 0,
+      truncated: false,
+    };
+    seen[col] = new Set();
+  }
+
+  for (const row of rows) {
+    for (const col of header) {
+      // `summaries`/`seen` were just populated from this same `header` array,
+      // so every column name looked up here is guaranteed present.
+      const summary = summaries[col]!;
+      const columnSeen = seen[col]!;
+      const cell = (row[col] ?? "").trim();
+      if (cell.length === 0) {
+        summary.blankRows += 1;
+        continue;
+      }
+      if (columnSeen.has(cell)) continue;
+      columnSeen.add(cell);
+      if (summary.truncated) continue;
+      if (columnSeen.size > distinctCap) {
+        summary.truncated = true;
+        summary.values = [];
+      } else {
+        summary.values.push(cell);
+      }
+    }
+  }
+  for (const col of header) {
+    summaries[col]!.distinctCount = seen[col]!.size;
+  }
+
+  const previewRows = rows
+    .slice(0, previewLimit)
+    .map((row) => Object.fromEntries(header.map((h) => [h, row[h] ?? ""])));
+
   return {
     header,
-    rows: rows.map((row) =>
-      Object.fromEntries(header.map((h) => [h, row[h] ?? ""]))
-    ),
+    rowCount: rows.length,
+    previewRows,
+    columnValues: summaries,
   };
 }

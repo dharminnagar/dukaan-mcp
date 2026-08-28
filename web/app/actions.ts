@@ -23,14 +23,15 @@ import {
   buildMappingPrompt,
   exactHeaderFallback,
   isValidMerchantId,
-  parseCsvRowObjects,
   parseModelMappingResponse,
+  readCsvColumns,
   readHeaderAndSamples,
   renameToCanonicalCsv,
   slugifyMerchantId,
 } from "../lib/mapping";
 import type {
   ColumnMapping,
+  ColumnValueSummary,
   MappingProposal,
   ProposedConfidence,
   ProposedMapping,
@@ -96,35 +97,36 @@ export async function proposeMapping(
  * extracted, and falls back to `exactHeaderFallback` on a `null` result —
  * no API key, a failed call, or an unparseable response. Also returns a
  * small preview slice of parsed rows (plain objects, JSON-serialisable) so
- * the client can render the ten-row confirm-mapping preview locally as the
- * merchant adjusts dropdowns, without another round trip per keystroke.
+ * the client can render the confirm-mapping preview table locally as the
+ * merchant adjusts dropdowns, without another round trip per keystroke —
+ * and, via `readCsvColumns`, the distinct values of EVERY column computed
+ * over the WHOLE file, which is what lets the page build category
+ * checkboxes without dropping any category that first appears past a
+ * short preview window.
  */
 export async function startMapping(csvText: string): Promise<{
   header: string[];
+  rowCount: number;
   previewRows: Record<string, string>[];
+  columnValues: Record<string, ColumnValueSummary>;
   proposal: MappingProposal;
   usedFallback: boolean;
 }> {
   const { header, sampleRows } = readHeaderAndSamples(csvText, 3);
-  const { rows: previewRows } = parseCsvRowObjects(csvText, 20);
+  const { rowCount, previewRows, columnValues } = readCsvColumns(csvText);
 
   const proposal = await proposeMapping(
     [...header],
     sampleRows.map((r) => [...r])
   );
-  if (proposal !== null) {
-    return {
-      header: [...header],
-      previewRows: [...previewRows],
-      proposal,
-      usedFallback: false,
-    };
-  }
+  const resolvedProposal = proposal ?? exactHeaderFallback(header);
   return {
     header: [...header],
+    rowCount,
     previewRows: [...previewRows],
-    proposal: exactHeaderFallback(header),
-    usedFallback: true,
+    columnValues: { ...columnValues },
+    proposal: resolvedProposal,
+    usedFallback: proposal === null,
   };
 }
 

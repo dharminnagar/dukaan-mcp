@@ -15,14 +15,29 @@ import { onboard, proposeMapping } from "../web/app/actions";
 import { slugifyMerchantId } from "../web/lib/merchant-id";
 import type { ColumnMapping } from "../web/lib/mapping-types";
 import {
+  availableCategoriesFor,
+  categoryColumnVerdict,
   exactHeaderFallback,
   lowConfidenceFields,
   parseModelMappingResponse,
+  readCsvColumns,
   readHeaderAndSamples,
   renameToCanonicalCsv,
+  selectedFrom,
 } from "../web/lib/mapping";
 import { parseCatalogCsv } from "../src/catalog/csv";
 import { pool, query, queryOne } from "../src/db/pool";
+
+const REPO_ROOT = `${import.meta.dir}/..`;
+const DEMO_MERCHANT_A_CSV = await Bun.file(
+  `${REPO_ROOT}/fixtures/demo-merchant-a.csv`
+).text();
+const MERCHANT_A_CSV = await Bun.file(
+  `${REPO_ROOT}/fixtures/merchant-a.csv`
+).text();
+const SHOPIFY_EXPORT_CSV = await Bun.file(
+  `${REPO_ROOT}/fixtures/shopify-export.csv`
+).text();
 
 async function cleanupMerchant(merchantId: string): Promise<void> {
   await pool.query("DELETE FROM merchants WHERE id = $1", [merchantId]);
@@ -169,6 +184,26 @@ describe("readHeaderAndSamples (offline)", () => {
     expect(sampleRows).toHaveLength(3);
     expect(sampleRows[0]).toEqual(["sku-0", "Item 0", "10.00", "5", "staples"]);
   });
+
+  test("a CSV with fewer data rows than sampleCount returns only what exists, not padded", () => {
+    const csv = "sku,name,price,stock,category\nsku-1,Item 1,10.00,5,staples\n";
+    const { sampleRows } = readHeaderAndSamples(csv, 3);
+    expect(sampleRows).toHaveLength(1);
+  });
+
+  test("startMapping's model boundary has not regressed: readHeaderAndSamples never returns row data past its own row/column count, even against the real demo CSV", () => {
+    // The model boundary this guards: `startMapping` builds its prompt from
+    // exactly this function's return value (web/app/actions.ts). A
+    // regression that widened it to the whole parsed file would leak every
+    // row into the LLM prompt instead of the header + 3 samples the
+    // contract promises.
+    const { header, sampleRows } = readHeaderAndSamples(DEMO_MERCHANT_A_CSV, 3);
+    expect(header).toEqual(["sku", "name", "price", "stock", "category"]);
+    expect(sampleRows).toHaveLength(3);
+    for (const row of sampleRows) {
+      expect(row).toHaveLength(header.length);
+    }
+  });
 });
 
 describe("renameToCanonicalCsv (offline, deterministic)", () => {
@@ -199,6 +234,341 @@ describe("renameToCanonicalCsv (offline, deterministic)", () => {
     // dairy) — proving the fixed branch can never read per-row data, only
     // apply one literal supplied once by the merchant.
     expect(products.every((p) => p.category === "general")).toBe(true);
+  });
+});
+
+describe("readCsvColumns (offline)", () => {
+  test("the bug guard: category values are collected over the WHOLE file, not a preview slice", () => {
+    // fixtures/demo-merchant-a.csv has 25 rows and 6 distinct categories, but
+    // "personal-care" first appears at row 22 and "beverages" at row 24 — an
+    // implementation that only scans a short preview (the 20-row slice the
+    // old parseCsvRowObjects capped at) would silently drop both.
+    const { columnValues } = readCsvColumns(DEMO_MERCHANT_A_CSV);
+    const category = columnValues["category"];
+    expect(category?.distinctCount).toBe(6);
+    expect(category?.values).toEqual([
+      "staples",
+      "dairy",
+      "snacks",
+      "household",
+      "personal-care",
+      "beverages",
+    ]);
+    expect(category?.values).toContain("personal-care");
+    expect(category?.values).toContain("beverages");
+    expect(category?.truncated).toBe(false);
+  });
+
+  test("the same trap, made deliberately airtight: a category first appearing well past any plausible preview window", () => {
+    // The default previewLimit is 10 and the old buggy behaviour capped at
+    // 20 rows — this puts the novel category at row 500, an order of
+    // magnitude past either number, so no plausible "just raise the preview
+    // size a bit" fix would happen to paper over a real regression here.
+    const rows = Array.from(
+      { length: 499 },
+      (_, i) => `sku-${i},Item ${i},10.00,5,staples`
+    );
+    rows.push("sku-late,Late Arrival,10.00,5,late-blooming-category");
+    const csv = ["sku,name,price,stock,category", ...rows].join("\n");
+    const { columnValues, rowCount } = readCsvColumns(csv);
+    expect(rowCount).toBe(500);
+    const category = columnValues["category"];
+    expect(category?.distinctCount).toBe(2);
+    expect(category?.values).toContain("late-blooming-category");
+  });
+
+  test("exactly at the distinct cap: NOT truncated, and values are shipped in full", () => {
+    // The boundary the trap above doesn't reach: distinctCount === cap must
+    // still ship every value, not just "under cap".
+    const rows = Array.from(
+      { length: 10 },
+      (_, i) => `sku-${i},Item ${i},10.00,5,cat-${i}`
+    );
+    const csv = ["sku,name,price,stock,category", ...rows].join("\n");
+    const { columnValues } = readCsvColumns(csv, { distinctCap: 10 });
+    const category = columnValues["category"];
+    expect(category?.truncated).toBe(false);
+    expect(category?.distinctCount).toBe(10);
+    expect(category?.values).toHaveLength(10);
+    expect(category?.values).toEqual(
+      Array.from({ length: 10 }, (_, i) => `cat-${i}`)
+    );
+  });
+
+  test("one value past the distinct cap: truncated, values dropped, count still exact", () => {
+    const rows = Array.from(
+      { length: 11 },
+      (_, i) => `sku-${i},Item ${i},10.00,5,cat-${i}`
+    );
+    const csv = ["sku,name,price,stock,category", ...rows].join("\n");
+    const { columnValues } = readCsvColumns(csv, { distinctCap: 10 });
+    const category = columnValues["category"];
+    expect(category?.truncated).toBe(true);
+    expect(category?.values).toEqual([]);
+    expect(category?.distinctCount).toBe(11);
+  });
+
+  test("a column past the distinct cap is truncated: no values shipped, count still accurate", () => {
+    const rows = Array.from(
+      { length: 300 },
+      (_, i) => `sku-${i},Item ${i},10.00,5,cat-${i}`
+    );
+    const csv = ["sku,name,price,stock,category", ...rows].join("\n");
+    const { columnValues } = readCsvColumns(csv, { distinctCap: 200 });
+    const category = columnValues["category"];
+    expect(category?.truncated).toBe(true);
+    expect(category?.values).toEqual([]);
+    expect(category?.distinctCount).toBe(300);
+  });
+
+  test("a blank cell is counted in blankRows and omitted from values", () => {
+    const csv = [
+      "sku,name,price,stock,category",
+      "sku-1,Item 1,10.00,5,staples",
+      "sku-2,Item 2,10.00,5,",
+      "sku-3,Item 3,10.00,5,staples",
+    ].join("\n");
+    const { columnValues } = readCsvColumns(csv);
+    const category = columnValues["category"];
+    expect(category?.blankRows).toBe(1);
+    expect(category?.values).not.toContain("");
+    expect(category?.values).toEqual(["staples"]);
+  });
+
+  test("a column that is entirely blank behaves sanely: zero distinct values, every row counted blank, never truncated", () => {
+    const csv = [
+      "sku,name,price,stock,category",
+      "sku-1,Item 1,10.00,5,",
+      "sku-2,Item 2,10.00,5, ",
+      "sku-3,Item 3,10.00,5,",
+    ].join("\n");
+    const { columnValues } = readCsvColumns(csv);
+    const category = columnValues["category"];
+    expect(category?.values).toEqual([]);
+    expect(category?.distinctCount).toBe(0);
+    expect(category?.blankRows).toBe(3);
+    expect(category?.truncated).toBe(false);
+  });
+
+  test("case is preserved, never folded: 'Dairy' and 'dairy' are two distinct values", () => {
+    // This is CORRECT, not a bug to fix later. The gate (src/gate/index.ts)
+    // compares categories with a bare `===`, and neither it nor
+    // src/catalog/policy.ts case-folds. Folding "Dairy"/"dairy" together
+    // here would let the allowlist contain a normalised form that then
+    // fails to `===`-match the catalog's actual (unfolded) category string
+    // on every purchase — manufacturing exactly the silent-block bug DUK-27
+    // exists to close, just moved one level up. If a future "cleanup"
+    // introduces case-insensitive dedup in readCsvColumns, this must go red.
+    const csv = [
+      "sku,name,price,stock,category",
+      "sku-1,Item 1,10.00,5,Dairy",
+      "sku-2,Item 2,10.00,5,dairy",
+    ].join("\n");
+    const { columnValues } = readCsvColumns(csv);
+    const category = columnValues["category"];
+    expect(category?.distinctCount).toBe(2);
+    expect(category?.values).toEqual(["Dairy", "dairy"]);
+  });
+
+  test("previewRows is capped while rowCount reports the true total", () => {
+    const rows = Array.from(
+      { length: 50 },
+      (_, i) => `sku-${i},Item ${i},10.00,5,staples`
+    );
+    const csv = ["sku,name,price,stock,category", ...rows].join("\n");
+    const { previewRows, rowCount } = readCsvColumns(csv, {
+      previewLimit: 10,
+    });
+    expect(rowCount).toBe(50);
+    expect(previewRows).toHaveLength(10);
+  });
+});
+
+describe("selectedFrom and categoryColumnVerdict (offline, pure helpers)", () => {
+  test("selectedFrom keeps the exclusion set as the stored state — a stale category becomes unrepresentable", () => {
+    const excluded = new Set<string>();
+    const firstPass = selectedFrom(["A", "B"], excluded);
+    expect(firstPass).toEqual(["A", "B"]);
+
+    excluded.add("B");
+    const afterExcludingB = selectedFrom(["A", "B"], excluded);
+    expect(afterExcludingB).toEqual(["A"]);
+
+    // Remapping to a new column's values: "B" lingers in the exclusion set as
+    // an unreachable string, but "C" and "D" are not in it, so they arrive
+    // ticked rather than inheriting the old column's unticks.
+    const afterRemap = selectedFrom(["C", "D"], excluded);
+    expect(afterRemap).toEqual(["C", "D"]);
+  });
+
+  test("a stale category is unrepresentable — the load-bearing property, pinned directly", () => {
+    // This is the exact claim the exclusion-set design makes (see
+    // selectedFrom's doc comment in mapping-types.ts): once the merchant
+    // remaps away from a column, that column's category strings can never
+    // again appear in the submitted allowlist, no matter what the exclusion
+    // set still contains. A regression here would mean a category the
+    // merchant never saw or chose slipping into `category_allowlist`. If
+    // this state were ever "simplified" to a selected-set instead of an
+    // exclusion-set, this assertion is what would catch it: a selected-set
+    // naively carried across a remap could still contain "B".
+    const excluded = new Set<string>(["B"]);
+    // "B" is deliberately IN the available list here too, unlike the
+    // remap case below — a `selectedFrom` that degraded into a no-op
+    // (returning `available` untouched, the exact "simplify to a
+    // selected-set" regression this test exists to catch) would still pass
+    // a version of this assertion that never put "B" in `available` in the
+    // first place. Put it in both, so a no-op is forced to fail here.
+    const stillPresent = selectedFrom(["A", "B", "C"], excluded);
+    expect(stillPresent).not.toContain("B");
+    expect(stillPresent).toEqual(["A", "C"]);
+
+    // And once remapped away, "B" is unreachable even though it is still
+    // sitting in the exclusion set.
+    const allowlist = selectedFrom(["C", "D"], excluded);
+    expect(allowlist).not.toContain("B");
+    expect(allowlist).toEqual(["C", "D"]);
+  });
+
+  test("A -> B -> A restores the merchant's earlier unticks", () => {
+    const excluded = new Set<string>();
+    expect(selectedFrom(["A", "B"], excluded)).toEqual(["A", "B"]);
+
+    excluded.add("B");
+    expect(selectedFrom(["A", "B"], excluded)).toEqual(["A"]);
+
+    // Remap away...
+    expect(selectedFrom(["C", "D"], excluded)).toEqual(["C", "D"]);
+
+    // ...and remap back. "B" was never removed from the exclusion set by the
+    // remap away from it, only rendered unreachable — so it is still there
+    // once "B" is reachable again.
+    expect(selectedFrom(["A", "B"], excluded)).toEqual(["A"]);
+    expect(excluded.has("B")).toBe(true);
+  });
+
+  test("an empty exclusion set is the all-ticked default, over any available list", () => {
+    const excluded = new Set<string>();
+    expect(selectedFrom(["A", "B", "C"], excluded)).toEqual(["A", "B", "C"]);
+    expect(selectedFrom([], excluded)).toEqual([]);
+    expect(selectedFrom(["staples", "dairy", "snacks"], excluded)).toEqual([
+      "staples",
+      "dairy",
+      "snacks",
+    ]);
+  });
+
+  test("categoryColumnVerdict on the real fixtures: every fixture's category column is 'ok'", () => {
+    // The regression cases this ticket exists to guard: without the
+    // NEARLY_UNIQUE_MIN_ROWS floor, a 5-row catalog with 4 (or 3) distinct
+    // categories trips the >50%-distinct ratio and wrongly verdicts
+    // "review" — which would put a filter box and a scary banner in front
+    // of the demo merchant's five-row catalog for no reason.
+    const merchantA = readCsvColumns(MERCHANT_A_CSV);
+    expect(
+      categoryColumnVerdict(
+        merchantA.columnValues["category"],
+        merchantA.rowCount
+      )
+    ).toBe("ok");
+    expect(merchantA.rowCount).toBe(5);
+    expect(merchantA.columnValues["category"]?.distinctCount).toBe(4);
+
+    const shopifyExport = readCsvColumns(SHOPIFY_EXPORT_CSV);
+    expect(
+      categoryColumnVerdict(
+        shopifyExport.columnValues["Product Type"],
+        shopifyExport.rowCount
+      )
+    ).toBe("ok");
+    expect(shopifyExport.rowCount).toBe(5);
+    expect(shopifyExport.columnValues["Product Type"]?.distinctCount).toBe(3);
+
+    const demoMerchantA = readCsvColumns(DEMO_MERCHANT_A_CSV);
+    expect(
+      categoryColumnVerdict(
+        demoMerchantA.columnValues["category"],
+        demoMerchantA.rowCount
+      )
+    ).toBe("ok");
+  });
+
+  test("categoryColumnVerdict: ok, review, and unusable bands", () => {
+    const ok = {
+      values: ["a", "b", "c"],
+      distinctCount: 3,
+      blankRows: 0,
+      truncated: false,
+    };
+    expect(categoryColumnVerdict(ok, 100)).toBe("ok");
+
+    const review = {
+      values: Array.from({ length: 41 }, (_, i) => `cat-${i}`),
+      distinctCount: 41,
+      blankRows: 0,
+      truncated: false,
+    };
+    expect(categoryColumnVerdict(review, 1000)).toBe("review");
+
+    // NEARLY_UNIQUE_MIN_ROWS (20) gates the ratio check: below it, a small
+    // catalog with a few categories must not be flagged just because the
+    // ratio looks high — the exact case fixtures/shopify-export.csv covers.
+    const nearlyUniqueSmallCatalog = {
+      values: ["a", "b", "c"],
+      distinctCount: 3,
+      blankRows: 0,
+      truncated: false,
+    };
+    expect(categoryColumnVerdict(nearlyUniqueSmallCatalog, 4)).toBe("ok");
+
+    const nearlyUniqueLargeCatalog = {
+      values: Array.from({ length: 11 }, (_, i) => `cat-${i}`),
+      distinctCount: 11,
+      blankRows: 0,
+      truncated: false,
+    };
+    expect(categoryColumnVerdict(nearlyUniqueLargeCatalog, 20)).toBe("review");
+
+    const unusable = {
+      values: [],
+      distinctCount: 300,
+      blankRows: 0,
+      truncated: true,
+    };
+    expect(categoryColumnVerdict(unusable, 1000)).toBe("unusable");
+
+    expect(categoryColumnVerdict(undefined, 100)).toBe("ok");
+  });
+});
+
+describe("availableCategoriesFor (offline, pure helper)", () => {
+  const columnValues = readCsvColumns(DEMO_MERCHANT_A_CSV).columnValues;
+
+  test("column branch: returns that column's distinct values", () => {
+    expect(availableCategoriesFor("category", "", columnValues)).toEqual(
+      columnValues["category"]?.values ?? []
+    );
+  });
+
+  test("column branch: an unmapped/unknown column name yields an empty list rather than throwing", () => {
+    expect(availableCategoriesFor("no-such-column", "", columnValues)).toEqual(
+      []
+    );
+  });
+
+  test("fixed branch: a trimmed, non-blank literal is the sole option", () => {
+    expect(availableCategoriesFor(null, "general", columnValues)).toEqual([
+      "general",
+    ]);
+    // Leading/trailing whitespace around a real value is trimmed, same as
+    // the CSV parser's own `trim: true`.
+    expect(availableCategoriesFor(null, "  general  ", columnValues)).toEqual([
+      "general",
+    ]);
+  });
+
+  test("fixed branch: a blank or whitespace-only literal yields no options at all", () => {
+    expect(availableCategoriesFor(null, "", columnValues)).toEqual([]);
+    expect(availableCategoriesFor(null, "   ", columnValues)).toEqual([]);
   });
 });
 
@@ -378,6 +748,71 @@ describe("onboard (integration, against real Postgres, namespaced m_web_*)", () 
       [merchantId]
     );
     expect(agentRows).toHaveLength(1);
+
+    await cleanupMerchant(merchantId);
+  });
+});
+
+describe("onboard: an allowlist derived from the CSV's own categories, end to end", () => {
+  test("excluding a category via the derived-checkboxes flow keeps it out of the written policy row, in the surviving order", async () => {
+    // This is the actual DUK-27 flow, wired end to end: read the categories
+    // out of the CSV (readCsvColumns), let the merchant untick two of them
+    // (selectedFrom), and onboard with the result — then check what
+    // Postgres actually stored, not just what was passed in.
+    const { columnValues, rowCount } = readCsvColumns(DEMO_MERCHANT_A_CSV);
+    expect(categoryColumnVerdict(columnValues["category"], rowCount)).toBe(
+      "ok"
+    );
+    const available = availableCategoriesFor("category", "", columnValues);
+    expect(available).toEqual([
+      "staples",
+      "dairy",
+      "snacks",
+      "household",
+      "personal-care",
+      "beverages",
+    ]);
+
+    const excluded = new Set<string>(["personal-care", "beverages"]);
+    const allowlist = selectedFrom(available, excluded);
+    expect(allowlist).toEqual(["staples", "dairy", "snacks", "household"]);
+
+    const name = "Web Onboard Derived Allowlist";
+    const merchantId = slugifyMerchantId(name);
+    await cleanupMerchant(merchantId);
+
+    const mapping: ColumnMapping = {
+      sku: "sku",
+      name: "name",
+      price: "price",
+      stock: "stock",
+      category: { kind: "column", column: "category" },
+    };
+
+    const result = await onboard(DEMO_MERCHANT_A_CSV, mapping, name, {
+      spend_cap_rupees: "5000.00",
+      approval_threshold_rupees: "1500.00",
+      category_allowlist: allowlist,
+      window: "24h",
+    });
+    expect(result.productCount).toBe(25);
+
+    const row = await queryOne<{ category_allowlist: string[] }>(
+      "SELECT category_allowlist FROM policies WHERE merchant_id = $1",
+      [merchantId]
+    );
+    expect(row?.category_allowlist).toEqual([
+      "staples",
+      "dairy",
+      "snacks",
+      "household",
+    ]);
+    // The genuinely-excluded categories are absent, not just unordered-equal
+    // to a shorter list — `toEqual` above already proves this, but the
+    // explicit negative assertion is what a reader skimming for "did the
+    // exclusion actually work" should see without re-deriving it.
+    expect(row?.category_allowlist).not.toContain("personal-care");
+    expect(row?.category_allowlist).not.toContain("beverages");
 
     await cleanupMerchant(merchantId);
   });
