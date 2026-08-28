@@ -99,7 +99,6 @@ Status 2026-08-24: Day 1 and Day 2 complete. 58 tests pass. The gate itself is n
 </invoke>
 
 ## Notes
-- New feature: feat(gate): the buyer's cap, the merchant's exposure, the platform's ceiling (DUK-31) [.env.example]
 - New feature: feat(web): merchant dashboard showing sales beside the gate's decisions (DUK-32) [docs/screenshots/dashboard.png]
 - gotcha: `lsof -ti:PORT | xargs kill -9` kills the WRONG processes — it returns every PID holding a socket on that port in ANY state, including OUTBOUND client connections. I ran it against port 3000 to clear a stale Next listener and killed Dharmin's Brave browser, which had four sockets to the old dev server sitting in CLOSE_WAIT. Always scope it to listeners: `lsof -ti:PORT -sTCP:LISTEN`. Better still for this project, kill by process identity rather than by port — `pkill -f "next dev"`, `pkill -f "src/mcp"` — since both servers have distinctive command lines. Related: an EADDRINUSE on 3000 does NOT imply a rogue listener; browser CLOSE_WAIT sockets show up under the same port in lsof output and look alarming while being harmless. Check the STATE column before killing anything. [scripts]
 - Gotcha found while browser-verifying the onboarding reorder: TWO `next dev` processes were running against the same web/.next directory (one pre-existing on :3000, one I started on :3001). Two Next dev servers sharing one build dir corrupt each other — every request 500s with `ENOENT: no such file or directory, open web/.next/server/app/page.js`, which reads like a broken page rather than a port collision. Fix: kill every `next dev`, `rm -rf web/.next`, start exactly ONE. Check with `lsof -nP -iTCP:3000,3001 -sTCP:LISTEN` before assuming the app is broken. Also: a server action that throws (e.g. `readHeaderAndSamples` on an empty CSV) surfaces as a console `500 Internal Server Error` in the browser even when the client catches it and renders the message — that 500 is expected, not a defect.
@@ -109,6 +108,7 @@ Status 2026-08-24: Day 1 and Day 2 complete. 58 tests pass. The gate itself is n
 - New feature: feat(gate): bound a merchant's total exposure, not just each agent's [src/catalog/policy.ts]
 - New feature: feat(web): buyers register, browse merchants, and mint their own tokens [src/buyer/auth.ts]
 - New feature: feat(web): dashboard reports agents registered and merchant-wide exposure [web/app/dashboard/[merchantId]/page.tsx]
+- New feature: feat(auth): OAuth 2.1 so a client discovers the server instead of being handed a token (DUK-35) [migrations/0004_oauth.sql]
 
 ## Key files
 - `/Users/dharmin/.local`
