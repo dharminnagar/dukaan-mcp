@@ -4,11 +4,16 @@
  * the onboarding flow already settled, matching `web/app/actions.ts`'s
  * "use server" + Node-runtime shape so it can import `src/db/pool` directly.
  *
- * DUK-31, landing concurrently with this ticket, adds `agents.buyer_cap_paise`
- * and `env.PLATFORM_SPEND_CEILING_PAISE` — both read below. `loadAgentSpend`
- * selects `buyer_cap_paise` and falls back to a query without it (catching
- * Postgres error 42703, undefined_column) so this file keeps working
- * whether or not DUK-31's migration has run yet in a given environment.
+ * DUK-31 added `agents.buyer_cap_paise` and `env.PLATFORM_SPEND_CEILING_PAISE`
+ * — both read below. `loadAgentSpend` selects `buyer_cap_paise` and falls
+ * back to a query without it (catching Postgres error 42703, undefined_column)
+ * for environments where that migration predates this file; `loadTopAgentSpend`
+ * (DUK-32b, buyer self-service) selects it unconditionally, since by the time
+ * agents can be buyer-provisioned the column is guaranteed to exist.
+ *
+ * DUK-31's migration (0003) also added `agents.buyer_id` and
+ * `policies.merchant_total_cap_paise`, read by `loadAgentCounts` and
+ * `loadMerchantExposure` respectively — see those functions' doc comments.
  */
 import "../lib/assert-server-only";
 import { query, queryOne } from "../../src/db/pool";
@@ -20,6 +25,47 @@ export interface RevenueSummary {
   readonly window_seconds: number;
   readonly revenue_paise: number;
   readonly order_count: number;
+}
+
+export interface AgentCounts {
+  readonly buyer_registered: number;
+  readonly merchant_minted: number;
+}
+
+export interface TopAgentSpend {
+  readonly agent_id: string;
+  readonly agent_label: string;
+  readonly buyer_registered: boolean;
+  readonly spent_paise: number;
+  readonly effective_cap: EffectiveCap;
+}
+
+/**
+ * `agents` returned capped at `TOP_AGENTS_LIMIT`, plus how many more agents
+ * had qualifying spend in the window but did not make the cut — so the page
+ * can say "and 340 more" instead of either rendering a thousand rows or
+ * silently dropping them with no trace.
+ */
+export interface TopAgentsResult {
+  readonly agents: readonly TopAgentSpend[];
+  readonly total_with_spend: number;
+}
+
+export interface MerchantExposure {
+  readonly window_seconds: number;
+  /**
+   * Merchant-wide spend across EVERY agent in the window — numerically the
+   * same aggregate as `RevenueSummary.revenue_paise` (same table, same
+   * window, same `status IN ('created','authorized')` filter, no
+   * `agent_id` predicate on either). Kept as its own field rather than
+   * reusing `revenue_paise` by name because the two answer different
+   * questions on screen ("how much did I sell" vs "how close am I to my
+   * exposure limit"), even though today they are the identical number by
+   * construction — see `sumOrdersInWindow` below, which both call.
+   */
+  readonly spent_paise: number;
+  /** `null` means the merchant has set no aggregate cap — a real, currently-normal state. */
+  readonly cap_paise: number | null;
 }
 
 export interface AgentSpend {
@@ -58,13 +104,39 @@ export interface RecentDecision {
 interface PolicyRow {
   readonly spend_cap_paise: number;
   readonly window_seconds: number;
+  readonly merchant_total_cap_paise: number | null;
 }
 
 async function loadPolicy(merchantId: string): Promise<PolicyRow | null> {
   return queryOne<PolicyRow>(
-    "SELECT spend_cap_paise, window_seconds FROM policies WHERE merchant_id = $1",
+    "SELECT spend_cap_paise, window_seconds, merchant_total_cap_paise FROM policies WHERE merchant_id = $1",
     [merchantId]
   );
+}
+
+/**
+ * The one aggregate used by both revenue and merchant-exposure: every order
+ * for this merchant, across every agent, in the window, restricted to
+ * `status IN ('created', 'authorized')` — mirroring `SPEND_CAP_SQL`
+ * (src/db/repo.ts) verbatim except for the `agent_id` predicate it has and
+ * this deliberately omits. Factored out so "revenue" and "merchant spend
+ * against its aggregate cap" cannot drift into two subtly different SQL
+ * strings that happen to agree today.
+ */
+async function sumOrdersInWindow(
+  merchantId: string,
+  windowSeconds: number
+): Promise<{ amount_paise: number; order_count: number }> {
+  const row = await queryOne<{ amount_paise: number; order_count: number }>(
+    `SELECT COALESCE(SUM(amount_paise), 0)::BIGINT AS amount_paise,
+            COUNT(*)::BIGINT AS order_count
+       FROM orders
+      WHERE merchant_id = $1
+        AND status IN ('created', 'authorized')
+        AND created_at >= now() - make_interval(secs => $2::int)`,
+    [merchantId, windowSeconds]
+  );
+  return row ?? { amount_paise: 0, order_count: 0 };
 }
 
 /**
@@ -72,10 +144,6 @@ async function loadPolicy(merchantId: string): Promise<PolicyRow | null> {
  * window the gate enforces the spend cap against, so the number on screen is
  * the number the gate is actually reasoning about, not an arbitrary "last
  * 24h" a dashboard would default to on its own.
- *
- * `status IN ('created', 'authorized')` mirrors `SPEND_CAP_SQL`
- * (src/db/repo.ts) verbatim: escalated and failed orders never counted
- * toward spend there, so they should not count as revenue here either.
  */
 export async function loadRevenueSummary(
   merchantId: string
@@ -83,20 +151,128 @@ export async function loadRevenueSummary(
   const policy = await loadPolicy(merchantId);
   if (policy === null) return null;
 
-  const row = await queryOne<{ revenue_paise: number; order_count: number }>(
-    `SELECT COALESCE(SUM(amount_paise), 0)::BIGINT AS revenue_paise,
-            COUNT(*)::BIGINT AS order_count
-       FROM orders
-      WHERE merchant_id = $1
-        AND status IN ('created', 'authorized')
-        AND created_at >= now() - make_interval(secs => $2::int)`,
-    [merchantId, policy.window_seconds]
-  );
+  const sum = await sumOrdersInWindow(merchantId, policy.window_seconds);
 
   return {
     window_seconds: policy.window_seconds,
-    revenue_paise: row?.revenue_paise ?? 0,
-    order_count: row?.order_count ?? 0,
+    revenue_paise: sum.amount_paise,
+    order_count: sum.order_count,
+  };
+}
+
+/**
+ * How many agents this merchant has, split by provenance: `buyer_id IS NOT
+ * NULL` means a buyer self-provisioned it post-DUK-31, `NULL` means the
+ * merchant onboarding flow minted it (every pre-buyer-era row, and still a
+ * legitimate shape — a merchant testing their own store). This split, not
+ * the raw total, is the self-service adoption signal the dashboard needs
+ * once a merchant can have thousands of agents.
+ */
+export async function loadAgentCounts(
+  merchantId: string
+): Promise<AgentCounts> {
+  const row = await queryOne<{
+    buyer_registered: number;
+    merchant_minted: number;
+  }>(
+    `SELECT COUNT(*) FILTER (WHERE buyer_id IS NOT NULL)::BIGINT AS buyer_registered,
+            COUNT(*) FILTER (WHERE buyer_id IS NULL)::BIGINT     AS merchant_minted
+       FROM agents
+      WHERE merchant_id = $1`,
+    [merchantId]
+  );
+  return row ?? { buyer_registered: 0, merchant_minted: 0 };
+}
+
+const TOP_AGENTS_LIMIT = 10;
+
+/**
+ * Top agents by spend in the policy window, capped at `TOP_AGENTS_LIMIT` —
+ * at thousands of agents, rendering every row is both useless to a merchant
+ * and a way to make the page itself slow. `total_with_spend` lets the page
+ * say "and N more" rather than truncating silently.
+ *
+ * Joins `agents` to `orders` constraining `merchant_id` on BOTH sides
+ * (`a.merchant_id = o.merchant_id`, in addition to the `WHERE` on `o`) so a
+ * mismatched id can never attribute one merchant's order to another
+ * merchant's agent row.
+ */
+export async function loadTopAgentSpend(
+  merchantId: string,
+  windowSeconds: number
+): Promise<TopAgentsResult> {
+  const [rows, totalRow, policy] = await Promise.all([
+    query<{
+      agent_id: string;
+      agent_label: string;
+      buyer_registered: boolean;
+      spent_paise: number;
+      buyer_cap_paise: number | null;
+    }>(
+      `SELECT o.agent_id                  AS agent_id,
+              a.label                     AS agent_label,
+              (a.buyer_id IS NOT NULL)    AS buyer_registered,
+              SUM(o.amount_paise)::BIGINT AS spent_paise,
+              a.buyer_cap_paise           AS buyer_cap_paise
+         FROM orders o
+         JOIN agents a ON a.id = o.agent_id AND a.merchant_id = o.merchant_id
+        WHERE o.merchant_id = $1
+          AND o.status IN ('created', 'authorized')
+          AND o.created_at >= now() - make_interval(secs => $2::int)
+        GROUP BY o.agent_id, a.label, a.buyer_id, a.buyer_cap_paise
+        ORDER BY spent_paise DESC
+        LIMIT $3`,
+      [merchantId, windowSeconds, TOP_AGENTS_LIMIT]
+    ),
+    queryOne<{ count: number }>(
+      `SELECT COUNT(DISTINCT agent_id)::BIGINT AS count
+         FROM orders
+        WHERE merchant_id = $1
+          AND status IN ('created', 'authorized')
+          AND created_at >= now() - make_interval(secs => $2::int)`,
+      [merchantId, windowSeconds]
+    ),
+    loadPolicy(merchantId),
+  ]);
+  const policyCapPaise = policy?.spend_cap_paise ?? null;
+
+  return {
+    agents: rows.map((row) => ({
+      agent_id: row.agent_id,
+      agent_label: row.agent_label,
+      buyer_registered: row.buyer_registered,
+      spent_paise: row.spent_paise,
+      effective_cap: effectiveCap(
+        row.buyer_cap_paise,
+        // `policyCapPaise` is only null when the merchant row itself is
+        // missing, which cannot happen here (an order implies an onboarded
+        // merchant) — the `?? 0` is unreachable, not a real fallback value.
+        policyCapPaise ?? 0,
+        env.PLATFORM_SPEND_CEILING_PAISE
+      ),
+    })),
+    total_with_spend: totalRow?.count ?? 0,
+  };
+}
+
+/**
+ * Merchant-wide spend against `policies.merchant_total_cap_paise`. `null`
+ * cap means the merchant has set no aggregate limit — a real, currently-
+ * normal state (every merchant before DUK-31 is in it), not an empty or
+ * broken one, so the page must say so rather than render an empty bar.
+ */
+export async function loadMerchantExposure(
+  merchantId: string
+): Promise<MerchantExposure | null> {
+  const policy = await loadPolicy(merchantId);
+  if (policy === null) return null;
+
+  const sum = await sumOrdersInWindow(merchantId, policy.window_seconds);
+
+  return {
+    window_seconds: policy.window_seconds,
+    spent_paise: sum.amount_paise,
+    cap_paise: policy.merchant_total_cap_paise,
   };
 }
 
