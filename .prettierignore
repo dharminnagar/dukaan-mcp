@@ -21,3 +21,8 @@ CLAUDE.md
 # eslint --cache artifact
 .eslintcache
 
+
+# Machine-local permission state written by Claude Code. Git-ignored globally and
+# never committed, but Prettier's ignore list is separate from git's, so without
+# this line `bun run lint` fails on a file that only exists on one machine.
+.claude/settings.local.json
