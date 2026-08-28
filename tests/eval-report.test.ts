@@ -614,6 +614,10 @@ describe("report over the real frozen train split (Postgres, eval-namespaced)", 
         // to null here would weaken a SECOND rule and muddy what this test
         // measures.
         buyerCapPaise: repo.buyerCapPaise.bind(repo),
+        // Also real and unweakened, for the same reason. The eval merchants set
+        // no aggregate cap, so this is never even queried — but a stub would be
+        // a second weakened rule either way.
+        merchantSpentInWindowPaise: repo.merchantSpentInWindowPaise.bind(repo),
         getPolicy: async () => {
           const policy = await repo.getPolicy();
           return { ...policy, category_allowlist: everyCategory };

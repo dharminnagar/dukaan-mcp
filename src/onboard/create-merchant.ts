@@ -127,14 +127,18 @@ export async function createMerchant(args: {
 
     await client.query(
       `INSERT INTO policies
-         (merchant_id, spend_cap_paise, approval_threshold_paise, category_allowlist, window_seconds)
-       VALUES ($1, $2, $3, $4, $5)`,
+         (merchant_id, spend_cap_paise, approval_threshold_paise, category_allowlist, window_seconds, merchant_total_cap_paise)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
       [
         merchantId,
         policy.spend_cap_paise,
         policy.approval_threshold_paise,
         policy.category_allowlist,
         policy.window_seconds,
+        // NULL when the merchant set no aggregate cap. Deliberately no
+        // `?? something`: the column has no default and NULL is a meaningful
+        // value here, not a missing one.
+        policy.merchant_total_cap_paise,
       ]
     );
 

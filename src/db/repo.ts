@@ -26,6 +26,28 @@ const SPEND_CAP_SQL = `SELECT COALESCE(SUM(amount_paise), 0)::BIGINT AS spent_pa
    AND created_at >= now() - make_interval(secs => $3::int)
    AND status IN ('created', 'authorized')`;
 
+/**
+ * `SPEND_CAP_SQL` with the `agent_id` predicate REMOVED, so it sums every agent
+ * of the merchant rather than one. Everything else is deliberately identical —
+ * the same `status IN ('created', 'authorized')` filter and the same
+ * `make_interval` against Postgres's own `now()` — because the two numbers are
+ * compared against caps that are meant to be commensurable. In particular
+ * 'escalated' orders are excluded here exactly as they are there: an escalated
+ * order has not been paid for, and counting it in one sum but not the other
+ * would make the aggregate and the per-agent figures disagree about the same
+ * order.
+ *
+ * Served by `idx_orders_merchant_window` (merchant_id, created_at DESC) WHERE
+ * status IN ('created','authorized'), added in migration 0003 for this query.
+ * `idx_orders_spend_cap` cannot serve it: its leading columns are
+ * (merchant_id, agent_id, ...) and this query has nothing to say about agent_id.
+ */
+const MERCHANT_TOTAL_SPEND_SQL = `SELECT COALESCE(SUM(amount_paise), 0)::BIGINT AS spent_paise
+  FROM orders
+ WHERE merchant_id = $1
+   AND created_at >= now() - make_interval(secs => $2::int)
+   AND status IN ('created', 'authorized')`;
+
 interface SpendCapRow {
   spent_paise: number;
 }
@@ -55,7 +77,7 @@ export class TenantRepo {
 
   async getPolicy(): Promise<Policy> {
     const row = await queryOne<Policy>(
-      "SELECT merchant_id, spend_cap_paise, approval_threshold_paise, category_allowlist, window_seconds FROM policies WHERE merchant_id = $1",
+      "SELECT merchant_id, spend_cap_paise, approval_threshold_paise, category_allowlist, window_seconds, merchant_total_cap_paise FROM policies WHERE merchant_id = $1",
       [this.ctx.merchant_id]
     );
     if (row === null) {
@@ -74,6 +96,31 @@ export class TenantRepo {
     ]);
     if (row === null) {
       throw new Error("spentInWindowPaise: aggregate query returned no row");
+    }
+    return row.spent_paise;
+  }
+
+  /**
+   * The merchant's spend across EVERY agent in the window, for the aggregate
+   * cap. Scope is (merchant_id, window) — the agent is deliberately NOT in it.
+   *
+   * This is the one method on this class whose omission of `agent_id` is
+   * intentional rather than a bug, which is worth saying out loud given the
+   * file-header rule that every query is scoped as narrowly as the table
+   * allows. It is still merchant-scoped, so it cannot leak across tenants: the
+   * id comes from `this.ctx`, not from a parameter, exactly like every other
+   * method here. Widening past `agent_id` is the entire point — the per-agent
+   * cap already bounds one agent, and nothing bounded the sum.
+   */
+  async merchantSpentInWindowPaise(windowSeconds: number): Promise<number> {
+    const row = await queryOne<SpendCapRow>(MERCHANT_TOTAL_SPEND_SQL, [
+      this.ctx.merchant_id,
+      windowSeconds,
+    ]);
+    if (row === null) {
+      throw new Error(
+        "merchantSpentInWindowPaise: aggregate query returned no row"
+      );
     }
     return row.spent_paise;
   }

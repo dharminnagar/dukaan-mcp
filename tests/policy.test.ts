@@ -60,6 +60,57 @@ describe("parsePolicy", () => {
   test("rejects malformed input shape", () => {
     expect(() => parsePolicy({ nonsense: true }, "m_test")).toThrow();
   });
+
+  test("omitting merchant_total_cap_rupees leaves the aggregate cap null", () => {
+    // `base` has no such key. Null is "no aggregate constraint", which is the
+    // behaviour that predates the column — and is why every already-scored
+    // eval transcript decides identically.
+    expect(parsePolicy(base, "m_test").merchant_total_cap_paise).toBeNull();
+  });
+
+  test("a blank merchant_total_cap_rupees is the same as omitting it", () => {
+    const blank = { ...base, merchant_total_cap_rupees: "" };
+    expect(parsePolicy(blank, "m_test").merchant_total_cap_paise).toBeNull();
+    const whitespace = { ...base, merchant_total_cap_rupees: "   " };
+    expect(
+      parsePolicy(whitespace, "m_test").merchant_total_cap_paise
+    ).toBeNull();
+  });
+
+  test("parses a valid merchant_total_cap_rupees to integer paise", () => {
+    const withCap = { ...base, merchant_total_cap_rupees: "20,000.50" };
+    // Through `rupeesToPaise`, so comma separators work and the fractional part
+    // is integer string maths — 0.50 must be exactly 50 paise, never 49.999...
+    expect(parsePolicy(withCap, "m_test").merchant_total_cap_paise).toBe(
+      2_000_050
+    );
+  });
+
+  test("an aggregate cap BELOW spend_cap_paise is legal, not an error", () => {
+    // The load-bearing case. "Each agent may spend up to ₹5,000, but all of
+    // them together may not exceed ₹1,000" is a coherent and useful policy, so
+    // there is deliberately no `>= spend_cap_paise` refine. A merchant going
+    // multi-buyer will often want exactly this shape.
+    const tighter = { ...base, merchant_total_cap_rupees: "1000.00" };
+    const policy = parsePolicy(tighter, "m_test");
+    expect(policy.merchant_total_cap_paise).toBe(100_000);
+    expect(policy.merchant_total_cap_paise).toBeLessThan(
+      policy.spend_cap_paise
+    );
+  });
+
+  test("rejects a zero aggregate cap rather than reading it as no cap", () => {
+    // Zero means "allow nothing"; storing it as NULL would mean the opposite.
+    const zero = { ...base, merchant_total_cap_rupees: "0" };
+    expect(() => parsePolicy(zero, "m_test")).toThrow(
+      /must be greater than zero/
+    );
+  });
+
+  test("rejects a non-numeric aggregate cap", () => {
+    const bad = { ...base, merchant_total_cap_rupees: "lots" };
+    expect(() => parsePolicy(bad, "m_test")).toThrow(/Invalid rupee amount/);
+  });
 });
 
 describe("policy_threshold_reachable — Postgres CHECK constraint", () => {

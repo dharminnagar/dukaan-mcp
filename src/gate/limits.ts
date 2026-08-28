@@ -24,12 +24,44 @@
  * connection pool into a page render.
  */
 
-/** Which party's number actually bound, for the block payload and the dashboard. */
-export type BindingParty = "buyer" | "merchant" | "platform";
+/**
+ * Which party's number actually bound, for the block payload and the dashboard.
+ *
+ * `merchant_total` is not a fourth cap in the same comparison as the other
+ * three. Those all bound ONE agent's spend and so reduce to a minimum;
+ * `merchant_total` bounds the sum across EVERY agent of a merchant and is
+ * therefore measured against a different total. It is in this union because a
+ * block has to be able to say it was the binding reason, not because
+ * `effectiveCap` considers it.
+ */
+export type CapParty = "buyer" | "merchant" | "platform";
+export type BindingParty = CapParty | "merchant_total";
+
+/**
+ * Whether this order would take a merchant's TOTAL spend past its aggregate cap.
+ *
+ * The per-agent cap cannot bound this. `policies.spend_cap_paise` is applied to
+ * each agent separately, so N buyers each got the full cap and the merchant's
+ * real exposure was N x cap — which stops being an exposure limit at all as soon
+ * as buyers provision themselves. This is the bound that survives going
+ * multi-buyer.
+ *
+ * `null` means the merchant set no aggregate cap, which is the pre-existing
+ * two-party behaviour and is why every already-scored transcript decides
+ * identically after this landed.
+ */
+export function exceedsMerchantTotalCap(
+  merchantSpentPaise: number,
+  attemptedPaise: number,
+  merchantTotalCapPaise: number | null
+): boolean {
+  if (merchantTotalCapPaise === null) return false;
+  return merchantSpentPaise + attemptedPaise > merchantTotalCapPaise;
+}
 
 export interface EffectiveCap {
   readonly cap_paise: number;
-  readonly bound_by: BindingParty;
+  readonly bound_by: CapParty;
 }
 
 /**
@@ -52,7 +84,7 @@ export function effectiveCap(
   platform_ceiling_paise: number | null
 ): EffectiveCap {
   let cap_paise = merchant_cap_paise;
-  let bound_by: BindingParty = "merchant";
+  let bound_by: CapParty = "merchant";
 
   // Buyer first, and `<=` rather than `<`: on a tie the buyer's figure wins
   // the attribution, which is the ordering rule above. A strict `<` here would

@@ -38,7 +38,38 @@ const RawPolicyInput = z.object({
   approval_threshold_rupees: z.string().min(1),
   category_allowlist: z.array(z.string()),
   window: z.string().min(1),
+  /**
+   * The merchant's cap on the sum across every one of its agents, in rupees.
+   *
+   * Optional, and blank is the same as absent: both mean NULL, no aggregate
+   * constraint — the behaviour that predates the column. `.optional()` rather
+   * than `.min(1)` so a form that always posts the field can post "" and a
+   * policy JSON written before the column existed still parses.
+   */
+  merchant_total_cap_rupees: z.string().optional(),
 });
+
+/**
+ * Blank or absent -> `null`. Delegates to `rupeesToPaise`, the codebase's ONE
+ * integer-string rupee converter, because `0.29 * 100` is 28.999999999999996
+ * and a second converter would eventually get that wrong.
+ *
+ * Zero is rejected rather than silently coerced to "no cap": a merchant who
+ * types 0 means "allow nothing", and storing that as NULL would mean the exact
+ * opposite. The column's own CHECK (> 0) is the second, independent copy of
+ * this rule.
+ */
+function merchantTotalCapToPaise(input: string | undefined): number | null {
+  if (input === undefined || input.trim() === "") return null;
+  const paise = rupeesToPaise(input);
+  if (paise <= 0) {
+    throw new Error(
+      `Invalid merchant total cap ${JSON.stringify(input)}: must be greater than zero. ` +
+        `Leave it blank for no aggregate cap.`
+    );
+  }
+  return paise;
+}
 
 export function parsePolicy(json: unknown, merchantId: string): Policy {
   const rawResult = RawPolicyInput.safeParse(json);
@@ -56,6 +87,9 @@ export function parsePolicy(json: unknown, merchantId: string): Policy {
     approval_threshold_paise: rupeesToPaise(raw.approval_threshold_rupees),
     category_allowlist: raw.category_allowlist,
     window_seconds: parseWindow(raw.window),
+    merchant_total_cap_paise: merchantTotalCapToPaise(
+      raw.merchant_total_cap_rupees
+    ),
   };
 
   const result = Policy.safeParse(candidate);

@@ -164,19 +164,124 @@ function makeDeps(
  * 'SPEND_CAP' is already one of rule's members.
  */
 async function lastCheckoutAuditDetail(
-  agentId: string
+  agentId: string,
+  merchantId: string = MERCHANT
 ): Promise<Record<string, unknown>> {
   const row = await queryOne<{ detail: Record<string, unknown> | null }>(
     `SELECT detail FROM audit_events
       WHERE merchant_id = $1 AND agent_id = $2 AND action = 'checkout'
       ORDER BY ts DESC LIMIT 1`,
-    [MERCHANT, agentId]
+    [merchantId, agentId]
   );
   if (row === null || row.detail === null) {
     throw new Error(`no checkout audit detail for ${agentId}`);
   }
   return row.detail;
 }
+
+/* ------------------------------- aggregate-cap scaffolding ---------------- */
+
+const TOTAL_MERCHANT_PREFIX = "m_gate_total_";
+
+/** Per-agent cap and threshold shared by every aggregate-cap scenario. */
+const TOTAL_AGENT_CAP_PAISE = 100_000;
+const TOTAL_ITEM = {
+  id: "p_gate_total_item",
+  name: "Aggregate Cap Item",
+  price_paise: 80_000,
+  stock: 50,
+  category: "groceries",
+};
+
+/**
+ * A FRESH merchant per aggregate-cap scenario, and that is not tidiness.
+ *
+ * The aggregate sum is merchant-wide by definition, so every order any agent of
+ * the merchant wrote inside the window counts toward it. Two scenarios sharing a
+ * merchant would silently pollute each other's total, and the failure would look
+ * like a wrong cap rather than like cross-test contamination. Isolating the
+ * merchant is the only way to keep each scenario's arithmetic stated in the test
+ * that depends on it.
+ *
+ * `approval_threshold_paise` is set EQUAL to the per-agent cap on purpose: check
+ * 4 escalates anything above it, and these tests are about check 2, so the
+ * threshold must not fire first and mask the result.
+ */
+async function makeTotalCapMerchant(
+  suffix: string,
+  merchantTotalCapPaise: number | null
+): Promise<string> {
+  const merchantId = `${TOTAL_MERCHANT_PREFIX}${suffix}`;
+  await query("DELETE FROM merchants WHERE id = $1", [merchantId]);
+  await query("INSERT INTO merchants (id, name) VALUES ($1, $2)", [
+    merchantId,
+    `Aggregate Cap Kirana ${suffix}`,
+  ]);
+  await query(
+    `INSERT INTO policies (merchant_id, spend_cap_paise, approval_threshold_paise, category_allowlist, window_seconds, merchant_total_cap_paise)
+     VALUES ($1, $2, $3, $4, $5, $6)`,
+    [
+      merchantId,
+      TOTAL_AGENT_CAP_PAISE,
+      TOTAL_AGENT_CAP_PAISE,
+      ["groceries"],
+      3600,
+      merchantTotalCapPaise,
+    ]
+  );
+  await query(
+    "INSERT INTO products (merchant_id, id, name, price_paise, stock, category) VALUES ($1, $2, $3, $4, $5, $6)",
+    [
+      merchantId,
+      TOTAL_ITEM.id,
+      TOTAL_ITEM.name,
+      TOTAL_ITEM.price_paise,
+      TOTAL_ITEM.stock,
+      TOTAL_ITEM.category,
+    ]
+  );
+  return merchantId;
+}
+
+/**
+ * Books prior spend for one agent WITHOUT going through the gate, so the test
+ * states the starting total as a number instead of depending on a chain of
+ * earlier decisions. `amount_paise` is deliberately independent of the item
+ * price — that is what lets a scenario land on an exact aggregate boundary.
+ */
+async function bookPriorSpend(
+  ctx: TenantContext,
+  orderId: string,
+  amountPaise: number
+): Promise<void> {
+  await new TenantRepo(ctx).insertOrder({
+    id: orderId,
+    merchant_id: ctx.merchant_id,
+    agent_id: ctx.agent_id,
+    session_id: ctx.session_id,
+    items: [
+      {
+        item_id: TOTAL_ITEM.id,
+        quantity: 1,
+        asserted_price_paise: TOTAL_ITEM.price_paise,
+      },
+    ],
+    amount_paise: amountPaise,
+    status: "created",
+    razorpay_order_id: null,
+  });
+}
+
+/** One unit of TOTAL_ITEM: 80_000 paise, under the 100_000 per-agent cap. */
+const TOTAL_ITEM_REQ: CheckoutRequest = {
+  items: [
+    {
+      item_id: TOTAL_ITEM.id,
+      quantity: 1,
+      asserted_price_paise: TOTAL_ITEM.price_paise,
+    },
+  ],
+};
 
 async function countCheckoutAudits(
   agentId: string,
@@ -259,6 +364,14 @@ afterAll(async () => {
   await query("DELETE FROM merchants WHERE id = $1", [MERCHANT]);
   await query("DELETE FROM audit_events WHERE merchant_id = $1", [MERCHANT_2]);
   await query("DELETE FROM merchants WHERE id = $1", [MERCHANT_2]);
+  // The per-scenario aggregate-cap merchants. One prefix, so a scenario added
+  // later cannot forget its own teardown.
+  await query("DELETE FROM audit_events WHERE merchant_id LIKE $1", [
+    `${TOTAL_MERCHANT_PREFIX}%`,
+  ]);
+  await query("DELETE FROM merchants WHERE id LIKE $1", [
+    `${TOTAL_MERCHANT_PREFIX}%`,
+  ]);
   // src/db/pool.ts exports ONE process-wide Pool singleton shared across
   // every test file in the same `bun test` process. Closing it here would
   // break whichever file runs next (projectmem #0013); bun exits fine
@@ -1017,6 +1130,216 @@ describe("check 2: three-party cap and bound_by", () => {
     };
 
     const outcome = await decide(ctx, req, makeDeps(ctx, 10_000_000));
+    expect(outcome.decision).toBe("allow");
+  });
+});
+
+/**
+ * DUK-?? the merchant AGGREGATE cap. `effectiveCap` bounds ONE agent; buyers can
+ * now self-provision agents, so N agents each under their own per-agent cap no
+ * longer bounds what the merchant is exposed to at all - it bounds it to N x cap.
+ * `merchant_total_cap_paise` (policies) plus `exceedsMerchantTotalCap` (src/gate/limits.ts)
+ * is the number that still means something once there is more than one agent.
+ *
+ * Every scenario here gets its OWN merchant via `makeTotalCapMerchant` - see that
+ * helper's own comment for why sharing one would make a wrong cap and cross-test
+ * contamination look identical.
+ */
+describe("check 2: merchant aggregate cap", () => {
+  test("THE CENTERPIECE: two agents each comfortably under the per-agent cap, whose combined spend breaches the merchant aggregate cap -> bound_by 'merchant_total', and (cap, spent, remaining) describe the MERCHANT-WIDE bound", async () => {
+    // Aggregate cap 130_000, deliberately distinct from the 100_000 per-agent
+    // cap every scenario in this merchant shares, so a test that accidentally
+    // read the wrong number would show up as the wrong figure, not a
+    // coincidentally-matching one.
+    const merchantId = await makeTotalCapMerchant("centerpiece", 130_000);
+    const agentA = await makeAgentCtx(
+      "total_centerpiece_a",
+      "total_centerpiece_a",
+      merchantId
+    );
+    const agentB = await makeAgentCtx(
+      "total_centerpiece_b",
+      "total_centerpiece_b",
+      merchantId
+    );
+
+    // Agent B alone: 70_000 of its own 100_000 per-agent cap - comfortable, a
+    // 30_000 margin, not a squeak.
+    await bookPriorSpend(agentB, "o_gate_total_centerpiece_b_prior", 70_000);
+
+    // Agent A alone: no prior spend, and this order is 80_000 against its own
+    // 100_000 cap - a 20_000 margin, also comfortable.
+    // Combined: 70_000 (B) + 0 (A's prior) + 80_000 (A's attempt) = 150_000,
+    // which clears the 130_000 aggregate cap by 20_000 - not a boundary case,
+    // a plain breach.
+    const outcome = await decide(agentA, TOTAL_ITEM_REQ, makeDeps(agentA));
+
+    expect(outcome.decision).toBe("block");
+    if (outcome.decision !== "block") throw new Error("unreachable");
+    expect(outcome.rule).toBe("SPEND_CAP");
+    expect(outcome.error.reason_code).toBe("SPEND_CAP_EXCEEDED");
+    if (outcome.error.reason_code !== "SPEND_CAP_EXCEEDED")
+      throw new Error("unreachable");
+    expect(outcome.error.bound_by).toBe("merchant_total");
+    // The merchant-wide figures, not agent A's own (which would have been
+    // cap_paise 100_000, spent_paise 0, remaining_budget_paise 100_000).
+    expect(outcome.error.cap_paise).toBe(130_000);
+    expect(outcome.error.spent_paise).toBe(70_000);
+    expect(outcome.error.remaining_budget_paise).toBe(60_000);
+    expect(outcome.error.attempted_paise).toBe(80_000);
+    expect(outcome.error.merchant_total_cap_paise).toBe(130_000);
+    expect(outcome.error.merchant_total_spent_paise).toBe(70_000);
+    expect(outcome.error.cap_paise).not.toBe(TOTAL_AGENT_CAP_PAISE);
+
+    const detail = await lastCheckoutAuditDetail(agentA.agent_id, merchantId);
+    expect(detail["bound_by"]).toBe("merchant_total");
+    expect(detail["cap_paise"]).toBe(130_000);
+    expect(detail["spent_paise"]).toBe(70_000);
+    expect(detail["merchant_total_cap_paise"]).toBe(130_000);
+    expect(detail["merchant_total_spent_paise"]).toBe(70_000);
+  });
+
+  test("THE additivity guarantee: merchant_total_cap_paise NULL decides exactly as before, with no merchant-total fields asserting themselves", async () => {
+    const merchantId = await makeTotalCapMerchant("additivity", null);
+    const agent = await makeAgentCtx(
+      "total_additivity",
+      "total_additivity",
+      merchantId
+    );
+    // 60_000 prior + 80_000 attempted = 140_000, past the 100_000 per-agent
+    // cap - the same shape the pre-existing check 2 tests use, so this is
+    // exactly the block that existed before the aggregate cap did.
+    await bookPriorSpend(agent, "o_gate_total_additivity_prior", 60_000);
+
+    const outcome = await decide(agent, TOTAL_ITEM_REQ, makeDeps(agent));
+
+    expect(outcome.decision).toBe("block");
+    if (outcome.decision !== "block") throw new Error("unreachable");
+    expect(outcome.error.reason_code).toBe("SPEND_CAP_EXCEEDED");
+    if (outcome.error.reason_code !== "SPEND_CAP_EXCEEDED")
+      throw new Error("unreachable");
+    expect(outcome.error.bound_by).toBe("merchant");
+    expect(outcome.error.cap_paise).toBe(TOTAL_AGENT_CAP_PAISE);
+    expect(outcome.error.spent_paise).toBe(60_000);
+    // The whole point: with no aggregate cap configured, neither field comes
+    // alive in the payload.
+    expect(outcome.error.merchant_total_cap_paise).toBeNull();
+    expect(outcome.error.merchant_total_spent_paise).toBeNull();
+
+    const detail = await lastCheckoutAuditDetail(agent.agent_id, merchantId);
+    expect(detail["bound_by"]).toBe("merchant");
+    expect(detail["merchant_total_cap_paise"]).toBeNull();
+    expect(detail["merchant_total_spent_paise"]).toBeNull();
+  });
+
+  test("boundary through the real gate: one paise past the aggregate cap blocks with bound_by 'merchant_total'", async () => {
+    // The exact-boundary allow case is pinned offline against
+    // exceedsMerchantTotalCap in tests/limits.test.ts; this is the
+    // over-the-line half, run through decide() so the wiring - not just the
+    // predicate - is proven to reject it.
+    const merchantId = await makeTotalCapMerchant("boundary_over", 100_000);
+    const agentA = await makeAgentCtx(
+      "total_boundary_over_a",
+      "total_boundary_over_a",
+      merchantId
+    );
+    const agentB = await makeAgentCtx(
+      "total_boundary_over_b",
+      "total_boundary_over_b",
+      merchantId
+    );
+    // 20_001 (B) + 80_000 (A's attempt) = 100_001 - exactly one paise past
+    // the 100_000 aggregate cap. Neither agent's OWN total comes near its own
+    // 100_000 per-agent cap (20_001 and 80_000 respectively), so only the
+    // aggregate check can be what fires.
+    await bookPriorSpend(agentB, "o_gate_total_boundary_over_b_prior", 20_001);
+
+    const outcome = await decide(agentA, TOTAL_ITEM_REQ, makeDeps(agentA));
+
+    expect(outcome.decision).toBe("block");
+    if (outcome.decision !== "block") throw new Error("unreachable");
+    expect(outcome.error.reason_code).toBe("SPEND_CAP_EXCEEDED");
+    if (outcome.error.reason_code !== "SPEND_CAP_EXCEEDED")
+      throw new Error("unreachable");
+    expect(outcome.error.bound_by).toBe("merchant_total");
+    expect(outcome.error.cap_paise).toBe(100_000);
+    expect(outcome.error.spent_paise).toBe(20_001);
+    expect(outcome.error.attempted_paise).toBe(80_000);
+  });
+
+  test("ordering: a basket that breaches BOTH the per-agent cap and the aggregate cap reports the per-agent bound, not merchant_total", async () => {
+    // The aggregate check runs strictly after the per-agent comparison (see
+    // src/gate/index.ts's comment on the ordering), so an order that would
+    // have blocked before this feature existed must still report that same
+    // block, byte-for-byte, even when the aggregate is ALSO breached.
+    const merchantId = await makeTotalCapMerchant("ordering", 50_000);
+    const agent = await makeAgentCtx(
+      "total_ordering",
+      "total_ordering",
+      merchantId
+    );
+    // 30_000 prior + 80_000 attempted = 110_000: past the 100_000 per-agent
+    // cap AND past the merchant's own 50_000 aggregate cap. If the ordering
+    // were wrong, this would report bound_by "merchant_total" instead.
+    await bookPriorSpend(agent, "o_gate_total_ordering_prior", 30_000);
+
+    const outcome = await decide(agent, TOTAL_ITEM_REQ, makeDeps(agent));
+
+    expect(outcome.decision).toBe("block");
+    if (outcome.decision !== "block") throw new Error("unreachable");
+    expect(outcome.error.reason_code).toBe("SPEND_CAP_EXCEEDED");
+    if (outcome.error.reason_code !== "SPEND_CAP_EXCEEDED")
+      throw new Error("unreachable");
+    expect(outcome.error.bound_by).toBe("merchant");
+    expect(outcome.error.bound_by).not.toBe("merchant_total");
+    // The per-agent figures, not the aggregate ones - proof this is the
+    // FIRST check's payload, not the second's with a lucky-matching bound_by.
+    expect(outcome.error.cap_paise).toBe(TOTAL_AGENT_CAP_PAISE);
+    expect(outcome.error.spent_paise).toBe(30_000);
+  });
+
+  test("an escalated order does not count toward the merchant aggregate total", async () => {
+    // MERCHANT_TOTAL_SPEND_SQL carries the same `status IN ('created',
+    // 'authorized')` filter SPEND_CAP_SQL does. An escalated order has not
+    // been paid for; counting it here would make the aggregate figure the
+    // gate enforces disagree with what a dashboard summing the same statuses
+    // would show.
+    const merchantId = await makeTotalCapMerchant("escalated", 100_000);
+    const agentA = await makeAgentCtx(
+      "total_escalated_a",
+      "total_escalated_a",
+      merchantId
+    );
+    const agentB = await makeAgentCtx(
+      "total_escalated_b",
+      "total_escalated_b",
+      merchantId
+    );
+    // 90_000, ESCALATED. If this counted, 90_000 + 80_000 = 170_000 would
+    // clear the 100_000 aggregate cap by a wide margin and block.
+    await new TenantRepo(agentB).insertOrder({
+      id: "o_gate_total_escalated_b_prior",
+      merchant_id: agentB.merchant_id,
+      agent_id: agentB.agent_id,
+      session_id: agentB.session_id,
+      items: [
+        {
+          item_id: TOTAL_ITEM.id,
+          quantity: 1,
+          asserted_price_paise: TOTAL_ITEM.price_paise,
+        },
+      ],
+      amount_paise: 90_000,
+      status: "escalated",
+      razorpay_order_id: null,
+    });
+
+    expect(await new TenantRepo(agentA).merchantSpentInWindowPaise(3600)).toBe(
+      0
+    );
+
+    const outcome = await decide(agentA, TOTAL_ITEM_REQ, makeDeps(agentA));
+
     expect(outcome.decision).toBe("allow");
   });
 });

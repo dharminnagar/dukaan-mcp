@@ -58,6 +58,13 @@ export interface PolicyFormInput {
   readonly approval_threshold_rupees: string;
   readonly category_allowlist: readonly string[];
   readonly window: string;
+  /**
+   * The merchant's cap on the sum across every one of its agents. Blank means
+   * no aggregate cap, exactly as absent does. Sent as the string the merchant
+   * typed and converted server-side by `rupeesToPaise` — never parsed to a
+   * number in the browser, where `0.29 * 100` is 28.999999999999996.
+   */
+  readonly merchant_total_cap_rupees?: string;
 }
 
 /**

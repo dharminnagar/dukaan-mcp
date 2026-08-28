@@ -89,7 +89,14 @@ export const StaleCatalogError = z.object({
  * what makes a divergence between the two a typecheck failure rather than a
  * production parse error.
  */
-export const BindingPartyCode = z.enum(["buyer", "merchant", "platform"]);
+export const BindingPartyCode = z.enum([
+  "buyer",
+  "merchant",
+  "platform",
+  // Not a fourth cap in the same comparison — it bounds the sum across every
+  // agent of a merchant, so it is measured against a different total.
+  "merchant_total",
+]);
 export type BindingPartyCode = z.infer<typeof BindingPartyCode>;
 
 /**
@@ -101,6 +108,20 @@ export type BindingPartyCode = z.infer<typeof BindingPartyCode>;
  * All three inputs are reported alongside `bound_by` so a reader of the block
  * (or of the audit row's `detail`) can see WHY that one bound, without going
  * back to the policy row and the deployment config to reconstruct it.
+ *
+ * FOOT-GUN, and `bound_by` is the thing that disarms it: the triple
+ * (`cap_paise`, `spent_paise`, `remaining_budget_paise`) always describes THE
+ * BOUND THAT ACTUALLY FIRED, and the aggregate bound is measured against a
+ * different total than the other three. So when `bound_by` is "merchant_total"
+ * that triple is merchant-wide — every agent's spend summed — and when it is
+ * any of "buyer" / "merchant" / "platform" it is this ONE agent's. Do not read
+ * `spent_paise` as per-agent without checking `bound_by` first.
+ *
+ * It is arranged this way round on purpose. The triple has to stay internally
+ * consistent (`remaining == max(cap - spent, 0)`) or an agent re-planning
+ * against it computes a budget that does not exist, which is the one thing
+ * this payload is for. Mixing an aggregate cap with a per-agent spend would
+ * have broken that arithmetic on exactly the new path.
  */
 export const SpendCapExceededError = z.object({
   reason_code: z.literal("SPEND_CAP_EXCEEDED"),
@@ -114,6 +135,22 @@ export const SpendCapExceededError = z.object({
   remaining_budget_paise: Paise,
   attempted_paise: PositivePaise,
   window_seconds: z.int().positive(),
+  /**
+   * The merchant's AGGREGATE cap across every one of its agents, and the spend
+   * already accrued against it in this window. `null` — both together — means
+   * the merchant set no aggregate cap, so the gate never measured that total.
+   *
+   * INVARIANT, and the gate is the only writer that has to hold it up: these
+   * two are non-null together or null together. The gate reads the merchant
+   * total only when the cap is set, so "cap set but spend unmeasured" is not a
+   * state it can emit.
+   *
+   * These sit ALONGSIDE `cap_paise`/`spent_paise` rather than replacing them
+   * because the aggregate is measured against a different total than the other
+   * three caps — see `BindingPartyCode`.
+   */
+  merchant_total_cap_paise: PositivePaise.nullable(),
+  merchant_total_spent_paise: Paise.nullable(),
 });
 
 export const CategoryNotAllowedError = z.object({
@@ -271,6 +308,24 @@ export const Policy = z
     approval_threshold_paise: PositivePaise,
     category_allowlist: z.array(z.string().min(1)).min(1),
     window_seconds: z.int().positive(),
+    /**
+     * The merchant's cap on the sum across EVERY one of its agents, or `null`
+     * for no aggregate constraint.
+     *
+     * `spend_cap_paise` above is applied to each agent SEPARATELY, so with N
+     * agents a merchant's real exposure is N x that figure. This is the bound
+     * that survives going multi-buyer; see src/gate/limits.ts.
+     *
+     * Deliberately no default and deliberately nullable: `null` is the
+     * pre-existing behaviour, so a policy row written before this column
+     * existed decides exactly as it always did.
+     *
+     * NOT refined against `spend_cap_paise`. An aggregate cap TIGHTER than one
+     * agent's per-agent cap is legal and meaningful — it says "any single agent
+     * may spend up to X, but all of them together may not exceed Y" — so a
+     * `>= spend_cap_paise` rule here would reject a sensible policy.
+     */
+    merchant_total_cap_paise: PositivePaise.nullable(),
   })
   .refine((p) => p.approval_threshold_paise <= p.spend_cap_paise, {
     message:

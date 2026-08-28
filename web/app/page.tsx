@@ -25,6 +25,12 @@ interface PolicyDraft {
   spendCapRupees: string;
   approvalThresholdRupees: string;
   window: string;
+  /**
+   * Unlike the buyer cap below, this one DOES belong in `PolicyDraft`: it is
+   * the merchant's own figure, set by the merchant, stored on the policy row.
+   * Blank means no aggregate cap.
+   */
+  merchantTotalCapRupees: string;
 }
 
 interface OnboardResult {
@@ -110,6 +116,11 @@ export default function OnboardingPage() {
     spendCapRupees: "",
     approvalThresholdRupees: "",
     window: "24h",
+    // Blank by default, and deliberately not pre-filled: NULL means no
+    // aggregate constraint, which is the behaviour that predates the field.
+    // Suggesting a number here would opt every new merchant into a bound they
+    // did not ask for.
+    merchantTotalCapRupees: "",
   });
   /**
    * The categories the merchant has UNTICKED, never the ones they kept.
@@ -354,6 +365,7 @@ export default function OnboardingPage() {
         approval_threshold_rupees: policy.approvalThresholdRupees.trim(),
         category_allowlist: selectedCategories,
         window: policy.window.trim(),
+        merchant_total_cap_rupees: policy.merchantTotalCapRupees.trim(),
       };
       const outcome = await onboard(
         csvText,
@@ -1061,6 +1073,23 @@ function StepPolicy(props: {
               setPolicy((p) => ({ ...p, window: e.target.value }))
             }
             placeholder="24h"
+          />
+        </LabeledField>
+
+        <LabeledField
+          label="Total cap across all agents (₹, per window) — optional"
+          hint="The spend cap above applies to EACH agent separately, so ten agents means ten times that exposure. This bounds what all of your agents can spend together in one window. Leave blank for no total cap. It may be lower than the per-agent cap.">
+          <input
+            className={fieldClass}
+            inputMode="decimal"
+            value={policy.merchantTotalCapRupees}
+            onChange={(e) =>
+              setPolicy((p) => ({
+                ...p,
+                merchantTotalCapRupees: e.target.value,
+              }))
+            }
+            placeholder="Leave blank for no total cap"
           />
         </LabeledField>
       </section>

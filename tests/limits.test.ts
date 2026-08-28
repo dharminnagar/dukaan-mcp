@@ -14,8 +14,8 @@
  */
 import { describe, expect, test } from "bun:test";
 import { parsePositivePaiseEnv } from "../src/config";
-import { effectiveCap } from "../src/gate/limits";
-import type { BindingParty } from "../src/gate/limits";
+import { effectiveCap, exceedsMerchantTotalCap } from "../src/gate/limits";
+import type { CapParty } from "../src/gate/limits";
 import {
   BindingPartyCode,
   SpendCapExceededError,
@@ -27,7 +27,7 @@ interface Row {
   readonly merchant: number;
   readonly platform: number | null;
   readonly cap: number;
-  readonly bound: BindingParty;
+  readonly bound: CapParty;
 }
 
 const TABLE: readonly Row[] = [
@@ -244,7 +244,7 @@ describe("effectiveCap properties over a grid", () => {
       for (const merchant of VALUES) {
         for (const platform of NULLABLE) {
           const result = effectiveCap(buyer, merchant, platform);
-          const byParty: Record<BindingParty, number | null> = {
+          const byParty: Record<CapParty, number | null> = {
             buyer,
             merchant,
             platform,
@@ -290,6 +290,8 @@ describe("the wire shape accepts what effectiveCap produces", () => {
       remaining_budget_paise: 40_000,
       attempted_paise: 45_000,
       window_seconds: 3600,
+      merchant_total_cap_paise: null,
+      merchant_total_spent_paise: null,
     });
     expect(parsed.bound_by).toBe("buyer");
     expect(parsed.cap_paise).toBe(40_000);
@@ -308,9 +310,71 @@ describe("the wire shape accepts what effectiveCap produces", () => {
       remaining_budget_paise: 0,
       attempted_paise: 1,
       window_seconds: 3600,
+      merchant_total_cap_paise: null,
+      merchant_total_spent_paise: null,
     });
     expect(parsed.buyer_cap_paise).toBeNull();
     expect(parsed.platform_ceiling_paise).toBeNull();
+  });
+
+  test("a merchant_total block round-trips with the aggregate figures set", () => {
+    const parsed = SpendCapExceededError.parse({
+      reason_code: "SPEND_CAP_EXCEEDED",
+      message: "blocked by the aggregate cap",
+      cap_paise: 500_000,
+      bound_by: "merchant_total",
+      buyer_cap_paise: null,
+      merchant_cap_paise: 300_000,
+      platform_ceiling_paise: null,
+      spent_paise: 480_000,
+      remaining_budget_paise: 20_000,
+      attempted_paise: 50_000,
+      window_seconds: 3600,
+      merchant_total_cap_paise: 500_000,
+      merchant_total_spent_paise: 480_000,
+    });
+    expect(parsed.bound_by).toBe("merchant_total");
+    // An aggregate cap TIGHTER than one agent's per-agent cap is legal, and the
+    // wire shape must not quietly reject it: 500_000 total against a 300_000
+    // per-agent figure only looks inverted if you assume the two bound the same
+    // total, which is exactly the confusion `bound_by` exists to settle.
+    expect(parsed.merchant_total_cap_paise).toBe(500_000);
+    expect(parsed.remaining_budget_paise).toBe(
+      parsed.merchant_total_cap_paise! - parsed.merchant_total_spent_paise!
+    );
+  });
+});
+
+/**
+ * The aggregate bound. `effectiveCap` cannot express it — those three caps all
+ * bound ONE agent and reduce to a minimum, while this is measured against the
+ * sum over every agent — so it is a separate predicate with its own boundary.
+ */
+describe("exceedsMerchantTotalCap", () => {
+  test("null never blocks, whatever the figures", () => {
+    expect(exceedsMerchantTotalCap(0, 1, null)).toBe(false);
+    expect(exceedsMerchantTotalCap(999_999_999, 999_999_999, null)).toBe(false);
+  });
+
+  test("boundary: exactly AT the cap is allowed", () => {
+    // 90_000 already spent + 10_000 attempted == a 100_000 cap. `>` not `>=`,
+    // the same boundary the per-agent check uses, so a merchant who sizes an
+    // order to land exactly on their cap is not blocked for arithmetic reasons.
+    expect(exceedsMerchantTotalCap(90_000, 10_000, 100_000)).toBe(false);
+  });
+
+  test("boundary: ONE paise over is blocked", () => {
+    expect(exceedsMerchantTotalCap(90_000, 10_001, 100_000)).toBe(true);
+  });
+
+  test("an aggregate cap tighter than any one agent's cap still binds", () => {
+    // The whole point: each agent is under its own 300_000 cap, but the
+    // merchant capped the total at 100_000 and the sum has reached it.
+    expect(exceedsMerchantTotalCap(100_000, 1, 100_000)).toBe(true);
+  });
+
+  test("spend already past the cap keeps blocking rather than wrapping", () => {
+    expect(exceedsMerchantTotalCap(150_000, 1, 100_000)).toBe(true);
   });
 });
 
@@ -426,7 +490,7 @@ describe("buyer_cap_paise immutability is enforced, not just intended", () => {
     expect(offenders).toEqual([]);
   });
 
-  test("only create-merchant sets the column; the eval provisioner leaves it null", async () => {
+  test("only the two provisioning paths set the column; the eval provisioner leaves it null", async () => {
     const { Glob } = await import("bun");
     const inserters: string[] = [];
     const settersOfColumn: string[] = [];
@@ -443,6 +507,7 @@ describe("buyer_cap_paise immutability is enforced, not just intended", () => {
     }
 
     expect(inserters.sort()).toEqual([
+      "src/buyer/provision.ts",
       "src/eval/provision.ts",
       "src/onboard/create-merchant.ts",
     ]);
@@ -453,6 +518,9 @@ describe("buyer_cap_paise immutability is enforced, not just intended", () => {
     // output is byte-identical across DUK-31. A well-meaning addition of a
     // buyer cap to the eval fixtures would move published numbers under a
     // holdout split that is scored exactly once.
-    expect(settersOfColumn).toEqual(["src/onboard/create-merchant.ts"]);
+    expect(settersOfColumn.sort()).toEqual([
+      "src/buyer/provision.ts",
+      "src/onboard/create-merchant.ts",
+    ]);
   });
 });

@@ -16,7 +16,10 @@
  *   2. Spend cap            - over (merchant_id, agent_id, window), against
  *      the TIGHTEST of the buyer's, the merchant's and the platform's caps
  *      (src/gate/limits.ts). Still ONE check, in the same position: the three
- *      caps collapse to one number before the comparison.
+ *      caps collapse to one number before the comparison. It ALSO carries the
+ *      merchant's aggregate bound - the sum over every agent, against
+ *      policies.merchant_total_cap_paise - which is a second comparison but
+ *      not a sixth check: see check 2's own comment for why it lives here.
  *   3. Category allowlist   - per line item.
  *   4. Approval threshold   - escalates; does not fall through to allow.
  *   5. Allow.
@@ -49,7 +52,7 @@
 import { randomUUID } from "node:crypto";
 import type { writeAuditEvent } from "../audit/write";
 import type { TenantRepo } from "../db/repo";
-import { effectiveCap } from "./limits";
+import { effectiveCap, exceedsMerchantTotalCap } from "./limits";
 import type {
   CategoryNotAllowedError,
   GateOutcome,
@@ -65,7 +68,11 @@ import type {
 export interface GateDeps {
   readonly repo: Pick<
     TenantRepo,
-    "getProduct" | "getPolicy" | "spentInWindowPaise" | "buyerCapPaise"
+    | "getProduct"
+    | "getPolicy"
+    | "spentInWindowPaise"
+    | "merchantSpentInWindowPaise"
+    | "buyerCapPaise"
   >;
   readonly writeAudit: typeof writeAuditEvent;
   /**
@@ -295,6 +302,25 @@ export async function decide(
     platformCeilingPaise
   );
 
+  // The merchant's AGGREGATE spend, read LAZILY: only when the merchant has
+  // actually set an aggregate cap. With the column NULL — every merchant that
+  // has not opted in, which is all of them until they do — this line runs no
+  // query at all, so the pre-existing path keeps its exact query count as well
+  // as its exact verdict. That is what keeps the frozen eval corpus valid.
+  //
+  // Fetched HERE, before the per-agent comparison below, rather than next to
+  // the aggregate comparison it feeds. Both spend-cap blocks report both
+  // figures, and doing the read here is what makes
+  // `merchant_total_cap_paise` and `merchant_total_spent_paise` non-null
+  // together on every payload, which is the invariant
+  // `SpendCapExceededError` documents. Reading it lower down would emit
+  // "cap set, spend unmeasured" on a per-agent block and break that.
+  const merchantTotalCapPaise = policy.merchant_total_cap_paise;
+  const merchantTotalSpentPaise =
+    merchantTotalCapPaise === null
+      ? null
+      : await deps.repo.merchantSpentInWindowPaise(policy.window_seconds);
+
   if (spentPaise + attemptedPaise > cap.cap_paise) {
     const error: SpendCapExceededError = {
       reason_code: "SPEND_CAP_EXCEEDED",
@@ -308,6 +334,8 @@ export async function decide(
       remaining_budget_paise: Math.max(cap.cap_paise - spentPaise, 0),
       attempted_paise: attemptedPaise,
       window_seconds: policy.window_seconds,
+      merchant_total_cap_paise: merchantTotalCapPaise,
+      merchant_total_spent_paise: merchantTotalSpentPaise,
     };
     await audit({
       order_id: null,
@@ -327,6 +355,93 @@ export async function decide(
         buyer_cap_paise: buyerCapPaise,
         merchant_cap_paise: policy.spend_cap_paise,
         platform_ceiling_paise: platformCeilingPaise,
+        merchant_total_cap_paise: merchantTotalCapPaise,
+        merchant_total_spent_paise: merchantTotalSpentPaise,
+      },
+    });
+    return { decision: "block", rule: "SPEND_CAP", error };
+  }
+
+  // Still check 2, deliberately NOT a sixth ordered check.
+  //
+  // It asks check 2's own question — "is there budget for this order?" — of a
+  // different total: the sum across EVERY agent of this merchant rather than
+  // this one agent's. `policies.spend_cap_paise` is applied to each agent
+  // separately, so N buyers each got the full cap and the merchant's real
+  // exposure was N x cap. Once buyers provision their own agents that stops
+  // being an exposure limit at all. This is the bound that survives going
+  // multi-buyer.
+  //
+  // It cannot fold into `effectiveCap` above, which is why this is a second
+  // comparison rather than a fourth party in the same `min()`: those three caps
+  // all bound ONE agent's spend and so reduce to a single tightest number,
+  // while this one is measured against `merchantTotalSpentPaise`. Comparing
+  // incommensurable totals with a `min()` would silently pick the wrong bound.
+  //
+  // It runs AFTER the per-agent comparison, and the order is load-bearing: an
+  // order that breaches BOTH reports the per-agent block, byte-for-byte as it
+  // did before this existed. Only orders that the old code would have ALLOWED
+  // can reach here, so nothing that used to pass check 2 has changed its
+  // reported reason — the change is purely additive.
+  //
+  // `rule` stays "SPEND_CAP" and `reason_code` stays "SPEND_CAP_EXCEEDED".
+  // Both are already members of the closed enums behind audit_events' CHECK
+  // constraints, so this needed no migration and widened nothing; `bound_by:
+  // "merchant_total"` in the payload and in `detail` is what distinguishes it.
+  if (
+    merchantTotalCapPaise !== null &&
+    merchantTotalSpentPaise !== null &&
+    exceedsMerchantTotalCap(
+      merchantTotalSpentPaise,
+      attemptedPaise,
+      merchantTotalCapPaise
+    )
+  ) {
+    // The (cap, spent, remaining) triple describes THE BOUND THAT FIRED, so
+    // here it is merchant-wide, not per-agent — see `SpendCapExceededError`.
+    // The agent has to re-plan against the aggregate room left, and telling it
+    // this agent's own remaining budget would have it retry an amount the
+    // merchant total still cannot absorb, forever.
+    const error: SpendCapExceededError = {
+      reason_code: "SPEND_CAP_EXCEEDED",
+      message: `This order (${attemptedPaise} paise) would take this merchant's TOTAL spend across all agents to ${merchantTotalSpentPaise + attemptedPaise} paise, past the merchant's ${merchantTotalCapPaise} paise aggregate cap over the last ${policy.window_seconds}s.`,
+      cap_paise: merchantTotalCapPaise,
+      bound_by: "merchant_total",
+      buyer_cap_paise: buyerCapPaise,
+      merchant_cap_paise: policy.spend_cap_paise,
+      platform_ceiling_paise: platformCeilingPaise,
+      spent_paise: merchantTotalSpentPaise,
+      remaining_budget_paise: Math.max(
+        merchantTotalCapPaise - merchantTotalSpentPaise,
+        0
+      ),
+      attempted_paise: attemptedPaise,
+      window_seconds: policy.window_seconds,
+      merchant_total_cap_paise: merchantTotalCapPaise,
+      merchant_total_spent_paise: merchantTotalSpentPaise,
+    };
+    await audit({
+      order_id: null,
+      amount_paise: attemptedPaise,
+      rule: "SPEND_CAP",
+      decision: "block",
+      reason_code: "SPEND_CAP_EXCEEDED",
+      // `agent_spent_paise` is named apart from `spent_paise` on purpose: on
+      // this branch `spent_paise` is the merchant-wide figure, and an audit
+      // reader reconstructing the decision needs both to see that the agent
+      // was individually under its own cap while the merchant total was not.
+      detail: {
+        spent_paise: merchantTotalSpentPaise,
+        cap_paise: merchantTotalCapPaise,
+        attempted_paise: attemptedPaise,
+        bound_by: "merchant_total",
+        buyer_cap_paise: buyerCapPaise,
+        merchant_cap_paise: policy.spend_cap_paise,
+        platform_ceiling_paise: platformCeilingPaise,
+        merchant_total_cap_paise: merchantTotalCapPaise,
+        merchant_total_spent_paise: merchantTotalSpentPaise,
+        agent_spent_paise: spentPaise,
+        agent_cap_paise: cap.cap_paise,
       },
     });
     return { decision: "block", rule: "SPEND_CAP", error };
