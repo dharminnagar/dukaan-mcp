@@ -27,7 +27,7 @@ guesses a shop name reads that merchant's revenue, order count, spend against
 cap, and every gate decision.
 
 That is documented as an accepted gap for a local demo. It is **not** acceptable
-on a public URL with real merchant data on it. Pick one before you deploy:
+on a public URL with real merchant data on it. Pick one before you deploy.
 
 - **Deploy the frontend but not publicly.** Keep it on localhost or a private
   network and record the demo from there. Cheapest, and loses nothing for the
@@ -79,8 +79,8 @@ need. The local compose URL uses `?sslmode=disable`; don't copy that forward.
 
 **Migrations are checksum-locked.** `src/db/migrate.ts` records a SHA-256 of
 each applied file and refuses to run if a previously-applied file has changed.
-This is deliberate. Never edit an applied migration to fix wording — add a new
-numbered one. If `db:migrate` complains about a checksum mismatch, the file was
+This is deliberate. Never edit an applied migration to fix wording, add a new
+numbered one instead. If `db:migrate` complains about a checksum mismatch, the file was
 edited after it ran, and reverting the edit is the fix.
 
 **Connection budget.** `src/db/pool.ts` opens a pool with `max: 10` per process,
@@ -105,9 +105,9 @@ bun run seed:demo
 
 ## 2. MCP server
 
-A single Bun process serving `/mcp` and `/health`. Stateless per request: the
-SDK handler's factory runs once per request and tenancy comes from the bearer
-token every time, so horizontal scaling needs no session affinity.
+A single Bun process serving `/mcp` and `/health`. Stateless per request.
+The SDK handler's factory runs once per request and tenancy comes from the
+bearer token every time, so horizontal scaling needs no session affinity.
 
 ### Environment
 
@@ -126,8 +126,8 @@ rather than a failed deploy, so check it explicitly after deploying.
 
 `PLATFORM_SPEND_CEILING_PAISE` is in **paise**, digits only. `2500` is ₹25.00,
 not ₹2,500. A value with a decimal point is rejected at boot rather than
-truncated, precisely so a rupee figure typed here fails loudly instead of
-becoming a plausible wrong ceiling.
+truncated. This is precisely so a rupee figure typed here fails loudly
+instead of becoming a plausible wrong ceiling.
 
 ### Run
 
@@ -137,7 +137,7 @@ bun run src/mcp/http.ts
 ```
 
 Bun binds all interfaces by default, so this works in a container as-is. The
-startup line prints `http://127.0.0.1:8787/mcp`, which is cosmetic — it is not
+startup line prints `http://127.0.0.1:8787/mcp`, which is cosmetic. It is not
 the bind address.
 
 ### Container
@@ -146,7 +146,7 @@ The web workspace imports from `src/`, so **the build context must be the
 repository root** for both services, not the subdirectory.
 
 ```dockerfile
-# Dockerfile.mcp — build from the repo root
+# Dockerfile.mcp, build from the repo root
 FROM oven/bun:1.3.6-alpine
 WORKDIR /app
 COPY package.json bun.lock ./
@@ -188,7 +188,7 @@ bun run smoke:rzp      # against the deployed env
 
 It refuses to run unless the key starts with `rzp_test_`. The Razorpay base URL
 is identical for test and live, so that prefix is the only guard against
-charging real money — do not weaken it.
+charging real money. Do not weaken it.
 
 ---
 
@@ -216,15 +216,15 @@ Never set `PORT` expecting it to mean the MCP server's port. Inside Next, `PORT`
 is Next's own. A test asserts no code here reads it.
 
 **Next only reads `web/.env.local`**, never the repository root `.env`. On a
-platform you set these as environment variables and no file is involved, but if
+platform you set these as environment variables and no file is involved. If
 you deploy from a VM by hand, the file has to be at `web/.env.local` and it has
-to carry `DATABASE_URL` too — the onboarding action reaches `src/onboard/`,
+to carry `DATABASE_URL` too. The onboarding action reaches `src/onboard/`,
 which pulls the pool, which requires it at module load. A missing
 `DATABASE_URL` there surfaces as a 500 on the mapping step, which touches no
-database, and that is a confusing hour if you don't know it.
+database. That is a confusing hour if you don't know it.
 
 `OPENROUTER_API_KEY` is optional in the sense that the app degrades rather than
-breaks: with no key, column mapping falls back to exact-header matching, so a
+breaks. With no key, column mapping falls back to exact-header matching, so a
 canonical `sku,name,price,stock,category` CSV still onboards and a Shopify
 export proposes nothing. Set it, or the mapping step in the demo does nothing
 visible.
@@ -242,7 +242,7 @@ Two failure modes I hit doing exactly this:
 
 **`rm -rf web/.next` is not superstition.** Building while a dev server is
 running mixes dev and production artifacts, and the production server then dies
-on `Cannot find module './879.js'` from `webpack-runtime.js` — every route 500s
+on `Cannot find module './879.js'` from `webpack-runtime.js`. Every route 500s
 or 404s while the build log said success. A clean directory fixes it. In CI you
 get this for free; from a working machine you do not.
 
@@ -254,7 +254,7 @@ works. Pass a port with `PORT=3100 bun run start` if 3000 is taken.
 ### Container
 
 ```dockerfile
-# Dockerfile.web — build from the repo root, because web/ imports src/
+# Dockerfile.web, build from the repo root, because web/ imports src/
 FROM oven/bun:1.3.6-alpine AS build
 WORKDIR /app
 COPY package.json bun.lock ./
@@ -274,8 +274,8 @@ CMD ["sh", "-c", "cd web && bun run start"]
 
 Copying the whole build stage keeps `node_modules` and `src/` alongside the
 build output, which the server needs at runtime. `next.config.ts` marks `pg` as
-a server-external package, so it is required at runtime rather than bundled —
-which is also why it must still be installed in the final image.
+a server-external package, so it is required at runtime rather than bundled.
+This is also why it must still be installed in the final image.
 
 ### Check
 
@@ -288,7 +288,7 @@ Then onboard a merchant through the UI and confirm the success screen shows your
 real MCP URL rather than `127.0.0.1`. That is the check worth doing by eye.
 
 Verified locally against a production build: `/` returns 200, a known merchant's
-dashboard returns 200, an unknown one returns 404, and neither `pg` nor
+dashboard returns 200, and an unknown one returns 404. Neither `pg` nor
 `csv-parse` nor the OpenRouter key appears anywhere in the build output,
 including the server chunks. The key is read at runtime, not baked in.
 
@@ -335,8 +335,8 @@ constraint violations still surface as raw Postgres errors.
 
 **The platform ceiling has no eval coverage.** It is inert inside `bun run eval`
 because the harness builds gate dependencies in a frozen file. That is why the
-eval numbers did not move when three-party limits landed, so it is a property of
-the change rather than a hole in it — but it means the ceiling is only exercised
+eval numbers did not move when three-party limits landed. It is a property of
+the change rather than a hole in it. But it means the ceiling is only exercised
 by the unit tests and by production traffic.
 
 **`bun run eval` needs no network and no keys.** If a deployment step seems to

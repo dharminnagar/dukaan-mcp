@@ -15,9 +15,8 @@ worth more than a bold claim that collapses.
 
 **Real money movement, not a mock.** `POST /v1/orders` against Razorpay
 test mode returns real `order_` ids. `bun run smoke:razorpay` is the narrowest
-probe of it and refuses to run unless the key starts with `rzp_test_`, because
-the base URL is identical for test and live and the key prefix is the only
-guard.
+probe of it. It refuses to run unless the key starts with `rzp_test_`. The base
+URL is identical for test and live, so the key prefix is the only guard.
 
 **A policy decision on every agent money action.** Five ordered checks return
 `allow`, `block` or `escalate` with a reason code. The gate is a pure function
@@ -49,15 +48,15 @@ oversells it. Both directions have tests.
 **Part of the corpus was authored by a model that never saw the gate.** The
 model returned 67 transcripts; 41 survived validation against the real catalog
 and are what the committed fixture holds. Quote both numbers. A 39% rejection
-rate is a point in the method's favour, not an embarrassment: generated
-transcripts were checked rather than trusted, and most rejections were sessions
+rate is a point in the method's favour, not an embarrassment. Generated
+transcripts were checked rather than trusted. Most rejections were sessions
 the model labelled benign while asserting a total above the published approval
-threshold, which the fixture would otherwise have counted as a false positive
-the gate never made.
+threshold. The fixture would otherwise have counted each one as a false
+positive the gate never made.
 
-The generating prompt is committed at `fixtures/eval/llm-generation-prompt.md`
-and a test asserts it contains none of ten gate identifiers, so a later helpful
-addition of context turns the suite red rather than making the claim quietly
+The generating prompt is committed at `fixtures/eval/llm-generation-prompt.md`.
+A test asserts it contains none of ten gate identifiers. So a later helpful
+addition of context turns the suite red, rather than making the claim quietly
 false. The gate caught all 9 independently-authored attacks in the train split.
 
 **Every number reproduces offline from a clone with no API key.** Generation is
@@ -67,7 +66,7 @@ fixture, the other reads it and never calls out.
 **The column mapper cannot see product values beyond three sample rows, and
 cannot return one.** `buildMappingPrompt(header, sampleRows)` cannot be handed
 the file, so no caller can widen its view. On the return path, any proposed name
-that is not an exact member of the real header rejects the whole response, so
+that is not an exact member of the real header rejects the whole response. So
 neither a hallucinated column nor a value dressed as a column name gets through.
 Both properties are structural, not conventional.
 
@@ -83,8 +82,8 @@ must not reintroduce them.
 
 **Do not say the buyer sets their own cap.** In this build the merchant mints
 agent tokens, so the merchant sets the buyer's cap too. Say: _the mechanism
-enforces whichever limit is tightest, and moving the buyer's cap to the buyer is
-a change of caller, not a change to the gate._ That is true, checkable, and
+enforces whichever limit is tightest. Moving the buyer's cap to the buyer is
+a change of caller, not a change to the gate_. That is true, checkable, and
 still answers the incentive objection.
 
 **Do not say the buyer's cap is immutable.** It is not immutable at rest; one
@@ -104,8 +103,8 @@ flattering one.
 single session is 85% of it. The median is ₹1,299. Quote the median as
 representative and the total as an upper bound, which is what the report does.
 Net is the summed value of sessions that did not recover, not the total scaled
-by the recovery rate: recovered and unrecovered sessions differ in average value
-by roughly seven times, and rate-scaling overstated it by several hundred
+by the recovery rate. Recovered and unrecovered sessions differ in average value
+by roughly seven times. Rate-scaling overstated it by several hundred
 percent before it was fixed.
 
 **Do not overstate how far the circularity broke.** Three limits, all worth
@@ -130,15 +129,29 @@ must not double as a merchant login. Documented as an accepted gap in the module
 doc; it needs one honest README line too.
 
 **Do not claim eval coverage for the platform ceiling.** It is inert inside the
-eval, because the only place the harness builds gate dependencies is frozen. That
-is exactly why the numbers did not move when three-party limits landed, so it is
-a feature of the change rather than a hole in it, but the ceiling itself has no
-eval coverage.
+eval, because the only place the harness builds gate dependencies is frozen.
+That is exactly why the numbers did not move when three-party limits landed.
+It is a feature of the change rather than a hole in it. But the ceiling itself
+has no eval coverage.
 
-**Say whether the held-out split was run, and when.** It is scored exactly once
-and has not been run yet. Whatever it reports is what gets published. If it comes
-back worse than the train figures, publish it anyway: that gap is the most
-credible thing in the report.
+**Do not say the held-out split has not been scored.** That is false as written,
+and a judge can disprove it in one command. `bun run eval` replays both splits.
+It prints a catch-rate table for each. That table has run many times during
+development. So the held-out rule coverage has been seen.
+
+What has not run is `bun run eval:report --split=holdout`. That is the full
+report, with the GMV, interrupted-intent, recovery and net figures. It runs
+exactly once. Say that, not the shorter and wrong version.
+
+**The stronger claim, and it is checkable.** No gate change was made because of a
+held-out result. Every gate change in this project was verified to leave
+`bun run eval` byte-identical against a stored baseline. The held-out numbers
+never moved. So they never drove a change. That is the property that makes a
+held-out split mean anything, and it survives.
+
+Whatever the one scored run reports is what gets published. If it comes back
+worse than the train figures, publish it anyway. That gap is the most credible
+thing in the report.
 
 ---
 
