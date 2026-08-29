@@ -4,6 +4,62 @@ This document explains the design in depth. Read the README first for what
 the system does. This document explains why it is built this way, and what
 was rejected along the way.
 
+```mermaid
+flowchart LR
+    buyer["Buyer's AI agent"]
+    merchant["Merchant"]
+
+    subgraph mcpsrv["MCP server, Bun :8787, holds the Razorpay keys"]
+        resolve["src/auth/resolve.ts<br/>bearer token to merchant_id, agent_id"]
+        tools["list_products, get_product,<br/>checkout, get_order_status"]
+        subgraph lock["withAdvisoryLock on merchant_id:agent_id"]
+            gate["decide() in src/gate/index.ts<br/>re-read, spend cap, allowlist, threshold<br/>no network call, no config read"]
+            write["order write"]
+        end
+        rzp["src/razorpay/"]
+        prd["/.well-known/oauth-protected-resource"]
+    end
+
+    subgraph nextapp["Next app :3000, holds the OpenRouter key"]
+        onboard["CSV upload, LLM column mapper, policy"]
+        dash["Merchant dashboard"]
+        authsrv["OAuth AS: /oauth/authorize,<br/>/api/oauth/token, PKCE S256"]
+    end
+
+    db[("Postgres<br/>merchants, policies, products, agents, buyers,<br/>sessions, orders, audit_events, oauth_*")]
+    razorpay["Razorpay Orders API"]
+    openrouter["OpenRouter"]
+
+    buyer -->|"MCP over HTTP, Bearer dk_..."| resolve
+    resolve --> tools
+    tools -->|"checkout"| gate
+    gate -->|"allow or escalate"| write
+    write -->|"allow only"| rzp
+    rzp --> razorpay
+    gate -.->|"audit row on every branch"| db
+    tools <--> db
+    write --> db
+
+    buyer -.->|"on 401"| prd
+    prd -.-> authsrv
+    buyer -.->|"authorization_code + PKCE"| authsrv
+    authsrv -.->|"issues the same dk_... agent token"| db
+
+    merchant --> onboard
+    merchant --> dash
+    onboard --> openrouter
+    onboard --> db
+    dash --> db
+```
+
+Read four things from this. The Razorpay keys and the OpenRouter key sit in
+different processes. There is no arrow from `decide()` to Razorpay, because
+the gate makes no network call. The gate call and the order write sit inside
+one advisory lock, so a second concurrent checkout from the same agent cannot
+read a spend total that the first one is about to change. The OAuth server
+issues the same `dk_...` agent token the MCP server already validates, so
+there is no second credential format.
+
 ## The two processes
 
 The system runs as two separate processes.
@@ -41,6 +97,53 @@ is passed in as `platformCeilingPaise`, an optional argument, rather than
 read from the environment inside `decide()`. A config import inside the gate
 would make its verdict depend on ambient state a caller cannot vary, which
 breaks the same reproducibility property.
+
+The five checks in order. Each one can stop the request, and nothing after a
+stopped check runs.
+
+```mermaid
+flowchart LR
+    req["checkout: asserted item_id,<br/>quantity and price_paise per line"]
+    v{"request well formed?<br/>known items, sane quantities"}
+    c1{"asserted price matches per line item,<br/>and stock covers the order<br/>summed per product?"}
+    c2{"within the tightest of the buyer,<br/>merchant and platform cap,<br/>and the merchant-wide total cap?"}
+    c3{"every item in this agent's<br/>category allowlist?"}
+    c4{"at or below the merchant's<br/>approval threshold?"}
+
+    b1["block<br/>AUTHORITATIVE_REREAD / INVALID_REQUEST"]
+    b2["block<br/>AUTHORITATIVE_REREAD / STALE_CATALOG"]
+    b3["block<br/>SPEND_CAP / SPEND_CAP_EXCEEDED"]
+    b4["block<br/>CATEGORY_ALLOWLIST / CATEGORY_NOT_ALLOWED"]
+    esc["escalate<br/>APPROVAL_THRESHOLD / PENDING_APPROVAL<br/>gate mints order_id, never reaches Razorpay"]
+    allow["allow<br/>ALLOW / ALLOWED<br/>gate mints order_id, caller calls Razorpay"]
+
+    audit[("audit_events<br/>one row on every branch")]
+
+    req --> v
+    v -- no --> b1
+    v -- yes --> c1
+    c1 -- no --> b2
+    c1 -- yes --> c2
+    c2 -- no --> b3
+    c2 -- yes --> c3
+    c3 -- no --> b4
+    c3 -- yes --> c4
+    c4 -- no --> esc
+    c4 -- yes --> allow
+
+    b1 -.-> audit
+    b2 -.-> audit
+    b3 -.-> audit
+    b4 -.-> audit
+    esc -.-> audit
+    allow -.-> audit
+```
+
+A breach of both the per-agent cap and the merchant-wide total cap reports the
+per-agent block. The merchant-wide check runs second on purpose, so an order
+that the per-agent cap already stops keeps the reason code it had before the
+merchant-wide cap existed. Only the payload's `bound_by` field separates the
+two.
 
 ## Tenancy
 

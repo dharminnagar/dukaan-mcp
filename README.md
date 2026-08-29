@@ -1,6 +1,8 @@
 # dukaan-mcp
 
-A multi-tenant MCP server for Razorpay's AI Buildathon 2026 (Track 01).
+A multi-tenant MCP server with in-built auth layer and audit capabilities for Razorpay's AI Buildathon 2026 (Track 01).
+
+NOTE: The architecture and design of this project is documented in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). This README focuses on the gate, its threat model, and its measurement.
 
 ## What this is
 
@@ -16,17 +18,17 @@ decide about.
 An AI agent can already place an order. Nothing stands between the agent and
 the merchant's payment API to check whether that order is safe.
 
-The dangerous case is not a hacked agent. It is a well-behaved agent that
-trusts stale data. It reads a product price, holds that price in its context
+The dangerous case is not always a hacked agent. It is also a well-behaved agent that might
+trust stale data. It reads a product price, holds that price in its context
 for a few turns, and checks out against a price the merchant already
 changed. Or it buys inside a category the buyer never approved, because the
 category label on the product looks close enough. Or it has no budget bound
 at all, because nobody ever set one for it. None of these need an attacker.
 They only need a normal agent and a policy nobody enforced.
 
-## The gate
+## The Gate
 
-The gate is one function, `decide()` in `src/gate/index.ts`. It runs five
+The gate is one function, `decide()` in [`src/gate/index.ts`](src/gate/index.ts). It runs five
 checks in order. Each check can stop the request. Nothing after a failed
 check runs.
 
@@ -46,8 +48,7 @@ check runs.
    policy that names the categories it may buy from. A product outside that
    list returns `CATEGORY_NOT_ALLOWED`.
 4. **Approval threshold.** An order above the merchant's threshold does not
-   block. It returns `PENDING_APPROVAL` and waits for merchant sign-off. It
-   never reaches Razorpay.
+   block. It returns `PENDING_APPROVAL` and waits for merchant sign-off.
 5. **Allow.** The order clears every check above. The gate mints an order id,
    writes an `ALLOWED` audit row, and hands the order back to the caller,
    which then calls Razorpay.
@@ -69,7 +70,7 @@ mechanism and the test that catches a regression here.
 The spend cap used to be one number, set by the merchant alone. That is a real
 number a merchant wants, an exposure limit, but it is not a buyer protection.
 The merchant profits when that number is loose, so "the agent cannot
-overspend" rested on the goodwill of the party being restrained.
+overspend" rested on the goodwill of the party being restrained. And realistically the merchant would always keep the number high to blocking any order and keeping to increase their revenue. The buyer has no control over that number, and the merchant has no incentive to keep it low. That is why the gate now reads three numbers and enforces the tightest one.
 
 Three parties now each set a number, and the tightest one binds:
 
@@ -79,7 +80,7 @@ Three parties now each set a number, and the tightest one binds:
 - **The platform** sets a ceiling on what any merchant may set for itself,
   from deployment config.
 
-In this build, the merchant still mints the agent token, so the merchant
+For this MVP, the merchant still mints the agent token, so the merchant
 currently sets the buyer's cap too. Moving that choice to the buyer only
 changes who calls the gate, not the gate itself. The gate already reads
 whichever cap the token carries and enforces the tightest one. That is
@@ -93,7 +94,7 @@ exposure becomes N times the cap, and the cap stops being an exposure limit
 at all. The aggregate cap bounds the sum across every agent of one merchant.
 A partial unique index also stops one buyer from holding two agents at one
 merchant, which would otherwise double that buyer's own cap silently. See
-`docs/ARCHITECTURE.md` for the constraint and the query it supports.
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the constraint and the query it supports.
 
 ## Quickstart
 
@@ -111,8 +112,12 @@ bun run lint                  # eslint . && prettier --check .
 ```
 
 None of the commands above need `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`,
-`OPENROUTER_API_KEY`, or `OPENROUTER_MODEL`. Tests use a fake Razorpay
-adapter. The gate never calls Razorpay itself.
+`OPENROUTER_API_KEY`, or `OPENROUTER_MODEL`.
+
+For demo, there are two ways tests can run.
+
+1.  Use a fake Razorpay adapter. The gate never calls Razorpay itself here
+2.  Use a real Razorpay account & adapter in smoke tests. This requires a Razorpay account and key pair set in `.env`
 
 Seed a merchant and try the gate against it.
 
