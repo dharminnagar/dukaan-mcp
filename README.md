@@ -74,9 +74,8 @@ overspend" rested on the goodwill of the party being restrained. And realistical
 
 Three parties now each set a number, and the tightest one binds:
 
-- **The buyer** sets a cap when their agent is minted. Nothing in the code
-  raises it after that point.
-- **The merchant** sets the existing policy cap. Unchanged from before.
+- **The buyer** sets a cap when their agent is minted.
+- **The merchant** sets the policy cap to set a threshold above which the gate will escalate to them for approval.
 - **The platform** sets a ceiling on what any merchant may set for itself,
   from deployment config.
 
@@ -141,7 +140,7 @@ Full deployment steps are in [`setup/deploy.md`](setup/deploy.md). They
 cover the two services' disjoint secrets and a warning you should read
 before putting the dashboard on a public URL.
 
-## Measurement
+## Measurement & Evaluation
 
 Run it yourself:
 
@@ -239,7 +238,7 @@ change in this project was verified against a byte-identical
 `bun run eval` output, compared to a stored baseline. So the held-out
 numbers never moved, and so they never drove a change to the gate.
 
-## Limitations
+## Honest Limitations
 
 - **The held-out split has not been scored with the full metrics report.**
   See above.
