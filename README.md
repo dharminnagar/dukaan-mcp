@@ -258,6 +258,13 @@ numbers never moved, and so they never drove a change to the gate.
   author nor the independent model imagined is still unmeasured, by
   construction.
 - **The platform ceiling has no eval coverage.** See above.
+- **Headless payment authorization needs a Razorpay grant that has not
+  arrived.** S2S JSON v2 and BharatQR are the only documented Test Mode
+  paths for an agent to authorize a payment without a human clicking
+  through a browser. Both need a support grant. Two tickets are open:
+  S2S JSON v2 is ticket 20678022, and BharatQR is ticket 20678038. Until
+  one is granted, the payment loop closes through a human-approved
+  handoff instead.
 
 ## Architecture
 
