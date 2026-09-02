@@ -6,10 +6,22 @@
  * its SHA-256 — a database read is not enough to impersonate a buyer,
  * exactly like `agents.token_hash`.
  *
- * Password hashing goes through `Bun.password.hash` / `Bun.password.verify`
- * (argon2id by default) — never a bare digest, never plaintext.
+ * Password hashing uses `node:crypto` scrypt, not `Bun.password`. The web
+ * app runs this code inside a real Next.js server process, where `next`'s
+ * CLI resolves through a Node shebang. `Bun.password` does not exist there,
+ * even when `bun run dev` starts the process. `node:crypto` behaves the
+ * same under Bun and under Node, so it is the only safe choice here.
+ *
+ * The stored hash string is self-describing:
+ * `scrypt$<N>$<r>$<p>$<saltHex>$<hashHex>`. Verification recomputes scrypt
+ * with the stored parameters and compares in constant time.
  */
-import { createHash, randomBytes } from "node:crypto";
+import {
+  createHash,
+  randomBytes,
+  scryptSync,
+  timingSafeEqual,
+} from "node:crypto";
 import { query, queryOne } from "../db/pool";
 
 export interface Buyer {
@@ -30,6 +42,45 @@ export const SESSION_COOKIE_NAME = "buyer_session";
 const SESSION_ENTROPY_BYTES = 32;
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
 const SESSION_PREFIX = "bs_";
+
+// Node's documented safe defaults for interactive login: cost factor 16384,
+// block size 8, parallelization 1. Derives a 64-byte key in about 16-32ms.
+const SCRYPT_N = 16384;
+const SCRYPT_R = 8;
+const SCRYPT_P = 1;
+const SCRYPT_KEY_LENGTH = 64;
+const SCRYPT_SALT_BYTES = 16;
+
+function hashPassword(password: string): string {
+  const salt = randomBytes(SCRYPT_SALT_BYTES);
+  const derivedKey = scryptSync(password, salt, SCRYPT_KEY_LENGTH, {
+    N: SCRYPT_N,
+    r: SCRYPT_R,
+    p: SCRYPT_P,
+  });
+  return `scrypt$${SCRYPT_N}$${SCRYPT_R}$${SCRYPT_P}$${salt.toString("hex")}$${derivedKey.toString("hex")}`;
+}
+
+/**
+ * Verifies a password against a stored `scrypt$N$r$p$salt$hash` string.
+ * Recomputes scrypt with the stored parameters so a future change to the
+ * default cost does not break verification of older hashes.
+ */
+function verifyPassword(password: string, stored: string): boolean {
+  const parts = stored.split("$");
+  if (parts.length !== 6 || parts[0] !== "scrypt") return false;
+  const n = Number(parts[1]);
+  const r = Number(parts[2]);
+  const p = Number(parts[3]);
+  const salt = Buffer.from(parts[4] as string, "hex");
+  const expected = Buffer.from(parts[5] as string, "hex");
+  const actual = scryptSync(password, salt, expected.length, {
+    N: n,
+    r,
+    p,
+  });
+  return actual.length === expected.length && timingSafeEqual(actual, expected);
+}
 
 /**
  * True when `err` is a Postgres unique-violation (SQLSTATE 23505), matched on
@@ -94,7 +145,7 @@ export async function registerBuyer(
     throw new Error("Password must be at least 8 characters.");
   }
 
-  const passwordHash = await Bun.password.hash(password);
+  const passwordHash = hashPassword(password);
   const buyerId = newBuyerId();
 
   let buyer: Buyer;
@@ -117,7 +168,7 @@ export async function registerBuyer(
   return { buyer, session };
 }
 
-/** Verifies a password against the stored argon2id hash and mints a session. */
+/** Verifies a password against the stored scrypt hash and mints a session. */
 export async function loginBuyer(
   emailInput: string,
   password: string
@@ -134,7 +185,7 @@ export async function loginBuyer(
   );
   if (row === null) throw new InvalidCredentialsError();
 
-  const valid = await Bun.password.verify(password, row.password_hash);
+  const valid = verifyPassword(password, row.password_hash);
   if (!valid) throw new InvalidCredentialsError();
 
   const session = await createSession(row.id);
