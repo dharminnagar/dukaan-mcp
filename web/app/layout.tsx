@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Dukaan — merchant onboarding",
+  title: "Dukaan MCP — merchant onboarding",
   description:
-    "Turn a product CSV and a policy into an agent-transactable storefront.",
+    "Turn a product CSV and a policy into an agent-transactable storefront. Built by @dharminnagar",
 };
 
 export default function RootLayout({

@@ -108,7 +108,6 @@ catalog and the MCP server exist so the gate has something to decide about.
 - Buyer token regeneration rotates the existing agents row in place (new token_hash via UPDATE) rather than revoke-and-reissue, because idx_agents_buyer_merchant (migration 0003) is a partial unique index on (buyer_id, merchant_id) and revoke-and-reissue would need a hard delete or an index migration to avoid violating it. [src/buyer/provision.ts]
 
 ## Notes
-- New feature: feat(web): buyers register, browse merchants, and mint their own tokens [src/buyer/auth.ts]
 - New feature: feat(web): dashboard reports agents registered and merchant-wide exposure [web/app/dashboard/[merchantId]/page.tsx]
 - New feature: feat(auth): OAuth 2.1 so a client discovers the server instead of being handed a token (DUK-35) [migrations/0004_oauth.sql]
 - gotcha: a mermaid flowchart with 5+ sequential decision diamonds renders unusably tall under `flowchart TD` because each decision takes its own rank. Use `flowchart LR` for decision ladders; terminals then stack on the right and the diagram stays short enough to read inline on GitHub. [docs/ARCHITECTURE.md]
@@ -118,6 +117,7 @@ catalog and the MCP server exist so the gate has something to decide about.
 - DUK-7 tickets resolved: BharatQR (20678038) refused — Razorpay confirmed BharatQR is deprecated platform-wide, and the suggested replacement (Razorpay QR Codes) only works in Live, not Test Mode, so it's unusable for this Test-Mode-only build. S2S JSON v2 (20678022) is pending — support asked for a phone number and integration description, and separately flagged the account's KYC is incomplete, blocking activation. With <4 days to submission, not chasing further; the human-approved handoff remains the only payment path. [README.md]
 - gotcha: web/ (Next 15) always executes under real Node, even when launched via `bun run dev` or `bun run start` from the root, because next's CLI resolves through a Node shebang. Any code path shared with web/ (server actions, route handlers) must not depend on the Bun global (Bun.password, Bun.serve, etc). node:crypto is safe in both runtimes. src/mcp/http.ts's Bun.serve is fine because that process is always started directly with `bun --watch`. [web/]
 - DUK buyer-token-regen: implemented rotateAgentToken exactly as specified (RETURNING includes buyer_cap_paise for reading, not writing) — this is a legitimate read-only use but trips tests/limits.test.ts's naive UPDATE-agents-containing-buyer_cap_paise regex; left both files as specified/pre-existing since editing tests/limits.test.ts was out of scope for this task [src/buyer/provision.ts]
+- New feature: feat: connect-instructions copy and buyer token regeneration [.projectmem/events.jsonl]
 
 ## Key files
 - `/Users/dharmin/.local`
