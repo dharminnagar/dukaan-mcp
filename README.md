@@ -261,10 +261,20 @@ numbers never moved, and so they never drove a change to the gate.
 - **Headless payment authorization needs a Razorpay grant that has not
   arrived.** S2S JSON v2 and BharatQR are the only documented Test Mode
   paths for an agent to authorize a payment without a human clicking
-  through a browser. Both need a support grant. Two tickets are open:
-  S2S JSON v2 is ticket 20678022, and BharatQR is ticket 20678038. Until
-  one is granted, the payment loop closes through a human-approved
-  handoff instead.
+  through a browser. Both need a support grant, and both came back closed
+  off within the build window:
+  - **S2S JSON v2** (ticket 20678022): Razorpay has not granted or refused
+    it. Support asked for a contact number and a description of the
+    integration before reviewing further, and separately flagged that
+    account activation itself is on hold pending KYC. With PCI-DSS also a
+    stated requirement for a student project, and fewer than four days
+    left before submission, this is not being chased further.
+  - **BharatQR** (ticket 20678038): refused outright. Razorpay confirmed
+    BharatQR is deprecated platform-wide. The suggested replacement,
+    Razorpay QR Codes, only works in the Live environment and cannot be
+    tested in Test Mode, so it is not usable for this build regardless.
+    The payment loop closes through the human-approved handoff instead, as
+    planned from the start.
 
 ## Architecture
 
