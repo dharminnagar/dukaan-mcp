@@ -8,7 +8,7 @@
  */
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { connect } from "../../../lib/buyer-actions";
+import { connect, regenerateToken } from "../../../lib/buyer-actions";
 import type { ConnectResult } from "../../../lib/buyer-actions";
 
 export function ConnectButton({
@@ -39,6 +39,19 @@ export function ConnectButton({
     }
   }
 
+  async function submitRegenerate(): Promise<void> {
+    setBusy(true);
+    setError(null);
+    try {
+      const r = await regenerateToken(merchantId);
+      setResult(r);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (result !== null) {
     return (
       <div className="mt-3 rounded-md border border-[var(--color-border)] bg-[var(--color-warn-bg)] p-3 text-sm">
@@ -54,15 +67,47 @@ export function ConnectButton({
             Your cap: Rs {(result.buyerCapPaise / 100).toFixed(2)}
           </p>
         )}
+        <div className="mt-3 border-t border-[var(--color-border)] pt-3 text-xs text-[var(--color-muted)]">
+          <p className="font-medium text-[var(--color-fg)]">
+            Connecting this to an AI client
+          </p>
+          <p className="mt-1">
+            <strong>Manual setup</strong> (a client that asks for a server URL
+            and a bearer token): use the endpoint above as the server URL, and
+            the token above as the bearer token.
+          </p>
+          <p className="mt-1">
+            <strong>Sign-in setup</strong> (a client with its own remote MCP
+            connector, using OAuth): give the client just the endpoint above, no
+            token. The client discovers sign-in on its own from this server's{" "}
+            <code>/.well-known/oauth-protected-resource</code> and{" "}
+            <code>/.well-known/oauth-authorization-server</code>, then walks you
+            through authorizing in your browser.
+          </p>
+        </div>
       </div>
     );
   }
 
   if (alreadyConnected) {
     return (
-      <p className="mt-3 text-sm text-[var(--color-muted)]">
-        You are already connected to this store.
-      </p>
+      <div className="mt-3 flex flex-col gap-2">
+        <p className="text-sm text-[var(--color-muted)]">
+          You are already connected to this store.
+        </p>
+        {error !== null && (
+          <p className="rounded-md bg-[var(--color-danger-bg)] px-2 py-1 text-xs text-[var(--color-danger)]">
+            {error}
+          </p>
+        )}
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => void submitRegenerate()}
+          className="w-fit rounded-md border border-[var(--color-border)] px-3 py-1.5 text-sm disabled:opacity-50">
+          {busy ? "Regenerating..." : "Regenerate token"}
+        </button>
+      </div>
     );
   }
 

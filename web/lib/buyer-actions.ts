@@ -18,7 +18,9 @@ import {
 } from "../../src/buyer/auth";
 import {
   AlreadyConnectedError,
+  NotConnectedError,
   provisionAgentForBuyer,
+  rotateAgentToken,
 } from "../../src/buyer/provision";
 import { rupeesToPaise } from "../../src/catalog/csv";
 import { getSessionBuyer, merchantExists } from "./buyer-queries";
@@ -146,6 +148,35 @@ export async function connect(
       throw new Error("You are already connected to this store.", {
         cause: err,
       });
+    }
+    throw err;
+  }
+
+  return {
+    token: result.token,
+    endpoint: MCP_ENDPOINT,
+    agentId: result.agentId,
+    buyerCapPaise: result.buyerCapPaise,
+  };
+}
+
+export async function regenerateToken(
+  merchantId: string
+): Promise<ConnectResult> {
+  const buyer = await getSessionBuyer();
+  if (buyer === null) {
+    throw new Error("You must be signed in to regenerate a token.");
+  }
+
+  let result: Awaited<ReturnType<typeof rotateAgentToken>>;
+  try {
+    result = await rotateAgentToken({ buyerId: buyer.id, merchantId });
+  } catch (err) {
+    if (err instanceof NotConnectedError) {
+      throw new Error(
+        "You are not connected to this store yet — use Connect instead.",
+        { cause: err }
+      );
     }
     throw err;
   }

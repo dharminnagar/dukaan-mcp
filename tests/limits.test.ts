@@ -482,7 +482,14 @@ describe("buyer_cap_paise immutability is enforced, not just intended", () => {
       const flat = src.replace(/\s+/g, " ");
       const updates = flat.match(/UPDATE\s+agents[^;`"']*/gi) ?? [];
       for (const stmt of updates) {
-        if (/buyer_cap_paise/i.test(stmt))
+        // Only the SET list can mutate the column. A RETURNING clause that
+        // reads it back (see rotateAgentToken in src/buyer/provision.ts) is
+        // the safe kind of mention this guard must not flag.
+        const setClause = stmt.match(
+          /SET\s+(.*?)(?:\s+WHERE\b|\s+RETURNING\b|$)/i
+        );
+        const target = setClause?.[1] ?? stmt;
+        if (/buyer_cap_paise/i.test(target))
           offenders.push(`${file}: ${stmt.slice(0, 90)}`);
       }
     }

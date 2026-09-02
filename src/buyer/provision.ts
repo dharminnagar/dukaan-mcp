@@ -91,3 +91,56 @@ export async function provisionAgentForBuyer(args: {
     throw err;
   }
 }
+
+export class NotConnectedError extends Error {
+  constructor(merchantId: string) {
+    super(`Not connected to merchant ${merchantId}.`);
+    this.name = "NotConnectedError";
+  }
+}
+
+export interface RotateResult {
+  readonly agentId: string;
+  readonly merchantId: string;
+  readonly token: string;
+  readonly buyerCapPaise: number | null;
+}
+
+/**
+ * Rotates the token for the buyer's existing agent at `merchantId` in
+ * place: same `agents.id` row, new `token_hash`. Ownership is enforced by
+ * the WHERE clause itself — buyer_id AND merchant_id must both match one
+ * row, or nothing updates and NotConnectedError is thrown.
+ */
+export async function rotateAgentToken(args: {
+  buyerId: string;
+  merchantId: string;
+}): Promise<RotateResult> {
+  const buyerId = args.buyerId?.trim() ?? "";
+  if (buyerId.length === 0) {
+    throw new Error("Buyer ID must not be blank.");
+  }
+
+  const { raw: token, hash: tokenHash } = mintAgentToken();
+
+  const row = await queryOne<{
+    id: string;
+    merchant_id: string;
+    buyer_cap_paise: number | null;
+  }>(
+    `UPDATE agents SET token_hash = $1
+     WHERE buyer_id = $2 AND merchant_id = $3
+     RETURNING id, merchant_id, buyer_cap_paise`,
+    [tokenHash, buyerId, args.merchantId]
+  );
+  if (row === null) {
+    throw new NotConnectedError(args.merchantId);
+  }
+
+  return {
+    agentId: row.id,
+    merchantId: row.merchant_id,
+    token,
+    buyerCapPaise: row.buyer_cap_paise,
+  };
+}

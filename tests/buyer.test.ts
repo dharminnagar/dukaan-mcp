@@ -12,7 +12,9 @@ import {
 } from "../src/buyer/auth";
 import {
   AlreadyConnectedError,
+  NotConnectedError,
   provisionAgentForBuyer,
+  rotateAgentToken,
 } from "../src/buyer/provision";
 import { createMerchant } from "../src/onboard/create-merchant";
 
@@ -33,6 +35,7 @@ const TEST_BUYER_EMAILS = [
   "buyer.reconnect@buyer-test.example",
 ];
 const TEST_MERCHANT_ID = "m_buyer_test_provision";
+const TEST_MERCHANT_ID_2 = "m_buyer_test_provision_2";
 
 async function cleanupBuyers(): Promise<void> {
   await query("DELETE FROM buyers WHERE email = ANY($1::text[])", [
@@ -50,6 +53,7 @@ async function cleanupMerchant(merchantId: string): Promise<void> {
 afterAll(async () => {
   await cleanupBuyers();
   await cleanupMerchant(TEST_MERCHANT_ID);
+  await cleanupMerchant(TEST_MERCHANT_ID_2);
 });
 
 describe("registerBuyer", () => {
@@ -359,6 +363,137 @@ describe("provisionAgentForBuyer", () => {
 
     expect(row?.buyer_id).toBe(buyer.id);
     expect(row?.buyer_cap_paise).toBe(75000);
+  });
+});
+
+describe("rotateAgentToken", () => {
+  test("changes token_hash, returns a new dk_ token different from the original, and keeps the same agent id", async () => {
+    const { buyer } = await registerBuyer(
+      "buyer.rotate@buyer-test.example",
+      "correct-horse-11"
+    );
+    TEST_BUYER_EMAILS.push("buyer.rotate@buyer-test.example");
+
+    const original = await provisionAgentForBuyer({
+      buyerId: buyer.id,
+      merchantId: TEST_MERCHANT_ID,
+      label: "rotate-agent",
+      buyerCapPaise: 20000,
+    });
+
+    const before = await queryOne<{ token_hash: string }>(
+      "SELECT token_hash FROM agents WHERE id = $1",
+      [original.agentId]
+    );
+
+    const rotated = await rotateAgentToken({
+      buyerId: buyer.id,
+      merchantId: TEST_MERCHANT_ID,
+    });
+
+    expect(rotated.token).toMatch(/^dk_/);
+    expect(rotated.token).not.toBe(original.token);
+    expect(rotated.agentId).toBe(original.agentId);
+
+    const after = await queryOne<{ token_hash: string }>(
+      "SELECT token_hash FROM agents WHERE id = $1",
+      [original.agentId]
+    );
+    expect(after?.token_hash).not.toBe(before?.token_hash);
+  });
+
+  test("throws NotConnectedError when no (buyerId, merchantId) row exists", async () => {
+    const { buyer } = await registerBuyer(
+      "buyer.notconnected@buyer-test.example",
+      "correct-horse-12"
+    );
+    TEST_BUYER_EMAILS.push("buyer.notconnected@buyer-test.example");
+
+    await expect(
+      rotateAgentToken({
+        buyerId: buyer.id,
+        merchantId: TEST_MERCHANT_ID,
+      })
+    ).rejects.toThrow(NotConnectedError);
+  });
+
+  test("does not change a different buyer's row or a different merchant's row", async () => {
+    await cleanupMerchant(TEST_MERCHANT_ID_2);
+    await createMerchant({
+      merchantId: TEST_MERCHANT_ID_2,
+      name: "Buyer Provision Test Kirana 2",
+      csv: FIXTURE_CSV,
+      policyJson: FIXTURE_POLICY,
+      agentLabel: "merchant-minted-agent-2",
+    });
+
+    const { buyer: buyerA } = await registerBuyer(
+      "buyer.rotate.a@buyer-test.example",
+      "correct-horse-13"
+    );
+    TEST_BUYER_EMAILS.push("buyer.rotate.a@buyer-test.example");
+    const { buyer: buyerB } = await registerBuyer(
+      "buyer.rotate.b@buyer-test.example",
+      "correct-horse-14"
+    );
+    TEST_BUYER_EMAILS.push("buyer.rotate.b@buyer-test.example");
+
+    const buyerAAtMerchant1 = await provisionAgentForBuyer({
+      buyerId: buyerA.id,
+      merchantId: TEST_MERCHANT_ID,
+      label: "buyer-a-merchant-1",
+      buyerCapPaise: null,
+    });
+    const buyerBAtMerchant1 = await provisionAgentForBuyer({
+      buyerId: buyerB.id,
+      merchantId: TEST_MERCHANT_ID,
+      label: "buyer-b-merchant-1",
+      buyerCapPaise: null,
+    });
+    const buyerAAtMerchant2 = await provisionAgentForBuyer({
+      buyerId: buyerA.id,
+      merchantId: TEST_MERCHANT_ID_2,
+      label: "buyer-a-merchant-2",
+      buyerCapPaise: null,
+    });
+
+    const hashesBefore = await Promise.all(
+      [
+        buyerAAtMerchant1.agentId,
+        buyerBAtMerchant1.agentId,
+        buyerAAtMerchant2.agentId,
+      ].map((agentId) =>
+        queryOne<{ token_hash: string }>(
+          "SELECT token_hash FROM agents WHERE id = $1",
+          [agentId]
+        )
+      )
+    );
+
+    await rotateAgentToken({
+      buyerId: buyerA.id,
+      merchantId: TEST_MERCHANT_ID_2,
+    });
+
+    const hashesAfter = await Promise.all(
+      [
+        buyerAAtMerchant1.agentId,
+        buyerBAtMerchant1.agentId,
+        buyerAAtMerchant2.agentId,
+      ].map((agentId) =>
+        queryOne<{ token_hash: string }>(
+          "SELECT token_hash FROM agents WHERE id = $1",
+          [agentId]
+        )
+      )
+    );
+
+    // buyer A at merchant 1: untouched by the rotation at merchant 2.
+    expect(hashesAfter[0]?.token_hash).toBe(hashesBefore[0]?.token_hash);
+    // buyer B at merchant 1: untouched by another buyer's rotation.
+    expect(hashesAfter[1]?.token_hash).toBe(hashesBefore[1]?.token_hash);
+    // buyer A at merchant 2: this is the row that should have rotated.
+    expect(hashesAfter[2]?.token_hash).not.toBe(hashesBefore[2]?.token_hash);
   });
 });
 
