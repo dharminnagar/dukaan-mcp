@@ -27,25 +27,31 @@ accidental echo. Do not remove it while editing for time.
    The form starts with every category ticked. You must untick these
    two categories, or the block does not fire later. Submit the form.
    The screen shows the token once.
-3. Terminal, the agent trace. Use a real MCP client, not a custom
-   script. The client connects with the printed token. It lists
+3. Buyer connect. Already signed in as a buyer (sign-in itself is not
+   shown, off camera before recording starts). Open `/buyer/stores`,
+   click Connect on the demo merchant. The token appears once. Quick
+   beat, do not linger. This is the token shot 4 uses, not the
+   merchant's onboarding token from shot 2 — the whole point is that
+   it carries the buyer's own cap, not the merchant's.
+4. Terminal, the agent trace. Use a real MCP client, not a custom
+   script. The client connects with the token from shot 3. It lists
    products. It attempts checkout on `sku-a22`, Lifebuoy Handwash
    500ml, category `personal-care`. The gate returns the
    `CATEGORY_NOT_ALLOWED` tool error. The agent re-plans. It picks an
    allowed item. It checks out again. This checkout succeeds. Increase
    the terminal font size before you record. Your normal font size is
    not readable at 720p.
-4. Audit view. The two rows from that session: the blocked
+5. Audit view. The two rows from that session: the blocked
    `CATEGORY_NOT_ALLOWED` row, and the `ALLOWED` row with the order
-   id.
-5. Razorpay dashboard, Test Mode, Orders. The same `order_` id from
-   step 3 and step 4, visible on screen, matched to a real
+   id. Quick cut, do not linger.
+6. Razorpay dashboard, Test Mode, Orders. The same `order_` id from
+   shot 4 and shot 5, visible on screen, matched to a real
    API-created order.
-6. Terminal, run `bun run eval:report` with no `--split` flag. This
+7. Terminal, run `bun run eval:report` with no `--split` flag. This
    command prints the train-split report. Do not run
    `--split=holdout`. That run is reserved. Let the full table stay on
    screen.
-7. On-camera, close. State the vouching thesis. Scope the claim to
+8. On-camera, close. State the vouching thesis. Scope the claim to
    India and UPI. Name Shopify UCP and Stripe ACS. Mention the two
    open Razorpay tickets. Speak the final line.
 
@@ -67,6 +73,14 @@ accidental echo. Do not remove it while editing for time.
 - Run `bun run eval:report` with no arguments, on camera. This command
   prints the train split only. `--split=holdout` is the one scored
   run. Do not spend that run for this video.
+- Have a buyer account already registered and signed in before you
+  start recording — registration and sign-in are not shown on camera.
+  That buyer must not already be connected to the demo merchant, or
+  the Connect button in shot 3 is replaced by "Regenerate token"
+  instead of "Connect." Either button produces the same on-screen
+  result (a fresh token), so if you forgot to disconnect first, using
+  Regenerate is a fine substitute — just say "connect" in your own
+  head, not on camera, since the audience never sees the distinction.
 
 ---
 
@@ -102,7 +116,7 @@ VISUAL: My chair empty, then me walking into frame, sitting, looking at the came
 
 _(cut to screen)_
 
-### Act 2, the investigation, screen capture (0:40-4:05)
+### Act 2, the investigation, screen capture (0:40-4:07)
 
 **Onboarding (0:40-1:10)**
 
@@ -119,14 +133,28 @@ VISUAL: upload `demo-merchant-a.csv`, policy form, untick
 >
 > One token. This token is the entire handoff to the agent.
 
-**Terminal, agent trace and the re-plan (1:10-2:30)**
+**Buyer connect (1:10-1:22)**
 
-VISUAL: MCP client connects with the token, calls `list_products`,
-then `checkout` on the Lifebuoy Handwash line, tool error comes back,
-agent's next call is a different, allowed product, checkout succeeds.
+VISUAL: `/buyer/stores`, already signed in as the buyer (sign-in is
+not shown). Click Connect on the demo merchant. The token appears
+once, with the connect-instructions copy visible under it, not
+narrated here.
 
-> The buyer connects an agent. This can be any MCP client, not only
-> mine.
+> The buyer connects from their own account, to a merchant they
+> picked from a list.
+>
+> This token is the buyer's, with the buyer's own cap. Not the
+> merchant's.
+
+**Terminal, agent trace and the re-plan (1:22-2:42)**
+
+VISUAL: MCP client connects with the buyer's token, calls
+`list_products`, then `checkout` on the Lifebuoy Handwash line, tool
+error comes back, agent's next call is a different, allowed product,
+checkout succeeds.
+
+> The agent connects with that token. This can be any MCP client, not
+> only mine.
 >
 > The agent reads the catalog. It decides to buy handwash.
 >
@@ -142,14 +170,15 @@ agent's next call is a different, allowed product, checkout succeeds.
 > The agent picks an item the policy allows. This time, the order
 > clears.
 
-**Audit view (2:30-2:50)**
+**Audit view (2:42-2:52)**
 
-VISUAL: the two rows, blocked, then allowed, same session.
+VISUAL: the two rows, blocked, then allowed, same session. Quick cut,
+do not linger here.
 
 > Every branch writes a row. The block writes a row. The allow writes
 > a row. Not only the successful checkouts.
 
-**Razorpay dashboard (2:50-3:15)**
+**Razorpay dashboard (2:52-3:17)**
 
 VISUAL: Test Mode, Orders, the same order id on screen.
 
@@ -157,7 +186,7 @@ VISUAL: Test Mode, Orders, the same order id on screen.
 > the real Orders API, at the moment the gate allowed the agent's
 > second attempt.
 
-**Metrics table, say the escapes out loud (3:15-4:05)**
+**Metrics table, say the escapes out loud (3:17-4:07)**
 
 VISUAL: `bun run eval:report`, full table on screen, let it sit long
 enough to read.
@@ -181,7 +210,7 @@ enough to read.
 
 _(cut back to camera)_
 
-### Act 3, the reckoning, on camera (4:05-5:00)
+### Act 3, the reckoning, on camera (4:07-5:02)
 
 > Razorpay already vouches for five merchants. Razorpay picked these
 > five by hand.
@@ -220,12 +249,18 @@ pace with pauses where marked.
 - Act 1: about 115 words, roughly 50 seconds against a 40-second
   target. Trim during the read-aloud pass if the timing runs long.
   This act has the least room. DUK-22 wants this act near 45 seconds.
-- Act 2: about 330 words across 3 minutes 25 seconds of screen time.
-  This total includes two deliberate silences on screen, the block
-  firing and the table sitting on screen. The word count is correctly
-  lower than the available time. Let the footage hold the screen. Do
-  not pad the voiceover to fill the time.
+- Act 2: about 360 words across 3 minutes 27 seconds of screen time
+  (the buyer-connect beat adds about 30 words and 12 seconds; the
+  audit-view beat is cut from 20 seconds to 10 to make room). This
+  total includes two deliberate silences on screen, the block firing
+  and the table sitting on screen. The word count is correctly lower
+  than the available time. Let the footage hold the screen. Do not
+  pad the voiceover to fill the time.
 - Act 3: about 155 words, roughly 55 to 65 seconds.
+
+Running total lands around 5:02. That is close enough to the 5:00
+ceiling that Act 1 is where you find the missing two seconds during
+the read-aloud pass, not a reason to add anything back to Act 2.
 
 Read the script aloud once, with a stopwatch running, before the
 first real take.
