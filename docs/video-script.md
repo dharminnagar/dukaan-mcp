@@ -79,6 +79,13 @@ accidental echo. Do not remove it while editing for time.
 - Run `bun run eval:report` with no arguments, on camera. This command
   prints the train split only. `--split=holdout` is the one scored
   run. Do not spend that run for this video.
+- **The challenge beat in Act 3 names one real bug, not a feeling.**
+  "It was hard" is what every other submission says. The spend cap
+  that three concurrent checkouts could beat is specific, it is
+  verified in `docs/CLAIMS.md`, and the test that catches a
+  regression uses a cap only one order fits, so luck cannot pass it.
+  Keep the concrete version. If you need the seconds back, cut Act 1
+  instead.
 - **Act 3 states the payment constraint. It does not complain about
   it.** Razorpay is the audience for this video, so "Razorpay has not
   granted my ticket" is both rude and wrong. BharatQR is deprecated
@@ -230,31 +237,29 @@ _(cut back to camera)_
 
 ### Act 3, the reckoning, on camera (4:07-5:02)
 
-> Razorpay already vouches for five merchants. Razorpay picked these
-> five by hand.
+> Razorpay vouches for five merchants by hand. Vouching for the
+> sixth, and the six-thousandth, is not a longer trust list. It is a
+> gate that decides on every transaction, and shows its work every
+> time it is wrong or unsure.
 >
-> This project shows what it takes to vouch for the sixth merchant,
-> and the six-thousandth merchant. The answer is not a longer trust
-> list. The answer is a gate that decides on every transaction, and
-> shows its work every time the gate is wrong or unsure.
+> The hardest part was not the agent. It was concurrency. Three
+> checkouts running at once could beat a spend cap, because each one
+> read the same total before any of them wrote. A database lock
+> around the decision and the write closed it.
 >
-> Outside India, other companies solved this problem already. Shopify
-> shipped self-serve agent checkout in June 2026. Stripe shipped its
-> own agentic commerce suite in December 2025.
->
-> Nobody has shipped this on UPI rails, where every payment still
-> assumes a human presses a button. This is the only claim this
-> project makes. Not the first agent commerce system. The first
-> vouching layer built for this rail.
+> Shopify shipped self-serve agent checkout in June 2026. Stripe
+> shipped its agentic commerce suite in December 2025. Neither runs
+> on UPI rails, where every payment still assumes a human presses a
+> button. That is the only claim I make here.
 >
 > I asked Razorpay support about two headless payment paths. BharatQR
 > is deprecated. Server to server needs PCI-DSS certification. Both
 > constraints are real. An agent cannot authorize a UPI payment alone
 > today. That is regulation. So a human approves the last step.
 >
-> The agent that tried to buy handwash earlier did not wait for a
-> human for any step before that one. The gate already decided
-> everything up to the payment, on its own.
+> The agent that tried to buy handwash never waited for a human. Not
+> until the payment. Everything before that, the gate had already
+> decided.
 
 _(end)_
 
@@ -269,11 +274,11 @@ The rate is 140 words per minute, a measured documentary pace.
 | ------------------------ | ------------ | -------------- |
 | Act 1, cold open         | 130          | about 0:56     |
 | Act 2, the investigation | 356          | about 2:33     |
-| Act 3, the reckoning     | 196          | about 1:24     |
-| **Total**                | **682**      | **about 4:52** |
+| Act 3, the reckoning     | 188          | about 1:21     |
+| **Total**                | **674**      | **about 4:49** |
 
 **The ceiling is 5:00, so the margin for every pause in the video is
-about 8 seconds combined.** That is the honest figure, and it is
+about 11 seconds combined.** That is the honest figure, and it is
 tighter than the per-beat timecodes above imply. Those timecodes are
 targets for where each beat starts. They are not a promise that the
 whole thing fits.
