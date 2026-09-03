@@ -79,6 +79,14 @@ accidental echo. Do not remove it while editing for time.
 - Run `bun run eval:report` with no arguments, on camera. This command
   prints the train split only. `--split=holdout` is the one scored
   run. Do not spend that run for this video.
+- **Act 3 states the payment constraint. It does not complain about
+  it.** Razorpay is the audience for this video, so "Razorpay has not
+  granted my ticket" is both rude and wrong. BharatQR is deprecated
+  platform-wide, and server-to-server access needs PCI-DSS
+  certification. Support answered both. Neither answer is a delay, and
+  the underlying limit is regulation rather than any company's policy.
+  Name the constraint, agree it is reasonable, move on. Do not
+  reintroduce a grievance here while editing for time.
 - Have a buyer account already registered and signed in before you
   start recording — registration and sign-in are not shown on camera.
   That buyer must not already be connected to the demo merchant, or
@@ -239,9 +247,10 @@ _(cut back to camera)_
 > project makes. Not the first agent commerce system. The first
 > vouching layer built for this rail.
 >
-> I raised two support tickets. Both ask Razorpay for a payment path
-> an agent can complete alone. Razorpay has not granted either ticket
-> yet. So today, a human still approves the last step.
+> I asked Razorpay support about two headless payment paths. BharatQR
+> is deprecated. Server to server needs PCI-DSS certification. Both
+> constraints are real. An agent cannot authorize a UPI payment alone
+> today. That is regulation. So a human approves the last step.
 >
 > The agent that tried to buy handwash earlier did not wait for a
 > human for any step before that one. The gate already decided
@@ -260,11 +269,11 @@ The rate is 140 words per minute, a measured documentary pace.
 | ------------------------ | ------------ | -------------- |
 | Act 1, cold open         | 130          | about 0:56     |
 | Act 2, the investigation | 356          | about 2:33     |
-| Act 3, the reckoning     | 188          | about 1:21     |
-| **Total**                | **674**      | **about 4:49** |
+| Act 3, the reckoning     | 196          | about 1:24     |
+| **Total**                | **682**      | **about 4:52** |
 
 **The ceiling is 5:00, so the margin for every pause in the video is
-about 11 seconds combined.** That is the honest figure, and it is
+about 8 seconds combined.** That is the honest figure, and it is
 tighter than the per-beat timecodes above imply. Those timecodes are
 targets for where each beat starts. They are not a promise that the
 whole thing fits.
