@@ -1,6 +1,6 @@
 # projectmem - dukaan-mcp
 
-_Last updated: 2026-09-02_
+_Last updated: 2026-09-03_
 
 ## Project purpose
 A multi-tenant MCP server for the Razorpay AI Buildathon 2026 (Track 01). A
@@ -108,7 +108,6 @@ catalog and the MCP server exist so the gate has something to decide about.
 - Buyer token regeneration rotates the existing agents row in place (new token_hash via UPDATE) rather than revoke-and-reissue, because idx_agents_buyer_merchant (migration 0003) is a partial unique index on (buyer_id, merchant_id) and revoke-and-reissue would need a hard delete or an index migration to avoid violating it. [src/buyer/provision.ts]
 
 ## Notes
-- New feature: feat(web): dashboard reports agents registered and merchant-wide exposure [web/app/dashboard/[merchantId]/page.tsx]
 - New feature: feat(auth): OAuth 2.1 so a client discovers the server instead of being handed a token (DUK-35) [migrations/0004_oauth.sql]
 - gotcha: a mermaid flowchart with 5+ sequential decision diamonds renders unusably tall under `flowchart TD` because each decision takes its own rank. Use `flowchart LR` for decision ladders; terminals then stack on the right and the diagram stays short enough to read inline on GitHub. [docs/ARCHITECTURE.md]
 - CORRECTION to a claim this project was about to publish, and the accurate replacement. We were going to write "the held-out split has not been run". That is FALSE and a judge could disprove it in one command. `bun run eval` (src/eval/run.ts) replays the WHOLE frozen dataset and prints a catch-rate table by class AND SPLIT, including holdout rows. It has run dozens of times. So the held-out rule coverage has been observed throughout development. What has NOT run is `bun run eval:report --split=holdout`, the full metrics report with the GMV, interrupted-intent, recovery and net figures. src/eval/report.ts line 31 documents that it is train-only by default and that holdout is scored once at DUK-20. Verified: `bun run eval:report` with no arguments mentions holdout ZERO times, so the obvious command cannot spend the one scored run by accident. THE REPLACEMENT CLAIM IS STRONGER BECAUSE IT IS CHECKABLE: no gate change was ever made because of a held-out result. Every gate change in this project was verified to leave `bun run eval` byte-identical against a stored baseline, so the held-out numbers never moved and therefore never drove a change. That is the property that makes a held-out split mean anything, and it survives. docs/CLAIMS.md and README.md now both carry the precise version. Anyone writing the video script or the submission form must use it too. [src/eval/report.ts]
@@ -118,6 +117,7 @@ catalog and the MCP server exist so the gate has something to decide about.
 - gotcha: web/ (Next 15) always executes under real Node, even when launched via `bun run dev` or `bun run start` from the root, because next's CLI resolves through a Node shebang. Any code path shared with web/ (server actions, route handlers) must not depend on the Bun global (Bun.password, Bun.serve, etc). node:crypto is safe in both runtimes. src/mcp/http.ts's Bun.serve is fine because that process is always started directly with `bun --watch`. [web/]
 - DUK buyer-token-regen: implemented rotateAgentToken exactly as specified (RETURNING includes buyer_cap_paise for reading, not writing) — this is a legitimate read-only use but trips tests/limits.test.ts's naive UPDATE-agents-containing-buyer_cap_paise regex; left both files as specified/pre-existing since editing tests/limits.test.ts was out of scope for this task [src/buyer/provision.ts]
 - New feature: feat: connect-instructions copy and buyer token regeneration [.projectmem/events.jsonl]
+- Build-cost stats in README's "How this was built" are measured from ~/.claude/projects/-Users-dharmin-Dev-Projects-dukaan-mcp/*.jsonl by summing message.usage per assistant message (deduped on message.id). Those transcripts contain NO sidechain records, so subagent/Task token usage is not counted — the published figures are a floor, not a total. Recompute the same way if the numbers are ever refreshed. [README.md]
 
 ## Key files
 - `/Users/dharmin/.local`

@@ -18,7 +18,7 @@ for sections 8/10).
 ```bash
 bun run typecheck  # tsc --noEmit, no output means pass
 bun run lint       # eslint . && prettier --check ., prints "All matched files use Prettier code style!"
-bun run test       # bun test tests/, 368 pass, 0 fail, 2197 expect() calls, 20 files
+bun run test       # bun test tests/, 371 pass, 0 fail, 2205 expect() calls, 20 files
 ```
 
 Red output is self-explanatory. Read the assertion.

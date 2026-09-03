@@ -4,6 +4,31 @@ A multi-tenant MCP server with in-built auth layer and audit capabilities for Ra
 
 NOTE: The architecture and design of this project is documented in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). This README focuses on the gate, its threat model, and its measurement.
 
+## How this was built
+
+|                      |                                          |
+| -------------------- | ---------------------------------------- |
+| Built in             | 13 days, 22 Aug to 3 Sep 2026            |
+| Commits              | 89                                       |
+| TypeScript and SQL   | 23,452 lines, of which 9,466 are tests   |
+| Tests                | 371 across 20 files                      |
+| Eval corpus          | 261 frozen transcripts, 6 threat classes |
+| Claude Code sessions | 10, over 1,432 assistant turns           |
+| Tokens generated     | 1.47M output                             |
+| Tokens processed     | 599M, of which 579M are cache reads      |
+
+This project was built with an AI coding agent, so the cost of building
+it is stated rather than left to be guessed at.
+
+Two things about those token figures, because the numbers flatter
+themselves otherwise. **579M of the 599M are cache reads**, which are
+re-reads of context already sent, billed at a fraction of fresh input.
+They are not 579M tokens of writing. The 1.47M output figure is the one
+that counts generated text. And the figures come from this machine's
+local Claude Code transcripts, which record the main session thread
+only. Work delegated to subagents is not written there, so the true
+totals are **higher** than this table, not lower. The count is a floor.
+
 ## What this is
 
 A merchant uploads a catalog and a spend policy. A buyer connects their own
@@ -105,7 +130,7 @@ bun install
 cp .env.example .env          # fill in RAZORPAY_KEY_ID/SECRET only if you plan to run smoke:rzp
 bun run db:up                 # Postgres 17 in Docker, waits for its healthcheck
 bun run db:migrate            # applies migrations/0001 through 0004
-bun test tests/               # 368 pass, 0 fail
+bun test tests/               # 371 pass, 0 fail
 bun run typecheck             # tsc --noEmit, no output on success
 bun run lint                  # eslint . && prettier --check .
 ```

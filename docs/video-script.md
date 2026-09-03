@@ -5,9 +5,15 @@ A script that feels like five minutes reads as seven.
 
 Structure: an on-camera cold open, then a screen-capture investigation,
 then an on-camera close. Documentary pacing. Short declarative lines.
-Real pauses. No "hi, I am Dharmin, welcome to my project" opener. The
-script states the problem like a finding. It does not pitch the
-problem.
+Real pauses. The script states the problem like a finding. It does not
+pitch the problem.
+
+The introduction comes after the hook, not before it. The first thing
+the viewer hears is the handwash failure, not a name. Saying "Hello, I
+am Dharmin" at 0:00 turns this into the project-tour video this format
+exists to avoid. Three sentences of introduction at 0:30, once the
+viewer already wants to know who found this, cost eight seconds and
+read as credentials rather than as a preamble.
 
 Target: 5:00 total. 5:00 is the hard ceiling.
 
@@ -100,7 +106,7 @@ VISUAL: My chair empty, then me walking into frame, sitting, looking at the came
 >
 > But... It never paid.
 >
-> The world today has evoled to a point where an agent can help you buy groceries, but it cannot buy groceries for you. This world needs a guardrail, a vouching layer that decides on every transaction whether to let the agent buy, and shows its work every time it is wrong or unsure. That's how we achieve Agentic Commerce.
+> An agent can help you choose groceries. It cannot buy them for you.
 >
 > Razorpay already runs agentic commerce today. Five brands. Zomato,
 > Swiggy, Zepto, Vi, and BigBasket. Razorpay picked these five by
@@ -110,7 +116,11 @@ VISUAL: My chair empty, then me walking into frame, sitting, looking at the came
 > merchant stays closed to every agent.
 >
 > This layer lets Razorpay open a merchant to agents. It decides, on
-> every transaction, whether to allow the agent, all while keeping track of every decision and logging every step.
+> every transaction, whether to allow the agent, and it logs every
+> decision it makes.
+>
+> I am Dharmin Nagar. I build around agentic AI and blockchain. I
+> built this.
 >
 > Let me show you how it works.
 
@@ -243,24 +253,33 @@ _(end)_
 
 ## Word-count and pacing check
 
-This count uses about 140 words per minute, a measured documentary
-pace with pauses where marked.
+These are counted from the spoken lines in this file, not estimated.
+The rate is 140 words per minute, a measured documentary pace.
 
-- Act 1: about 115 words, roughly 50 seconds against a 40-second
-  target. Trim during the read-aloud pass if the timing runs long.
-  This act has the least room. DUK-22 wants this act near 45 seconds.
-- Act 2: about 360 words across 3 minutes 27 seconds of screen time
-  (the buyer-connect beat adds about 30 words and 12 seconds; the
-  audit-view beat is cut from 20 seconds to 10 to make room). This
-  total includes two deliberate silences on screen, the block firing
-  and the table sitting on screen. The word count is correctly lower
-  than the available time. Let the footage hold the screen. Do not
-  pad the voiceover to fill the time.
-- Act 3: about 155 words, roughly 55 to 65 seconds.
+| Act                      | Spoken words | Speech time    |
+| ------------------------ | ------------ | -------------- |
+| Act 1, cold open         | 130          | about 0:56     |
+| Act 2, the investigation | 356          | about 2:33     |
+| Act 3, the reckoning     | 188          | about 1:21     |
+| **Total**                | **674**      | **about 4:49** |
 
-Running total lands around 5:02. That is close enough to the 5:00
-ceiling that Act 1 is where you find the missing two seconds during
-the read-aloud pass, not a reason to add anything back to Act 2.
+**The ceiling is 5:00, so the margin for every pause in the video is
+about 11 seconds combined.** That is the honest figure, and it is
+tighter than the per-beat timecodes above imply. Those timecodes are
+targets for where each beat starts. They are not a promise that the
+whole thing fits.
 
-Read the script aloud once, with a stopwatch running, before the
-first real take.
+Two consequences, both of which decide themselves during the
+read-aloud pass rather than in the edit:
+
+1. The deliberate silences must be short. The block landing on screen
+   and the metrics table sitting on screen are worth two or three
+   seconds each, not ten.
+2. If the read runs long, Act 1 is the place to cut. It carries the
+   hook, the Razorpay framing and now the introduction, and at 0:55 it
+   is the act furthest over its own target. Act 3 is second. Do not
+   cut the escapes in Act 2. DUK-22 names those as the one thing not
+   to drop for time.
+
+Read the whole script aloud with a stopwatch before the first real
+take. If it comes in over 5:00, cut words. Do not speed up the read.
