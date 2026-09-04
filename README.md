@@ -13,6 +13,15 @@ reason code. The gate writes an audit row on every branch. The gate is the
 product. The catalog and the MCP server exist so the gate has something to
 decide about.
 
+
+## Architecture
+
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) covers the two processes and why they stay separate,
+the data model table by table, the audit log's reconstructibility claim, the
+concurrency fix for the spend cap, the OAuth design, and the trade-offs taken
+along the way.
+
+
 ## The problem
 
 An AI agent can already place an order. Nothing stands between the agent and
@@ -275,10 +284,3 @@ numbers never moved, and so they never drove a change to the gate.
     tested in Test Mode, so it is not usable for this build regardless.
     The payment loop closes through the human-approved handoff instead, as
     planned from the start.
-
-## Architecture
-
-`docs/ARCHITECTURE.md` covers the two processes and why they stay separate,
-the data model table by table, the audit log's reconstructibility claim, the
-concurrency fix for the spend cap, the OAuth design, and the trade-offs taken
-along the way.
